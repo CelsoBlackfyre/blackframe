@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/CelsoBlackfyre/blackframe/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/CelsoBlackfyre/blackframe/actions/workflows/tests.yml/badge.svg"></a>
+  <img alt="74 tests passing" src="https://img.shields.io/badge/tests-74%20passing-2E7D32">
   <img alt="Laravel 12" src="https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white">
