@@ -153,8 +153,10 @@ function CandidateCard({
                 <div className="flex min-w-0 flex-col p-5 sm:p-7">
                     <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                            <h2 className="truncate text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{candidate.name}</h2>
-                            <p className="text-muted-foreground mt-1 truncate text-sm">@{candidate.username}</p>
+                            <Link href={route('profiles.show', candidate.username)} className="hover:text-primary block rounded-lg">
+                                <h2 className="truncate text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{candidate.name}</h2>
+                                <p className="text-muted-foreground mt-1 truncate text-sm">@{candidate.username}</p>
+                            </Link>
                             {relationship && <p className="text-primary mt-2 text-xs font-semibold">{relationship}</p>}
                         </div>
                         <CompatibilityScore score={candidate.compatibility.score} />
@@ -474,12 +476,16 @@ function Connections({ candidates }: { candidates: MatchCandidate[] }) {
             {candidates.map((candidate) => (
                 <article key={candidate.id} className="border-border bg-card flex flex-col rounded-2xl border p-5">
                     <div className="flex items-start gap-4">
-                        <SocialAvatar name={candidate.name} src={candidate.avatar_url} className="size-16 shrink-0" />
+                        <Link href={route('profiles.show', candidate.username)} className="shrink-0 rounded-full">
+                            <SocialAvatar name={candidate.name} src={candidate.avatar_url} className="size-16" />
+                        </Link>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                    <h2 className="truncate text-lg font-semibold">{candidate.name}</h2>
-                                    <p className="text-muted-foreground truncate text-sm">@{candidate.username}</p>
+                                    <Link href={route('profiles.show', candidate.username)} className="hover:text-primary block rounded">
+                                        <h2 className="truncate text-lg font-semibold">{candidate.name}</h2>
+                                        <p className="text-muted-foreground truncate text-sm">@{candidate.username}</p>
+                                    </Link>
                                 </div>
                                 <CompatibilityScore score={candidate.compatibility.score} size="small" />
                             </div>

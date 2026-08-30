@@ -54,7 +54,7 @@ class PostCreationTest extends TestCase
 
     public function test_user_can_publish_a_validated_image_post(): void
     {
-        Storage::fake('public');
+        Storage::fake('post-media');
         $user = User::factory()->create();
 
         $this->actingAs($user)
@@ -72,11 +72,11 @@ class PostCreationTest extends TestCase
         $media = Media::query()->whereMorphedTo('mediaable', $post)->sole();
 
         $this->assertSame('image', $post->type);
-        $this->assertSame('public', $media->disk);
+        $this->assertSame('post-media', $media->disk);
         $this->assertSame(1200, $media->width);
         $this->assertSame(1500, $media->height);
         $this->assertSame('Warm afternoon light crossing a concrete studio floor.', $media->alt_text);
-        Storage::disk('public')->assertExists($media->path);
+        Storage::disk('post-media')->assertExists($media->path);
     }
 
     public function test_type_specific_post_fields_are_required(): void

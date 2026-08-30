@@ -2,7 +2,7 @@ import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { FeedPost } from '@/types/feed';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { Heart, LoaderCircle, MessageCircle } from 'lucide-react';
 import { SocialAvatar } from './avatar';
 
@@ -33,9 +33,16 @@ export function PostCard({ post, eager = false }: PostCardProps) {
     return (
         <article className="border-border bg-card text-card-foreground overflow-hidden rounded-2xl border shadow-[0_10px_35px_rgba(30,20,24,0.06)] dark:shadow-none">
             <header className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
-                <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
+                <Link href={route('profiles.show', post.author.username)} aria-label={`View ${post.author.name}'s profile`} className="rounded-full">
+                    <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
+                </Link>
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{post.author.username}</p>
+                    <Link
+                        href={route('profiles.show', post.author.username)}
+                        className="hover:text-primary block truncate rounded text-sm font-semibold"
+                    >
+                        {post.author.username}
+                    </Link>
                     <p className="text-muted-foreground truncate text-xs">{[post.location, post.published_at].filter(Boolean).join(' | ')}</p>
                 </div>
             </header>
@@ -96,7 +103,9 @@ export function PostCard({ post, eager = false }: PostCardProps) {
 
                 {post.caption && (
                     <p className="text-[15px] leading-6">
-                        <span className="mr-2 font-semibold">{post.author.username}</span>
+                        <Link href={route('profiles.show', post.author.username)} className="hover:text-primary mr-2 rounded font-semibold">
+                            {post.author.username}
+                        </Link>
                         {post.caption}
                     </p>
                 )}
@@ -105,7 +114,12 @@ export function PostCard({ post, eager = false }: PostCardProps) {
                     <div className="border-border/70 space-y-1.5 border-t pt-3">
                         {post.comments.map((comment) => (
                             <p key={comment.id} className="text-muted-foreground text-sm leading-5">
-                                <span className="text-foreground mr-2 font-semibold">{comment.author.username}</span>
+                                <Link
+                                    href={route('profiles.show', comment.author.username)}
+                                    className="text-foreground hover:text-primary mr-2 rounded font-semibold"
+                                >
+                                    {comment.author.username}
+                                </Link>
                                 {comment.body}
                             </p>
                         ))}

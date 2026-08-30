@@ -1,17 +1,18 @@
 import { cn } from '@/lib/utils';
+import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { House, LibraryBig, MessageCircleMore, SquarePlus, UserRound } from 'lucide-react';
+import { House, MessageCircleMore, MessagesSquare, SquarePlus, UsersRound } from 'lucide-react';
 
 const items = [
     { label: 'Home', href: '/feed', icon: House },
     { label: 'Pulse', href: '/pulse', icon: MessageCircleMore },
     { label: 'Create', href: '/posts/create', icon: SquarePlus },
-    { label: 'Shelf', href: '/shelf', icon: LibraryBig },
-    { label: 'Profile', href: '/settings/profile', icon: UserRound },
+    { label: 'Discover', href: '/people', icon: UsersRound },
+    { label: 'Direct', href: '/direct', icon: MessagesSquare },
 ];
 
 export function MobileNav() {
-    const page = usePage();
+    const page = usePage<SharedData>();
 
     return (
         <nav
@@ -33,7 +34,15 @@ export function MobileNav() {
                                 active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                             )}
                         >
-                            <item.icon className="size-5" strokeWidth={active ? 2.2 : 1.8} aria-hidden="true" />
+                            <span className="relative">
+                                <item.icon className="size-5" strokeWidth={active ? 2.2 : 1.8} aria-hidden="true" />
+                                {item.href === '/direct' && page.props.direct.unread_count > 0 && (
+                                    <span className="border-background bg-primary absolute -top-2 -right-2 min-w-4 rounded-full border px-1 text-center text-[0.5625rem] leading-3.5 font-semibold text-white tabular-nums">
+                                        {page.props.direct.unread_count > 9 ? '9+' : page.props.direct.unread_count}
+                                        <span className="sr-only"> unread messages</span>
+                                    </span>
+                                )}
+                            </span>
                             {item.label}
                         </Link>
                     );

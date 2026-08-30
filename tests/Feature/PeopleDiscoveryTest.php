@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -43,6 +44,7 @@ class PeopleDiscoveryTest extends TestCase
                 ->where('filters.query', '')
                 ->where('network.followers_count', 1)
                 ->where('network.following_count', 1)
+                ->where('network.follow_requests_count', 0)
                 ->has('people.data', 2)
                 ->where('people.data.0.id', $mutual->id)
                 ->where('people.data.0.is_following', true)
@@ -50,6 +52,30 @@ class PeopleDiscoveryTest extends TestCase
                 ->where('people.data.0.followers_count', 1)
                 ->where('people.data.0.posts_count', 1)
                 ->where('people.data.1.id', $stranger->id)
+            );
+    }
+
+    public function test_pending_private_follow_requests_are_visible_only_to_the_recipient(): void
+    {
+        $requester = User::factory()->create(['name' => 'Pending Person']);
+        $privateCreator = User::factory()->create(['is_private' => true]);
+
+        $this->actingAs($requester)->post(route('people.follow.store', $privateCreator));
+
+        $this->actingAs($privateCreator)
+            ->get('/people')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('network.follow_requests_count', 1)
+                ->has('follow_requests', 1)
+                ->where('follow_requests.0.id', $requester->id)
+                ->where('follow_requests.0.incoming_follow_request', true)
+            );
+
+        $this->actingAs($requester)
+            ->get('/people')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('network.follow_requests_count', 0)
+                ->has('follow_requests', 0)
             );
     }
 
@@ -139,6 +165,34 @@ class PeopleDiscoveryTest extends TestCase
                 ->where('people.current_page', 1)
                 ->where('people.last_page', 2)
                 ->has('people.data', 12)
+            );
+    }
+
+    public function test_discover_prioritizes_and_explains_shared_culture(): void
+    {
+        $viewer = User::factory()->create();
+        $sharedPerson = User::factory()->create(['name' => 'Shared Culture']);
+        $popularPerson = User::factory()->create(['name' => 'Popular Stranger']);
+        $sharedSubject = Subject::factory()->create(['name' => 'The Expanse']);
+
+        $viewer->shelfEntries()->create([
+            'subject_id' => $sharedSubject->id,
+            'status' => 'completed',
+        ]);
+        $sharedPerson->shelfEntries()->create([
+            'subject_id' => $sharedSubject->id,
+            'status' => 'current',
+        ]);
+        User::factory()->count(3)->create()->each(fn (User $follower) => $follower->following()->attach($popularPerson));
+
+        $this->actingAs($viewer)
+            ->get('/people')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('people.data.0.id', $sharedPerson->id)
+                ->where('people.data.0.shared_titles_count', 1)
+                ->where('people.data.0.shared_subjects.0.name', 'The Expanse')
+                ->where('people.data.0.current_activity.subject.name', 'The Expanse')
+                ->where('people.data.0.recommendation_reason', 'Suggested because you both shelved The Expanse.')
             );
     }
 }

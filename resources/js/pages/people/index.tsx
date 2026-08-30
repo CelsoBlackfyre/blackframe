@@ -11,10 +11,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import { LoaderCircle, Search, UsersRound, X } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'People', href: '/people' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Discover', href: '/people' }];
 
 interface PeoplePageProps {
     people: Paginated<PersonSummary>;
+    follow_requests: PersonSummary[];
     filters: PeopleFilters;
     network: PeopleNetwork;
 }
@@ -73,7 +74,7 @@ function EmptyPeople({ view, query, onClear }: { view: PeopleView; query: string
     );
 }
 
-export default function People({ people, filters, network }: PeoplePageProps) {
+export default function People({ people, follow_requests: followRequests, filters, network }: PeoplePageProps) {
     const [searchQuery, setSearchQuery] = useState(filters.query);
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -135,16 +136,16 @@ export default function People({ people, filters, network }: PeoplePageProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="People" />
-            <main id="main-content" className="mx-auto w-full max-w-[1040px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
+            <Head title="Discover people" />
+            <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
                 <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-2xl">
                         <div className="bg-primary/10 text-primary mb-4 flex size-11 items-center justify-center rounded-2xl">
                             <UsersRound className="size-6" strokeWidth={1.8} aria-hidden="true" />
                         </div>
-                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Find your people</h1>
+                        <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Discover your people</h1>
                         <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-6 sm:text-base">
-                            Discover new perspectives, search your network, and decide whose stories belong in your feed.
+                            Find people through shared stories, worlds, games, and the culture already on your Geek Shelf.
                         </p>
                     </div>
                     <dl className="border-border bg-card flex shrink-0 gap-5 rounded-2xl border px-5 py-4">
@@ -162,6 +163,27 @@ export default function People({ people, filters, network }: PeoplePageProps) {
                 <div className="mt-6">
                     <FlashMessage />
                 </div>
+
+                {followRequests.length > 0 && (
+                    <section className="border-border bg-muted/35 mt-6 rounded-2xl border p-4 sm:p-5" aria-labelledby="follow-requests-title">
+                        <div className="mb-4 flex items-center justify-between gap-4">
+                            <div>
+                                <h2 id="follow-requests-title" className="font-semibold">
+                                    Follow requests
+                                </h2>
+                                <p className="text-muted-foreground mt-1 text-sm">Choose who can see your private profile.</p>
+                            </div>
+                            <span className="bg-primary/10 text-primary rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums">
+                                {network.follow_requests_count}
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                            {followRequests.map((person) => (
+                                <PersonCard key={person.id} person={person} />
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 <section className="border-border bg-card mt-6 rounded-2xl border p-4 sm:p-5" aria-labelledby="people-search-label">
                     <form onSubmit={submitSearch} role="search">

@@ -2,7 +2,7 @@ import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PulsePost } from '@/types/pulse';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { Heart, LoaderCircle, MessageCircle } from 'lucide-react';
 import { SocialAvatar } from './avatar';
 
@@ -27,11 +27,20 @@ export function PulsePostCard({ post }: { post: PulsePost }) {
     return (
         <article className="border-border bg-card rounded-2xl border px-4 py-4 sm:px-5 sm:py-5">
             <div className="flex items-start gap-3">
-                <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
+                <Link href={route('profiles.show', post.author.username)} aria-label={`View ${post.author.name}'s profile`} className="rounded-full">
+                    <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
+                </Link>
                 <div className="min-w-0 flex-1">
                     <header className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        <p className="font-semibold">{post.author.name}</p>
-                        <p className="text-muted-foreground text-sm">@{post.author.username}</p>
+                        <Link href={route('profiles.show', post.author.username)} className="hover:text-primary rounded font-semibold">
+                            {post.author.name}
+                        </Link>
+                        <Link
+                            href={route('profiles.show', post.author.username)}
+                            className="text-muted-foreground hover:text-primary rounded text-sm"
+                        >
+                            @{post.author.username}
+                        </Link>
                         {post.published_at && <p className="text-muted-foreground text-sm">{post.published_at}</p>}
                     </header>
 

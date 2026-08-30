@@ -33,6 +33,7 @@ class ProfileUpdateTest extends TestCase
                 'email' => 'test@example.com',
                 'bio' => 'Photos from daily walks.',
                 'website' => 'https://example.com',
+                'is_private' => true,
             ]);
 
         $response
@@ -45,6 +46,7 @@ class ProfileUpdateTest extends TestCase
         $this->assertSame('test.user', $user->username);
         $this->assertSame('test@example.com', $user->email);
         $this->assertSame('Photos from daily walks.', $user->bio);
+        $this->assertTrue($user->is_private);
         $this->assertNull($user->email_verified_at);
     }
 

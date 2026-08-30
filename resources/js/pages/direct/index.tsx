@@ -269,11 +269,13 @@ function ConversationPane({ active }: { active: DirectActiveConversation | null 
                         <ArrowLeft className="size-5" aria-hidden="true" />
                     </Link>
                 </Button>
-                <SocialAvatar name={active.person.name} src={active.person.avatar_url} className="size-11 shrink-0" />
-                <div className="min-w-0 flex-1">
+                <Link href={route('profiles.show', active.person.username)} className="shrink-0 rounded-full">
+                    <SocialAvatar name={active.person.name} src={active.person.avatar_url} className="size-11" />
+                </Link>
+                <Link href={route('profiles.show', active.person.username)} className="hover:text-primary min-w-0 flex-1 rounded">
                     <h1 className="truncate font-semibold">{active.person.name}</h1>
                     <p className="text-muted-foreground truncate text-sm">@{active.person.username}</p>
-                </div>
+                </Link>
                 <span className="bg-primary/10 text-primary hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold sm:flex">
                     <BookHeart className="size-4" strokeWidth={1.8} aria-hidden="true" />
                     Shelf Match

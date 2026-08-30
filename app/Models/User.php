@@ -80,13 +80,40 @@ class User extends Authenticatable
     public function following(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+            ->wherePivotNotNull('accepted_at')
+            ->withPivot('accepted_at')
             ->withTimestamps();
     }
 
     public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+            ->wherePivotNotNull('accepted_at')
+            ->withPivot('accepted_at')
             ->withTimestamps();
+    }
+
+    public function pendingFollowing(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+            ->wherePivotNull('accepted_at')
+            ->withPivot('accepted_at')
+            ->withTimestamps();
+    }
+
+    public function pendingFollowers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+            ->wherePivotNull('accepted_at')
+            ->withPivot('accepted_at')
+            ->withTimestamps();
+    }
+
+    public function canViewContentFrom(User $profile): bool
+    {
+        return $this->is($profile)
+            || ! $profile->is_private
+            || $this->following()->whereKey($profile->id)->exists();
     }
 
     public function comments(): HasMany

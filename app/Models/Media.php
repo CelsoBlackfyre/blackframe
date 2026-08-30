@@ -39,6 +39,13 @@ class Media extends Model
             return $this->path;
         }
 
+        if ($this->disk === 'post-media') {
+            return route('posts.media.show', [
+                'post' => $this->mediaable_id,
+                'media' => $this->getKey(),
+            ]);
+        }
+
         return Storage::disk($this->disk)->url($this->path);
     }
 }

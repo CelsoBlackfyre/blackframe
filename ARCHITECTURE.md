@@ -151,17 +151,19 @@ Controllers should validate/authorize input and delegate multi-step domain work 
 - Unique indexes make repeated social actions idempotent.
 - Shelf Match requires a real shared title at the server boundary, excludes private profiles unless the viewer already follows them, stores interest privately, and does not call two users a match until both choose Connect.
 - Direct requires reciprocal Connect decisions to start, reuses one pair conversation, authorizes every read and send against participant membership, validates message length, and rate-limits both thread creation and sending.
-- Private accounts exist in the schema; follow approval is intentionally deferred and must be added before private profiles are exposed publicly.
-- Media uploads must validate MIME type from file contents, set size limits, and process variants in a queue.
-- Public profile and post routes require policies before they ship.
+- Private accounts create pending follow rows that do not enter follower queries until the profile owner accepts them.
+- Post visibility is centralized in `PostPolicy`; likes and media delivery return 404 when a post is unpublished or its private author has not approved the viewer.
+- Media uploads validate MIME type and size, use server-generated paths outside the public web root, and are streamed through authenticated authorization. Queued variants remain future work.
+- Password changes and resets rotate persistent-login tokens and invalidate database-backed sessions; account-sensitive routes have dedicated throttles.
+- Production requests validate exact configured hosts and add baseline browser security headers.
 
 ## Media strategy
 
-Development uses Laravel's public disk plus explicitly marked external seed images. Production should use S3 or Cloudflare R2. The media table already stores dimensions, ordering, alt text, and JSON variants so storage can change without changing post records.
+Development stores uploaded post media on a private local disk and streams it through an authorized controller; explicitly marked external seed images remain remote. Production should use private S3 or Cloudflare R2 objects with equivalent authorization. The media table already stores dimensions, ordering, alt text, and JSON variants so storage can change without changing post records.
 
 ## Roadmap alignment
 
-1. Complete the core social loop with post management, carousels, public profiles, follow approval, comments, and profile grids.
+1. Complete the core social loop with post management, carousels, comments, and richer profile grids.
 2. Expand the shipped subject graph and shelf matching with spoiler controls, subject detail pages, structured reviews, fandom hubs, and compatibility preferences.
 3. Expand discovery with hashtags and subject-aware recommendations, then add notifications and Reverb events.
 4. Add stories and queued video/reel processing.

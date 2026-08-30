@@ -77,8 +77,7 @@ class MatchCompatibilityService
 
     public function isVisibleTo(User $viewer, User $candidate): bool
     {
-        return ! $candidate->is_private
-            || $candidate->followers()->whereKey($viewer->id)->exists();
+        return $viewer->canViewContentFrom($candidate);
     }
 
     private function candidateQuery(User $viewer): Builder

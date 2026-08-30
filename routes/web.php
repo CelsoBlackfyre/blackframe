@@ -11,6 +11,8 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\MatchDecisionController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostMediaController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\ShelfController;
 use App\Http\Controllers\SubjectSuggestionController;
@@ -27,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('people', PeopleController::class)
         ->middleware('throttle:people-search')
         ->name('people.index');
+    Route::get('profiles/{user:username}', PublicProfileController::class)->name('profiles.show');
     Route::get('matches', MatchController::class)->name('matches.index');
     Route::post('matches/{user}/decision', [MatchDecisionController::class, 'store'])
         ->middleware('throttle:match-decisions')
@@ -64,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('shelf.destroy');
 
     Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::get('posts/{post}/media/{media}', PostMediaController::class)->name('posts.media.show');
     Route::post('posts', [PostController::class, 'store'])
         ->middleware('throttle:content-creation')
         ->name('posts.store');
@@ -81,6 +85,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('people/{user}/follow', [FollowController::class, 'destroy'])
         ->middleware('throttle:social-interactions')
         ->name('people.follow.destroy');
+    Route::patch('people/follow-requests/{user}/accept', [FollowController::class, 'accept'])
+        ->middleware('throttle:social-interactions')
+        ->name('people.follow-requests.accept');
+    Route::delete('people/follow-requests/{user}', [FollowController::class, 'decline'])
+        ->middleware('throttle:social-interactions')
+        ->name('people.follow-requests.decline');
 });
 
 require __DIR__.'/settings.php';

@@ -1,64 +1,71 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { SocialAvatar } from '@/components/social/avatar';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
+import { UserMenuContent } from '@/components/user-menu-content';
 import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { HeartHandshake, MessagesSquare, Search } from 'lucide-react';
+import { MessagesSquare, Search, SquarePlus } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
-    const page = usePage<SharedData>();
-    const peopleActive = page.url.startsWith('/people');
-    const matchesActive = page.url.startsWith('/matches');
-    const directActive = page.url.startsWith('/direct');
+    const { auth, direct } = usePage<SharedData>().props;
 
     return (
-        <header className="border-sidebar-border/60 bg-background/90 sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b px-4 backdrop-blur transition-[width,height] ease-linear md:px-5">
-            <Link href="/feed" className="flex items-center md:hidden" aria-label="BlackFrame home">
-                <AppLogo compact />
-            </Link>
-            <Link
-                href="/people"
-                aria-current={peopleActive ? 'page' : undefined}
-                className={cn(
-                    'ml-auto flex min-h-11 items-center gap-2 rounded-xl px-2.5 text-sm font-semibold transition-colors md:hidden',
-                    peopleActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                )}
-            >
-                <Search className="size-5" strokeWidth={peopleActive ? 2.2 : 1.8} aria-hidden="true" />
-                People
-            </Link>
-            <Link
-                href="/matches"
-                aria-current={matchesActive ? 'page' : undefined}
-                className={cn(
-                    'flex min-h-11 items-center gap-2 rounded-xl px-2.5 text-sm font-semibold transition-colors md:hidden',
-                    matchesActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                )}
-            >
-                <HeartHandshake className="size-5" strokeWidth={matchesActive ? 2.2 : 1.8} aria-hidden="true" />
-                Match
-            </Link>
-            <Link
-                href="/direct"
-                aria-current={directActive ? 'page' : undefined}
-                className={cn(
-                    'relative flex min-h-11 items-center gap-2 rounded-xl px-2.5 text-sm font-semibold transition-colors md:hidden',
-                    directActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                )}
-            >
-                <MessagesSquare className="size-5" strokeWidth={directActive ? 2.2 : 1.8} aria-hidden="true" />
-                Direct
-                {page.props.direct.unread_count > 0 && (
-                    <span className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 min-w-5 rounded-full px-1 text-center text-[0.625rem] leading-5 font-semibold tabular-nums">
-                        {page.props.direct.unread_count > 99 ? '99+' : page.props.direct.unread_count}
-                        <span className="sr-only"> unread messages</span>
-                    </span>
-                )}
-            </Link>
-            <div className="hidden items-center gap-2 md:flex">
-                <SidebarTrigger className="-ml-1 size-10 cursor-pointer" />
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
+        <header className="border-sidebar-border/70 bg-background/92 sticky top-0 z-20 h-[4.5rem] shrink-0 border-b backdrop-blur-lg">
+            <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-2 px-4 sm:px-5 lg:px-7">
+                <Link href="/feed" className="flex items-center md:hidden" aria-label="BlackFrame home">
+                    <AppLogo compact />
+                </Link>
+
+                <div className="hidden min-w-0 items-center gap-2 md:flex">
+                    <SidebarTrigger className="-ml-1 size-10 cursor-pointer rounded-xl" />
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+
+                <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+                    <Button asChild variant="ghost" className="min-h-11 rounded-xl px-3 sm:px-4">
+                        <Link href={route('people.index')} aria-label="Search BlackFrame">
+                            <Search className="size-5" strokeWidth={1.8} aria-hidden="true" />
+                            <span className="hidden sm:inline">Search</span>
+                        </Link>
+                    </Button>
+
+                    <Button asChild className="hidden min-h-11 rounded-xl px-4 md:inline-flex">
+                        <Link href={route('posts.create')}>
+                            <SquarePlus className="size-4" strokeWidth={1.9} aria-hidden="true" />
+                            Create
+                        </Link>
+                    </Button>
+
+                    <Button asChild variant="ghost" size="icon" className="relative hidden size-11 rounded-xl md:inline-flex">
+                        <Link href={route('direct.index')} aria-label="Open Direct messages">
+                            <MessagesSquare className="size-5" strokeWidth={1.8} aria-hidden="true" />
+                            {direct.unread_count > 0 && (
+                                <span className="border-background bg-primary absolute top-1 right-1 min-w-4 rounded-full border px-1 text-center text-[0.5625rem] leading-3.5 font-semibold text-white tabular-nums">
+                                    {direct.unread_count > 9 ? '9+' : direct.unread_count}
+                                    <span className="sr-only"> unread messages</span>
+                                </span>
+                            )}
+                        </Link>
+                    </Button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                type="button"
+                                aria-label="Open account menu"
+                                className="hover:bg-muted focus-visible:ring-ring flex size-11 cursor-pointer items-center justify-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                                <SocialAvatar name={auth.user.name} src={auth.user.avatar_url} className="size-8" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-64 rounded-xl p-1.5" align="end" sideOffset={8}>
+                            <UserMenuContent user={auth.user} />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </header>
     );

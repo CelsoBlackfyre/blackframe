@@ -125,6 +125,10 @@ class DirectController extends Controller
      */
     private function sharedSubjects(User $viewer, User $other): Collection
     {
+        if (! $viewer->canViewContentFrom($other)) {
+            return collect();
+        }
+
         return UserSubject::query()
             ->where('user_id', $other->id)
             ->whereIn(

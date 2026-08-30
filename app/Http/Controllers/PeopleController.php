@@ -17,20 +17,14 @@ class PeopleController extends Controller
         $view = PeopleView::from($request->string('view')->toString());
         $term = $request->validated('query');
 
-        $people = $peopleSearch->search($viewer, $view, $term)->through(fn (User $user) => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'username' => $user->username,
-            'bio' => $user->bio,
-            'avatar_url' => $user->avatar_url,
-            'followers_count' => $user->followers_count,
-            'posts_count' => $user->posts_count,
-            'is_following' => (bool) $user->followed_by_viewer,
-            'follows_you' => (bool) $user->follows_viewer,
-        ]);
+        $people = $peopleSearch->search($viewer, $view, $term)
+            ->through(fn (User $user) => $peopleSearch->present($viewer, $user));
+        $followRequests = $peopleSearch->pendingRequests($viewer)
+            ->map(fn (User $user) => $peopleSearch->present($viewer, $user));
 
         return Inertia::render('people/index', [
             'people' => $people,
+            'follow_requests' => $followRequests,
             'filters' => [
                 'view' => $view->value,
                 'query' => $term ?? '',
@@ -38,6 +32,7 @@ class PeopleController extends Controller
             'network' => [
                 'followers_count' => $viewer->followers()->count(),
                 'following_count' => $viewer->following()->count(),
+                'follow_requests_count' => $viewer->pendingFollowers()->count(),
             ],
         ]);
     }

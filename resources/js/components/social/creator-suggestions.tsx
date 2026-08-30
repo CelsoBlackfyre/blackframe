@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { CreatorSuggestion } from '@/types/feed';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Link, useForm } from '@inertiajs/react';
+import { LoaderCircle, Sparkles } from 'lucide-react';
 import { SocialAvatar } from './avatar';
 
 function FollowButton({ creatorId }: { creatorId: number }) {
@@ -52,9 +52,16 @@ export function CreatorSuggestions({ suggestions, compact = false }: { suggestio
                             key={creator.id}
                             className="border-border bg-card flex min-w-[220px] snap-start items-center gap-3 rounded-2xl border p-3"
                         >
-                            <SocialAvatar name={creator.name} src={creator.avatar_url} />
+                            <Link href={route('profiles.show', creator.username)} className="rounded-full">
+                                <SocialAvatar name={creator.name} src={creator.avatar_url} />
+                            </Link>
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold">{creator.username}</p>
+                                <Link
+                                    href={route('profiles.show', creator.username)}
+                                    className="hover:text-primary block truncate rounded text-sm font-semibold"
+                                >
+                                    {creator.username}
+                                </Link>
                                 <p className="text-muted-foreground truncate text-xs">{creator.name}</p>
                             </div>
                             <FollowButton creatorId={creator.id} />
@@ -66,7 +73,7 @@ export function CreatorSuggestions({ suggestions, compact = false }: { suggestio
     }
 
     return (
-        <aside className="sticky top-24 hidden self-start xl:block" aria-labelledby="suggestions-heading">
+        <section aria-labelledby="suggestions-heading">
             <div className="border-border bg-card rounded-2xl border p-5">
                 <h2 id="suggestions-heading" className="text-base font-semibold">
                     People to discover
@@ -75,18 +82,33 @@ export function CreatorSuggestions({ suggestions, compact = false }: { suggestio
                 <div className="mt-5 space-y-4">
                     {suggestions.map((creator) => (
                         <div key={creator.id} className="flex items-center gap-3">
-                            <SocialAvatar name={creator.name} src={creator.avatar_url} />
+                            <Link href={route('profiles.show', creator.username)} className="rounded-full">
+                                <SocialAvatar name={creator.name} src={creator.avatar_url} />
+                            </Link>
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold">{creator.username}</p>
+                                <Link
+                                    href={route('profiles.show', creator.username)}
+                                    className="hover:text-primary block truncate rounded text-sm font-semibold"
+                                >
+                                    {creator.username}
+                                </Link>
                                 <p className="text-muted-foreground truncate text-xs">
-                                    {creator.posts_count} {creator.posts_count === 1 ? 'post' : 'posts'}
+                                    {creator.shared_titles_count > 0
+                                        ? `${creator.shared_titles_count} shared ${creator.shared_titles_count === 1 ? 'title' : 'titles'}`
+                                        : `${creator.posts_count} ${creator.posts_count === 1 ? 'post' : 'posts'}`}
                                 </p>
                             </div>
                             <FollowButton creatorId={creator.id} />
                         </div>
                     ))}
                 </div>
+                {suggestions.some((creator) => creator.recommendation_reason) && (
+                    <p className="text-muted-foreground mt-4 flex items-start gap-2 border-t pt-4 text-xs leading-5">
+                        <Sparkles className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                        Recommendations prioritize culture you share.
+                    </p>
+                )}
             </div>
-        </aside>
+        </section>
     );
 }

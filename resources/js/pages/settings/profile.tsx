@@ -7,6 +7,7 @@ import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -28,6 +29,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         email: auth.user.email,
         bio: auth.user.bio ?? '',
         website: auth.user.website ?? '',
+        is_private: auth.user.is_private,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -127,6 +129,21 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 placeholder="https://example.com"
                             />
                             <InputError className="mt-2" message={errors.website} />
+                        </div>
+
+                        <div className="border-border flex items-start gap-3 rounded-xl border p-4">
+                            <Checkbox
+                                id="is_private"
+                                checked={data.is_private}
+                                onCheckedChange={(checked) => setData('is_private', checked === true)}
+                            />
+                            <div className="grid gap-1">
+                                <Label htmlFor="is_private">Private profile</Label>
+                                <p className="text-muted-foreground text-xs leading-5">
+                                    Only followers you approve can see your posts, Pulse updates, Geek Shelf, and cultural activity.
+                                </p>
+                                <InputError message={errors.is_private} />
+                            </div>
                         </div>
 
                         {mustVerifyEmail && auth.user.email_verified_at === null && (

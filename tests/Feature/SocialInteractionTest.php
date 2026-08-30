@@ -30,6 +30,29 @@ class SocialInteractionTest extends TestCase
         $this->assertDatabaseCount('likes', 0);
     }
 
+    public function test_private_and_unpublished_posts_cannot_be_liked_by_direct_id(): void
+    {
+        $viewer = User::factory()->create();
+        $privateAuthor = User::factory()->create(['is_private' => true]);
+        $privatePost = Post::factory()->for($privateAuthor)->create(['published_at' => now()]);
+        $draft = Post::factory()->create(['published_at' => null]);
+
+        $this->actingAs($viewer)
+            ->post(route('posts.likes.store', $privatePost))
+            ->assertNotFound();
+        $this->actingAs($viewer)
+            ->post(route('posts.likes.store', $draft))
+            ->assertNotFound();
+
+        $viewer->following()->attach($privateAuthor);
+
+        $this->actingAs($viewer)
+            ->post(route('posts.likes.store', $privatePost))
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('likes', 1);
+    }
+
     public function test_user_can_follow_another_user_but_not_themselves(): void
     {
         $viewer = User::factory()->create();
@@ -44,7 +67,9 @@ class SocialInteractionTest extends TestCase
             'following_id' => $creator->id,
         ]);
 
-        $this->actingAs($viewer)->post(route('people.follow.store', $viewer))->assertStatus(422);
+        $this->actingAs($viewer)
+            ->post(route('people.follow.store', $viewer))
+            ->assertSessionHasErrors('person');
         $this->assertDatabaseCount('follows', 1);
     }
 
@@ -58,11 +83,60 @@ class SocialInteractionTest extends TestCase
             ->from('/people?view=following')
             ->delete(route('people.follow.destroy', $creator))
             ->assertRedirect('/people?view=following')
-            ->assertSessionHas('success', 'You unfollowed former.friend.');
+            ->assertSessionHas('success', 'Your relationship with former.friend was removed.');
 
         $this->assertDatabaseMissing('follows', [
             'follower_id' => $viewer->id,
             'following_id' => $creator->id,
+        ]);
+    }
+
+    public function test_private_follow_requires_owner_approval(): void
+    {
+        $viewer = User::factory()->create();
+        $privateCreator = User::factory()->create([
+            'username' => 'private.creator',
+            'is_private' => true,
+        ]);
+
+        $this->actingAs($viewer)
+            ->post(route('people.follow.store', $privateCreator))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Follow request sent to private.creator.');
+
+        $this->assertDatabaseHas('follows', [
+            'follower_id' => $viewer->id,
+            'following_id' => $privateCreator->id,
+            'accepted_at' => null,
+        ]);
+        $this->assertFalse($viewer->following()->whereKey($privateCreator->id)->exists());
+
+        $this->actingAs($privateCreator)
+            ->patch(route('people.follow-requests.accept', $viewer))
+            ->assertRedirect();
+
+        $this->assertTrue($viewer->following()->whereKey($privateCreator->id)->exists());
+    }
+
+    public function test_follow_requests_can_only_be_managed_by_the_recipient(): void
+    {
+        $requester = User::factory()->create();
+        $privateCreator = User::factory()->create(['is_private' => true]);
+        $attacker = User::factory()->create();
+
+        $this->actingAs($requester)->post(route('people.follow.store', $privateCreator));
+
+        $this->actingAs($attacker)
+            ->patch(route('people.follow-requests.accept', $requester))
+            ->assertNotFound();
+        $this->actingAs($attacker)
+            ->delete(route('people.follow-requests.decline', $requester))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('follows', [
+            'follower_id' => $requester->id,
+            'following_id' => $privateCreator->id,
+            'accepted_at' => null,
         ]);
     }
 }

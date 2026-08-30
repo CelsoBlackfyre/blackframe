@@ -4,18 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Subject;
-use App\Models\User;
 use App\Services\FeedService;
+use App\Services\PeopleSearchService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class FeedController extends Controller
 {
-    public function __invoke(Request $request, FeedService $feedService): Response
+    public function __invoke(Request $request, FeedService $feedService, PeopleSearchService $peopleSearch): Response
     {
         $viewer = $request->user();
-        $followingIds = $viewer->following()->pluck('users.id');
 
         $posts = $feedService->for($viewer)->through(fn (Post $post) => [
             'id' => $post->id,
@@ -55,25 +54,40 @@ class FeedController extends Controller
             ]),
         ]);
 
-        $suggestions = User::query()
-            ->whereKeyNot($viewer->id)
-            ->whereNotIn('id', $followingIds)
-            ->withCount(['followers', 'posts'])
-            ->orderByDesc('followers_count')
-            ->limit(5)
+        $suggestions = $peopleSearch->suggestions($viewer)
+            ->map(fn ($user) => $peopleSearch->present($viewer, $user));
+
+        $currentShelf = $viewer->shelfEntries()
+            ->with('subject:id,name,slug,type,image_url')
+            ->where('status', 'current')
+            ->latest('updated_at')
+            ->limit(3)
             ->get()
-            ->map(fn (User $user) => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'avatar_url' => $user->avatar_url,
-                'followers_count' => $user->followers_count,
-                'posts_count' => $user->posts_count,
+            ->map(fn ($entry) => [
+                'id' => $entry->id,
+                'status_label' => $entry->status->labelFor($entry->subject->type),
+                'progress' => $entry->progress,
+                'subject' => [
+                    'id' => $entry->subject->id,
+                    'name' => $entry->subject->name,
+                    'slug' => $entry->subject->slug,
+                    'type' => $entry->subject->type->value,
+                    'type_label' => $entry->subject->type->label(),
+                    'image_url' => $entry->subject->image_url,
+                ],
             ]);
+
+        $activation = [
+            'shelf_count' => $viewer->shelfEntries()->count(),
+            'following_count' => $viewer->following()->count(),
+            'published_posts_count' => $viewer->posts()->whereNotNull('published_at')->count(),
+        ];
 
         return Inertia::render('feed/index', [
             'posts' => $posts,
             'suggestions' => $suggestions,
+            'current_shelf' => $currentShelf,
+            'activation' => $activation,
         ]);
     }
 }

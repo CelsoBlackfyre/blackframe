@@ -28,6 +28,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'bio' => ['nullable', 'string', 'max:160'],
             'website' => ['nullable', 'url:http,https', 'max:255'],
+            'is_private' => ['sometimes', 'boolean'],
 
             'email' => [
                 'required',

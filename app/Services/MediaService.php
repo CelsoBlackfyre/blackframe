@@ -11,7 +11,7 @@ use Throwable;
 
 class MediaService
 {
-    private const POST_DISK = 'public';
+    private const POST_DISK = 'post-media';
 
     public function storePostImage(Post $post, UploadedFile $file, string $altText): Media
     {

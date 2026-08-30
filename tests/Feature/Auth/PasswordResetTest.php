@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -52,6 +53,13 @@ class PasswordResetTest extends TestCase
         Notification::fake();
 
         $user = User::factory()->create();
+        config(['session.driver' => 'database']);
+        DB::table('sessions')->insert([
+            'id' => 'compromised-session',
+            'user_id' => $user->id,
+            'payload' => 'serialized payload',
+            'last_activity' => now()->timestamp,
+        ]);
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
@@ -66,6 +74,8 @@ class PasswordResetTest extends TestCase
             $response
                 ->assertSessionHasNoErrors()
                 ->assertRedirect(route('login'));
+
+            $this->assertDatabaseMissing('sessions', ['id' => 'compromised-session']);
 
             return true;
         });

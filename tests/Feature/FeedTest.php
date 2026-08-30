@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SubjectType;
 use App\Models\Post;
 use App\Models\Subject;
 use App\Models\User;
@@ -28,7 +29,7 @@ class FeedTest extends TestCase
 
         $ownPost = Post::factory()->for($viewer)->create(['published_at' => now()->subMinute()]);
         $followedPost = Post::factory()->for($followed)->create(['published_at' => now()]);
-        $subject = Subject::factory()->create(['name' => 'Baldur’s Gate 3']);
+        $subject = Subject::factory()->create(['name' => 'Baldur’s Gate 3', 'type' => SubjectType::Game]);
         $followedPost->subjects()->attach($subject);
         Post::factory()->for($stranger)->create(['published_at' => now()->addMinute()]);
 
@@ -65,5 +66,28 @@ class FeedTest extends TestCase
         $this->actingAs($viewer)
             ->get('/feed')
             ->assertInertia(fn (Assert $page) => $page->has('posts.data', 0));
+    }
+
+    public function test_home_includes_activation_and_current_culture_context(): void
+    {
+        $viewer = User::factory()->create();
+        $subject = Subject::factory()->create(['name' => 'Baldur’s Gate 3', 'type' => SubjectType::Game]);
+        $viewer->shelfEntries()->create([
+            'subject_id' => $subject->id,
+            'status' => 'current',
+            'progress' => 'Act 2',
+        ]);
+        Post::factory()->for($viewer)->create(['type' => 'text']);
+
+        $this->actingAs($viewer)
+            ->get('/feed')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('activation.shelf_count', 1)
+                ->where('activation.following_count', 0)
+                ->where('activation.published_posts_count', 1)
+                ->where('current_shelf.0.subject.name', 'Baldur’s Gate 3')
+                ->where('current_shelf.0.status_label', 'Playing')
+                ->where('current_shelf.0.progress', 'Act 2')
+            );
     }
 }

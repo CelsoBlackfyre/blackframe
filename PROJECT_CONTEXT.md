@@ -85,7 +85,7 @@ All layers should reuse the same BlackFrame users, follows, content records, per
 - Polymorphic media records with disk, path, MIME type, order, dimensions, alt text, and future variant metadata.
 - Polymorphic likes with a database uniqueness constraint.
 - Thread-ready comments using an optional parent comment and soft deletion.
-- Directed follower and following relationships with a uniqueness constraint.
+- Directed follower and following relationships with pending private-account approval, accepted-only relationship queries, uniqueness, and a distinct-user check constraint.
 - Visual-first Home and conversation-first Pulse views over the same post, follow, like, and comment graph.
 - Typed subject catalog with parent-child relationships, provider provenance, secure on-selection imports, and extensible PostgreSQL JSON metadata.
 - Personal Geek Shelf entries with context-aware statuses, progress notes, optional 1–10 ratings, and favorites.
@@ -104,16 +104,15 @@ All layers should reuse the same BlackFrame users, follows, content records, per
 - Searchable two-pane Direct workspace on desktop and a single-focus conversation with predictable back navigation on mobile.
 - Direct entry points from mutual Connections, desktop navigation, and the compact mobile header, with accessible unread badges.
 - Like and unlike actions.
-- Follow and unfollow actions in both creator suggestions and the People directory, with processing and success feedback.
+- Follow, private request, accept, decline, cancel, and unfollow actions across profiles and People, with processing and success feedback.
 - Per-user rate limiting for people search, like, follow, and content-creation actions.
 - Responsive desktop sidebar with People, Shelf Match, and Direct destinations, compact mobile header with People, Match, and Direct access, and five-destination mobile navigation for Home, Pulse, Create, Shelf, and Profile.
 - Light theme, dark theme, visible focus treatment, reduced-motion handling, and semantic color tokens.
 - Seeded local demo users, visual posts, Pulse posts, likes, comments, follows, avatars, image content, twelve catalog subjects, overlapping community shelves, and tagged posts.
-- Authentication, profile, Home, Pulse, post-creation, Geek Shelf, Shelf Match, Direct messaging, people-discovery, and social-interaction feature tests.
+- Authentication, member profiles, Home, Pulse, post-creation, protected media, Geek Shelf, Shelf Match, Direct messaging, people-discovery, and social-interaction feature tests.
 
 ### Partially implemented or schema-ready
 
-- Private accounts have an `is_private` field, but follow requests and privacy enforcement are not implemented.
 - Comments exist in the database and feed previews, but users cannot create, edit, delete, or reply to comments through the current UI.
 - Media records support multiple ordered attachments and JSON variants, but the current feed card displays only the first media item.
 - Email-verification routes and screens exist from the starter kit, but the `User` model does not currently implement `MustVerifyEmail`; verification is therefore not enforced.
@@ -125,8 +124,6 @@ All layers should reuse the same BlackFrame users, follows, content records, per
 ### Not implemented yet
 
 - Post editing and deletion UI.
-- Public user profiles and profile post grids.
-- Private-account follow approval.
 - Comment authoring and moderation controls.
 - Multiple-image carousel interaction.
 - Explore, search, hashtags, mentions, saved posts, and collections.
@@ -630,13 +627,15 @@ The full source of truth is `design-system/blackframe/MASTER.md`. `DESIGN.md` is
 - Likes and follows have a named per-user limiter of 60 requests per minute.
 - Duplicate likes and follows are prevented by database indexes.
 - Self-follow attempts are rejected.
-- Like creation returns 404 for unpublished posts.
-- `PostPolicy` authorizes post creation. Update/delete abilities and public-profile policies remain required before those routes ship.
+- Like creation returns 404 for unpublished posts and posts hidden by private-account visibility.
+- `PostPolicy` authorizes creation, viewing, interactions, and protected media delivery. Update/delete abilities remain required before those routes ship.
 - `UserSubjectPolicy` restricts shelf updates and deletion to the owning user; shelf mutation requests validate subjects, statuses, ratings, progress, and favorite state.
 - External catalog payloads are encrypted and signed on the server before reaching React. `SubjectResolver` rejects altered references, and provider credentials never reach the browser.
 - Catalog search and missing-title requests have separate per-user limits; normalized suggestion uniqueness prevents duplicate queue entries.
-- Private-account enforcement is incomplete and must be implemented before private profiles become publicly accessible.
-- Current image uploads validate image contents and accepted MIME types, enforce an 8 MB limit, generate server-side names, record dimensions and alt text, and clean up stored files if media-record creation fails.
+- Private accounts use recipient-approved follow requests; pending rows never enter follower queries or unlock profile, match, Direct shelf-context, like, or post-media access.
+- Current image uploads validate image contents and accepted MIME types, enforce an 8 MB limit, generate server-side names, record dimensions and alt text, store outside the web root, authorize delivery, and clean up stored files if media-record creation fails.
+- Password changes and resets rotate persistent-login tokens, invalidate database-backed sessions, and use throttled account-sensitive routes.
+- Production requests validate configured hostnames and receive baseline browser security headers.
 - Future upload work must process responsive variants in queued jobs and define deletion and retention behavior.
 - Never place real credentials, API keys, storage secrets, or production connection strings in this document or committed environment files.
 
@@ -744,8 +743,8 @@ php artisan test
 Last verified result:
 
 ```text
-74 tests passed
-608 assertions
+87 tests passed
+823 assertions
 ```
 
 ### PHP formatting check
@@ -883,9 +882,9 @@ A complete feature should include the relevant items from this list:
 2. Completed: add image and text post creation with caption, location, alt text, and a shared Create flow.
 3. Add ordered multiple attachments and carousel rendering.
 4. Add post editing and deletion with policies and media cleanup.
-5. Add public profile pages and responsive profile media grids.
-6. Add follow and unfollow controls on profiles.
-7. Implement private-account follow requests and visibility rules.
+5. Completed: add authenticated member profile pages and responsive profile media grids.
+6. Completed: add follow, request, approval, cancellation, and unfollow controls on profiles and People.
+7. Completed: enforce private-account visibility for profiles, matching context, interactions, and uploaded post media.
 8. Add comment creation, deletion, and replies with validation and policies.
 
 ### Phase 2: Expand geek identity and fandoms
@@ -944,8 +943,8 @@ A complete feature should include the relevant items from this list:
 
 ## Known risks and decisions that must not be overlooked
 
-- `is_private` is data only; it does not currently protect content.
-- Public profile and post-management work requires policies before release.
+- Private visibility depends on accepted follow rows; future relationship changes must not query raw pending rows as followers.
+- Uploaded post media must remain behind authorization when moved to production object storage or a CDN.
 - The current external seed images require internet access and may change or fail.
 - Displaying only the first media record is intentional current behavior, not full carousel support.
 - Email verification is not enforced by the `User` model.
@@ -977,4 +976,4 @@ Before describing a requested change as complete, the assistant should verify al
 
 ## Concise AI context summary
 
-BlackFrame is a Laravel 12 and React 19 geek-culture social application using Inertia 2, TypeScript, Tailwind CSS 4, Radix UI primitives, Lucide icons, locally bundled Outfit Variable typography, focused GSAP motion, PostgreSQL 18.6, and PHPUnit. Docker Compose provides persistent `frame` development data and an isolated `frame_testing` database; CI runs the same PostgreSQL version. Home, Pulse, People, Geek Shelf, Shelf Match, and Direct share users, follows, posts, subjects, likes, comments, authorization, and one structured culture graph. People search supports Discover, Followers, and Following views with relationship context and pagination. Create and Geek Shelf use the same search-first SubjectPicker, which combines local subjects with cached Open Library, TVmaze, Jikan, Wikidata, and optional TMDB matches. Shelf Match requires a real shared title, explains compatibility through overlap, favorites, status, and rating closeness, keeps decisions private, supports practical Undo, and shows a match only after mutual Connect decisions. Mutual matches can open one participant-only Direct thread with shared-title context, searchable recent conversations, validated text messages, and per-user unread state. Signed provider records are imported only after selection, deduplicated by provenance and exact type/title, and arbitrary missing items enter a rate-limited review queue. Laravel remains the server and routing authority; React is delivered through Inertia rather than a separate API. The next geek milestone is spoiler-aware subject content followed by subject pages, structured reviews, and an administrative catalog-review screen; the core social loop still needs carousels, post management, public profiles, private-follow approval, and comment authoring. All work must preserve the BlackFrame design system, accessibility requirements, database invariants, typed Inertia props, and test coverage.
+BlackFrame is a Laravel 12 and React 19 geek-culture social application using Inertia 2, TypeScript, Tailwind CSS 4, Radix UI primitives, Lucide icons, locally bundled Outfit Variable typography, focused GSAP motion, PostgreSQL 18.6, and PHPUnit. Docker Compose provides persistent `frame` development data and an isolated `frame_testing` database; CI runs the same PostgreSQL version. Home, Pulse, People, member profiles, Geek Shelf, Shelf Match, and Direct share users, approved follows, posts, subjects, likes, comments, authorization, and one structured culture graph. Private accounts use recipient-approved follow requests, and post media stays outside the web root behind policy authorization. People search supports Discover, Followers, and Following views with relationship context and pagination. Create and Geek Shelf use the same search-first SubjectPicker, which combines local subjects with cached Open Library, TVmaze, Jikan, Wikidata, and optional TMDB matches. Shelf Match requires a real shared title, explains compatibility through overlap, favorites, status, and rating closeness, keeps decisions private, supports practical Undo, and shows a match only after mutual Connect decisions. Mutual matches can open one participant-only Direct thread with shared-title context, searchable recent conversations, validated text messages, and per-user unread state. Signed provider records are imported only after selection, deduplicated by provenance and exact type/title, and arbitrary missing items enter a rate-limited review queue. Laravel remains the server and routing authority; React is delivered through Inertia rather than a separate API. The next geek milestone is spoiler-aware subject content followed by subject pages, structured reviews, and an administrative catalog-review screen; the core social loop still needs carousels, post management, and comment authoring. All work must preserve the BlackFrame design system, accessibility requirements, database invariants, typed Inertia props, and test coverage.

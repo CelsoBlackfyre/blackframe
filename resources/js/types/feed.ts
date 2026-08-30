@@ -36,6 +36,21 @@ export interface FeedPost {
 export interface CreatorSuggestion extends FeedAuthor {
     followers_count: number;
     posts_count: number;
+    shared_titles_count: number;
+    recommendation_reason: string | null;
+}
+
+export interface FeedActivation {
+    shelf_count: number;
+    following_count: number;
+    published_posts_count: number;
+}
+
+export interface FeedShelfEntry {
+    id: number;
+    status_label: string;
+    progress: string | null;
+    subject: PostSubject & { image_url: string | null };
 }
 
 export interface PaginationLink {

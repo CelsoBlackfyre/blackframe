@@ -2,12 +2,30 @@
 
 namespace App\Policies;
 
+use App\Models\Post;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class PostPolicy
 {
     public function create(User $user): bool
     {
         return ! $user->trashed();
+    }
+
+    public function view(User $user, Post $post): Response
+    {
+        $author = $post->user;
+
+        return $post->published_at !== null
+            && $author !== null
+            && $user->canViewContentFrom($author)
+                ? Response::allow()
+                : Response::denyAsNotFound();
+    }
+
+    public function interact(User $user, Post $post): Response
+    {
+        return $this->view($user, $post);
     }
 }
