@@ -1,0 +1,17 @@
+[
+    {
+        "action": "DELETE",
+        "isEnabled": true,
+        "name": "delete-blackframe-backups-after-eight-days",
+        "objectNameFilter": {
+            "exclusionPatterns": [],
+            "inclusionPatterns": [],
+            "inclusionPrefixes": [
+                "blackframe/"
+            ]
+        },
+        "target": "objects",
+        "timeAmount": 8,
+        "timeUnit": "DAYS"
+    }
+]

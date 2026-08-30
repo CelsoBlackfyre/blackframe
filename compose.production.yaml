@@ -1,0 +1,122 @@
+name: blackframe
+
+services:
+    postgres:
+        image: postgres:18.6-bookworm
+        restart: unless-stopped
+        env_file:
+            - ${BLACKFRAME_ENV_FILE:-/srv/blackframe-data/config/app.env}
+        environment:
+            POSTGRES_DB: ${DB_DATABASE:?Set DB_DATABASE in the production environment file}
+            POSTGRES_USER: ${DB_USERNAME:?Set DB_USERNAME in the production environment file}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the production environment file}
+        volumes:
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/postgres:/var/lib/postgresql
+        networks:
+            - data
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+            interval: 5s
+            timeout: 5s
+            retries: 12
+            start_period: 15s
+        shm_size: 256mb
+        security_opt:
+            - no-new-privileges:true
+
+    web:
+        image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
+        build:
+            context: .
+            target: runtime
+        restart: unless-stopped
+        init: true
+        env_file:
+            - ${BLACKFRAME_ENV_FILE:-/srv/blackframe-data/config/app.env}
+        depends_on:
+            postgres:
+                condition: service_healthy
+        expose:
+            - '80'
+        volumes:
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/post-media:/var/www/html/storage/app/post-media
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/public-media:/var/www/html/storage/app/public
+        networks:
+            - edge
+            - data
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'curl --fail --silent --show-error --header "Host: $${HEALTHCHECK_HOST:-127.0.0.1}" http://127.0.0.1/up >/dev/null'
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        security_opt:
+            - no-new-privileges:true
+
+    queue:
+        image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
+        restart: unless-stopped
+        init: true
+        user: www-data
+        env_file:
+            - ${BLACKFRAME_ENV_FILE:-/srv/blackframe-data/config/app.env}
+        command:
+            - php
+            - artisan
+            - queue:work
+            - --sleep=3
+            - --tries=3
+            - --timeout=90
+            - --max-time=3600
+        stop_grace_period: 30s
+        depends_on:
+            postgres:
+                condition: service_healthy
+        volumes:
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/post-media:/var/www/html/storage/app/post-media
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/public-media:/var/www/html/storage/app/public
+        networks:
+            - edge
+            - data
+        security_opt:
+            - no-new-privileges:true
+
+    caddy:
+        image: caddy:2.11.4-alpine
+        restart: unless-stopped
+        init: true
+        env_file:
+            - ${BLACKFRAME_ENV_FILE:-/srv/blackframe-data/config/app.env}
+        depends_on:
+            web:
+                condition: service_healthy
+        ports:
+            - ${BLACKFRAME_HTTP_BIND:-127.0.0.1:8080}:80
+            - ${BLACKFRAME_HTTPS_BIND:-127.0.0.1:8443}:443
+        volumes:
+            - ./docker/production/Caddyfile:/etc/caddy/Caddyfile:ro
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/caddy/data:/data
+            - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/caddy/config:/config
+        networks:
+            - edge
+        healthcheck:
+            test:
+                - CMD
+                - caddy
+                - validate
+                - --config
+                - /etc/caddy/Caddyfile
+            interval: 30s
+            timeout: 5s
+            retries: 3
+        security_opt:
+            - no-new-privileges:true
+
+networks:
+    edge:
+    data:
+        internal: true

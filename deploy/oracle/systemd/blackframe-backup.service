@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up BlackFrame to OCI Object Storage
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+Environment=BLACKFRAME_BACKUP_CONFIG=/srv/blackframe-data/config/backup.env
+ExecStart=/opt/blackframe/deploy/oracle/backup.sh
+User=root
+Group=root

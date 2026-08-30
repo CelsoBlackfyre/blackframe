@@ -1,0 +1,13 @@
+{
+    admin off
+}
+
+{$CADDY_SITE_ADDRESS:http://} {
+    encode zstd gzip
+
+    header {
+        -Server
+    }
+
+    reverse_proxy web:80
+}

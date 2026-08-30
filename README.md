@@ -140,6 +140,18 @@ The current verified baseline is **87 tests with 823 assertions**.
 - Production requests use exact trusted-host validation plus baseline anti-framing, MIME-sniffing, referrer, permissions, and transport-security headers.
 - Composer and npm dependency audits are part of release verification.
 
+## Production deployment
+
+The repository includes an ARM64-compatible production image and a hardened
+single-VM Docker Compose stack for Oracle Cloud Always Free. The deployment runs
+Caddy, Laravel, a database queue worker, and PostgreSQL without publishing the
+application or database containers directly.
+
+The initial launch is accessible only through an SSH tunnel. The production
+runbook covers OCI provisioning, secrets, persistent volumes, SMTP, instance-
+principal backups, restore verification, and the later domain/HTTPS cutover.
+See the [Oracle Cloud deployment guide](deploy/oracle/README.md).
+
 ## Project map
 
 ```text
@@ -160,10 +172,11 @@ design-system/         Product-wide and page-specific interface rules
 - [Catalog](CATALOG.md) — title sources, signed imports, caching, and moderation
 - [Design system](design-system/blackframe/MASTER.md) — visual and interaction source of truth
 - [Everyday design contract](DESIGN.md) — concise UI implementation guidance
+- [Oracle deployment](deploy/oracle/README.md) — Always Free production and operations runbook
 
 ## Current boundaries
 
-BlackFrame is an active application foundation, not a production-ready social network. Direct currently refreshes open conversations every ten seconds instead of using WebSockets. Comment authoring, subject pages, carousels, notifications, blocking, reporting, media transformation, production object storage, and deployment automation remain future work.
+BlackFrame is an active application foundation, not a production-ready social network. Direct currently refreshes open conversations every ten seconds instead of using WebSockets. Comment authoring, subject pages, carousels, notifications, blocking, reporting, media transformation, and direct application media storage in OCI Object Storage remain future work.
 
 ## Author
 

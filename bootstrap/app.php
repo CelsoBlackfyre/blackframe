@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             subdomains: false,
         );
 
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES'));
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
