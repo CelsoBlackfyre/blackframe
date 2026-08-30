@@ -1,0 +1,26 @@
+name: frame
+
+services:
+    postgres:
+        image: postgres:18.6-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE:-frame}
+            POSTGRES_USER: ${DB_USERNAME:-frame}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-frame_local_dev}
+        ports:
+            - '127.0.0.1:${DB_PORT:-5433}:5432'
+        volumes:
+            - frame-postgres-data:/var/lib/postgresql
+            - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - pg_isready -U ${DB_USERNAME:-frame} -d ${DB_DATABASE:-frame}
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+
+volumes:
+    frame-postgres-data:
