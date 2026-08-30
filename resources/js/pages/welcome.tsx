@@ -15,25 +15,98 @@ const chapters = [
     {
         title: 'Share the frame',
         description: 'Photos, thoughts, and everyday scenes stay at the center of the experience.',
-        image: '/images/blackframe-hero.webp',
-        imageAlt: 'Friends looking through photographs together on a rooftop.',
+        visual: 'frame' as const,
         icon: Images,
     },
     {
         title: 'Build your shelf',
         description: 'Keep the books, games, films, series, and worlds that shaped your taste in one living collection.',
-        image: '/images/campaign/blackframe-collections.png',
-        imageAlt: 'Friends discussing photographs and collections in a creative studio.',
+        visual: 'shelf' as const,
         icon: LibraryBig,
     },
     {
         title: 'Find your people',
         description: 'Meet people through transparent compatibility based on what you both chose to keep.',
-        image: '/images/campaign/blackframe-collections.png',
-        imageAlt: 'A group of friends sharing items from their personal collections.',
+        visual: 'people' as const,
         icon: HeartHandshake,
     },
 ];
+
+function ChapterArtwork({ visual, active }: { visual: (typeof chapters)[number]['visual']; active: boolean }) {
+    if (visual === 'frame') {
+        return (
+            <img
+                src="/images/blackframe-hero.webp"
+                alt={active ? 'Friends looking through photographs together on a rooftop.' : ''}
+                loading="lazy"
+                className={cn(
+                    'absolute inset-0 h-full w-full object-cover transition duration-500 motion-reduce:transition-none',
+                    active ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-60 grayscale-[35%]',
+                )}
+            />
+        );
+    }
+
+    if (visual === 'shelf') {
+        const spines = [
+            'h-[54%] w-10 bg-rose-300',
+            'h-[72%] w-14 bg-neutral-100',
+            'h-[46%] w-8 bg-rose-500',
+            'h-[82%] w-12 bg-stone-300',
+            'h-[62%] w-16 bg-neutral-700',
+            'h-[76%] w-9 bg-rose-200',
+        ];
+
+        return (
+            <span
+                aria-hidden="true"
+                className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_78%_20%,rgba(244,63,94,0.34),transparent_36%),linear-gradient(135deg,#1a1718_0%,#090909_72%)]"
+            >
+                <span className="absolute inset-x-[8%] bottom-[18%] h-px bg-white/35 shadow-[0_8px_22px_rgba(0,0,0,0.7)]" />
+                <span className="absolute right-[8%] bottom-[18%] left-[12%] flex h-[62%] items-end gap-2 sm:gap-3">
+                    {spines.map((classes, index) => (
+                        <span
+                            key={classes}
+                            className={cn(
+                                'relative block rounded-t-sm opacity-85 shadow-[-8px_8px_20px_rgba(0,0,0,0.28)] transition-transform duration-500',
+                                classes,
+                                active ? 'translate-y-0' : 'translate-y-3',
+                                index % 2 === 0 && '-rotate-2',
+                            )}
+                        >
+                            <span className="absolute top-3 right-1 left-1 h-px bg-black/25" />
+                        </span>
+                    ))}
+                </span>
+                <span className="absolute top-[16%] right-[9%] text-[clamp(4rem,9vw,8rem)] leading-none font-semibold tracking-[-0.08em] text-white/8">
+                    02
+                </span>
+            </span>
+        );
+    }
+
+    return (
+        <span
+            aria-hidden="true"
+            className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_68%_32%,rgba(244,63,94,0.3),transparent_28%),linear-gradient(145deg,#151214_0%,#070707_76%)]"
+        >
+            <span className="absolute top-[28%] left-[28%] h-px w-[45%] origin-left rotate-[18deg] bg-white/25" />
+            <span className="absolute top-[62%] left-[25%] h-px w-[48%] origin-left -rotate-[16deg] bg-white/20" />
+            <span className="absolute top-[22%] left-[21%] flex size-16 items-center justify-center rounded-full border border-white/20 bg-neutral-950/80 shadow-[0_0_34px_rgba(244,63,94,0.18)] sm:size-20">
+                <span className="size-5 rounded-full bg-rose-200 sm:size-6" />
+            </span>
+            <span className="absolute top-[40%] right-[18%] flex size-20 items-center justify-center rounded-full border border-rose-300/40 bg-rose-500/18 shadow-[0_0_42px_rgba(244,63,94,0.24)] sm:size-24">
+                <HeartHandshake className="size-8 text-rose-100" strokeWidth={1.5} />
+            </span>
+            <span className="absolute bottom-[16%] left-[30%] flex size-14 items-center justify-center rounded-full border border-white/20 bg-neutral-900 sm:size-16">
+                <span className="size-4 rounded-full bg-neutral-200 sm:size-5" />
+            </span>
+            <span className="absolute top-[14%] right-[8%] text-[clamp(4rem,9vw,8rem)] leading-none font-semibold tracking-[-0.08em] text-white/8">
+                03
+            </span>
+        </span>
+    );
+}
 
 function AccountActions({ authenticated, dark = false }: { authenticated: boolean; dark?: boolean }) {
     if (authenticated) {
@@ -206,16 +279,7 @@ export default function Welcome() {
                                                 active ? 'flex-[5]' : 'flex-1',
                                             )}
                                         >
-                                            <img
-                                                src={chapter.image}
-                                                alt={active ? chapter.imageAlt : ''}
-                                                loading="lazy"
-                                                className={cn(
-                                                    'absolute inset-0 h-full w-full object-cover transition duration-500 motion-reduce:transition-none',
-                                                    index === 2 && 'object-right',
-                                                    active ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-60 grayscale-[35%]',
-                                                )}
-                                            />
+                                            <ChapterArtwork visual={chapter.visual} active={active} />
                                             <span className="absolute inset-0 bg-black/45" aria-hidden="true" />
                                             <span className="absolute inset-x-0 bottom-0 z-10 p-5 text-white sm:p-6">
                                                 <span className="flex items-center gap-3">
@@ -277,14 +341,27 @@ export default function Welcome() {
                                     </div>
                                 </article>
 
-                                <article className="relative min-h-80 overflow-hidden rounded-2xl bg-neutral-950 lg:col-span-7">
-                                    <img
-                                        src="/images/campaign/blackframe-collections.png"
-                                        alt="Friends sharing photography and media collections."
-                                        loading="lazy"
-                                        className="absolute inset-0 h-full w-full object-cover object-right opacity-75"
+                                <article className="relative min-h-80 overflow-hidden rounded-2xl bg-neutral-950 text-white lg:col-span-7">
+                                    <div
+                                        aria-hidden="true"
+                                        className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(244,63,94,0.24),transparent_30%),radial-gradient(circle_at_24%_76%,rgba(255,255,255,0.1),transparent_24%)]"
                                     />
-                                    <div className="absolute right-5 bottom-5 left-5 rounded-xl bg-black/72 p-5 text-white backdrop-blur-md sm:right-7 sm:bottom-7 sm:left-7">
+                                    <div aria-hidden="true" className="absolute top-8 right-7 hidden w-[46%] grid-cols-2 gap-2 sm:grid">
+                                        {['Photography', 'Film', 'Games', 'Books'].map((subject, index) => (
+                                            <span
+                                                key={subject}
+                                                className={cn(
+                                                    'rounded-xl border px-4 py-3 text-sm font-medium backdrop-blur-sm',
+                                                    index === 0
+                                                        ? 'translate-y-5 border-rose-300/40 bg-rose-500/18 text-rose-100'
+                                                        : 'border-white/12 bg-white/[0.06] text-neutral-300',
+                                                )}
+                                            >
+                                                {subject}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div className="absolute right-5 bottom-5 left-5 rounded-xl border border-white/10 bg-black/55 p-5 backdrop-blur-md sm:right-7 sm:bottom-7 sm:left-7 sm:max-w-[62%]">
                                         <HeartHandshake className="text-primary size-6" strokeWidth={1.8} aria-hidden="true" />
                                         <p className="mt-3 max-w-xl text-2xl font-semibold tracking-[-0.025em]">
                                             Start with a shared world. Let the conversation become its own.

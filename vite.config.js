@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
+import process from 'node:process';
 import { defineConfig } from 'vite';
 
 const dockerPort = Number(process.env.VITE_PORT ?? 5173);
@@ -11,6 +12,9 @@ const dockerServer =
               port: dockerPort,
               strictPort: true,
               origin: `http://${process.env.VITE_BROWSER_HOST ?? 'localhost'}:${dockerPort}`,
+              cors: {
+                  origin: /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/,
+              },
               watch: {
                   usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
               },
