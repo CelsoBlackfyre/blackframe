@@ -131,7 +131,7 @@ export default function Welcome() {
                     <section className="relative mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-[1440px] flex-col gap-6 px-4 pb-8 sm:px-6 lg:block lg:px-10 lg:pb-10">
                         <div
                             data-hero-copy
-                            className="relative z-10 max-w-4xl py-14 lg:absolute lg:top-1/2 lg:left-10 lg:w-[72%] lg:-translate-y-1/2 lg:py-0"
+                            className="relative z-10 max-w-4xl py-14 lg:absolute lg:top-1/2 lg:left-20 lg:w-[72%] lg:-translate-y-1/2 lg:py-0 xl:left-24"
                         >
                             <h1 className="max-w-[870px] text-[clamp(3.4rem,6.6vw,5.4rem)] leading-[0.91] font-semibold tracking-[-0.06em] text-balance">
                                 Your taste already knows your people.

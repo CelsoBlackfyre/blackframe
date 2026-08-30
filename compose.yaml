@@ -1,5 +1,37 @@
 name: frame
 
+x-app-environment: &app-environment
+    APP_ENV: local
+    APP_DEBUG: 'true'
+    APP_URL: http://localhost:${APP_PORT:-8000}
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: '5432'
+    DB_DATABASE: ${DB_DATABASE:-frame}
+    DB_USERNAME: ${DB_USERNAME:-frame}
+    DB_PASSWORD: ${DB_PASSWORD:-frame_local_dev}
+    DB_SSLMODE: disable
+    MAIL_MAILER: smtp
+    MAIL_HOST: mailpit
+    MAIL_PORT: '1025'
+
+x-php-service: &php-service
+    image: blackframe-local-php
+    build:
+        context: .
+        dockerfile: docker/local/Dockerfile
+        target: php-development
+    init: true
+    working_dir: /var/www/html
+    environment: *app-environment
+    volumes:
+        - .:/var/www/html
+        - frame-vendor:/var/www/html/vendor
+        - frame-composer-cache:/tmp/composer/cache
+    networks:
+        - app
+        - data
+
 services:
     postgres:
         image: postgres:18.6-alpine
@@ -13,6 +45,8 @@ services:
         volumes:
             - frame-postgres-data:/var/lib/postgresql
             - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+        networks:
+            - data
         healthcheck:
             test:
                 - CMD-SHELL
@@ -21,6 +55,133 @@ services:
             timeout: 5s
             retries: 10
             start_period: 10s
+        shm_size: 256mb
+
+    setup:
+        <<: *php-service
+        command: blackframe-local-setup
+        depends_on:
+            postgres:
+                condition: service_healthy
+        restart: 'no'
+
+    app:
+        <<: *php-service
+        restart: unless-stopped
+        command:
+            - php
+            - artisan
+            - serve
+            - --host=0.0.0.0
+            - --port=8000
+            - --no-reload
+        depends_on:
+            setup:
+                condition: service_completed_successfully
+            mailpit:
+                condition: service_started
+        ports:
+            - '127.0.0.1:${APP_PORT:-8000}:8000'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - curl --fail --silent --show-error http://127.0.0.1:8000/up >/dev/null
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
+
+    queue:
+        <<: *php-service
+        restart: unless-stopped
+        command:
+            - php
+            - artisan
+            - queue:work
+            - --sleep=1
+            - --tries=3
+            - --timeout=90
+        stop_grace_period: 30s
+        depends_on:
+            setup:
+                condition: service_completed_successfully
+
+    vite:
+        image: blackframe-local-node
+        build:
+            context: .
+            dockerfile: docker/local/Dockerfile
+            target: node-development
+        init: true
+        restart: unless-stopped
+        working_dir: /var/www/html
+        environment:
+            CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-true}
+            VITE_BROWSER_HOST: ${VITE_BROWSER_HOST:-localhost}
+            VITE_DOCKER: 'true'
+            VITE_PORT: ${VITE_PORT:-5173}
+        volumes:
+            - .:/var/www/html
+            - frame-node-modules:/var/www/html/node_modules
+        networks:
+            - app
+        depends_on:
+            setup:
+                condition: service_completed_successfully
+        ports:
+            - '127.0.0.1:${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        healthcheck:
+            test:
+                - CMD
+                - node
+                - -e
+                - fetch('http://127.0.0.1:${VITE_PORT:-5173}/@vite/client').then(response=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 30s
+
+    mailpit:
+        image: axllent/mailpit:v1.31.0
+        restart: unless-stopped
+        environment:
+            MP_DATABASE: /data/mailpit.db
+            MP_MAX_MESSAGES: '500'
+        volumes:
+            - frame-mailpit-data:/data
+        networks:
+            - app
+        ports:
+            - '127.0.0.1:${MAILPIT_PORT:-8025}:8025'
+
+    test:
+        <<: *php-service
+        profiles:
+            - test
+        environment:
+            <<: *app-environment
+            APP_ENV: testing
+            DB_DATABASE: frame_testing
+            MAIL_MAILER: array
+            QUEUE_CONNECTION: sync
+            SESSION_DRIVER: array
+        command:
+            - php
+            - artisan
+            - test
+            - --compact
+        depends_on:
+            setup:
+                condition: service_completed_successfully
+        restart: 'no'
+
+networks:
+    app:
+    data:
 
 volumes:
+    frame-composer-cache:
+    frame-mailpit-data:
+    frame-node-modules:
     frame-postgres-data:
+    frame-vendor:

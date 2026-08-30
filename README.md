@@ -67,31 +67,57 @@ The application is a Laravel monolith with server-driven Inertia pages. Domain s
 
 ## Local development
 
-### Requirements
+### Docker workflow (recommended)
 
-- PHP 8.2 or newer with `pdo_pgsql`
-- Composer 2
-- Node.js 22 and npm
-- Docker Desktop
-
-### First-time setup
+Docker Desktop is the only host requirement. The default Compose stack runs
+Laravel, Vite with hot reload, the database queue worker, PostgreSQL, and
+Mailpit. It also installs PHP and JavaScript dependencies, creates `.env` and
+`APP_KEY` when missing, applies pending migrations, and creates the storage
+link.
 
 ```powershell
 git clone https://github.com/CelsoBlackfyre/blackframe.git
 cd blackframe
+docker compose up --build -d
+docker compose logs -f app vite queue
+```
+
+Open the application at [http://localhost:8000](http://localhost:8000) and
+captured development email at [http://localhost:8025](http://localhost:8025).
+Stop the stack with `docker compose down`. PostgreSQL, dependencies, and
+captured mail remain in named volumes between runs.
+
+After pulling code or changing dependency lock files, run the same
+`docker compose up --build -d` command. The setup service applies migrations
+and synchronizes Composer packages, while the Vite service refreshes npm
+packages only when `package-lock.json` changes.
+
+Useful container commands:
+
+```powershell
+docker compose exec app php artisan about
+docker compose exec app php artisan db:seed
+docker compose exec app composer audit
+docker compose exec vite npm audit
+docker compose run --rm test
+```
+
+Only seed a new or disposable database: the demo seeder is not idempotent.
+`docker compose down -v` deletes all local Docker data, including PostgreSQL.
+
+### Host-native workflow
+
+If PHP 8.2+, Composer 2, Node.js 22, and npm are installed on the host, the
+original hybrid workflow remains available. Docker runs only PostgreSQL while
+the application processes run on the host:
+
+```powershell
 composer install
 npm install
 Copy-Item .env.example .env
 php artisan key:generate
-composer run db:start
-php artisan migrate --seed
-php artisan storage:link
 composer run dev
 ```
-
-Open [http://localhost:8000](http://localhost:8000).
-
-The combined development command starts PostgreSQL when necessary, applies safe pending migrations, and launches Laravel, the queue listener, application logs, and Vite.
 
 ### Demo account
 
@@ -116,6 +142,9 @@ composer run db:start
 composer run db:status
 composer run db:stop
 ```
+
+The Docker-only workflow exposes the same database on `127.0.0.1:5433`, so
+host database clients continue to work.
 
 Do not run `php artisan migrate:fresh --seed` against data you need to keep; it intentionally drops every application table.
 
