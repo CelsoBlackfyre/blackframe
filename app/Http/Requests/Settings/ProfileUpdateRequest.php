@@ -32,6 +32,8 @@ class ProfileUpdateRequest extends FormRequest
 
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
 
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+
             'email' => [
                 'required',
                 'string',

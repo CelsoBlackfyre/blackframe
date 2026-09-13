@@ -215,7 +215,13 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                 <FlashMessage />
 
                 <section className="border-border bg-card overflow-hidden rounded-2xl border">
-                    <div className="bg-accent h-28 border-b sm:h-36" aria-hidden="true" />
+                    <div className="bg-accent relative h-28 border-b sm:h-36">
+                        {profile.banner_url ? (
+                            <img src={profile.banner_url} alt={`${profile.name}'s profile banner`} className="h-full w-full object-cover" />
+                        ) : (
+                            <div aria-hidden="true" />
+                        )}
+                    </div>
                     <div className="px-5 pb-6 sm:px-8 sm:pb-8">
                         <div className="-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
                             <div className="flex min-w-0 items-end gap-4 sm:gap-5">

@@ -42,6 +42,7 @@ export interface User {
     email: string;
     avatar?: string;
     avatar_url?: string | null;
+    banner_url?: string | null;
     bio?: string | null;
     website?: string | null;
     is_private: boolean;

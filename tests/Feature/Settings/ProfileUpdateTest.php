@@ -152,6 +152,85 @@ class ProfileUpdateTest extends TestCase
         Storage::disk('public')->assertDirectoryEmpty('avatars');
     }
 
+    public function test_banner_can_be_uploaded()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'banner' => UploadedFile::fake()->image('banner.jpg', 1200, 400),
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/profile');
+
+        $user->refresh();
+
+        $this->assertStringStartsWith('banners/'.$user->id.'/', $user->banner_path);
+        Storage::disk('public')->assertExists($user->banner_path);
+        $this->assertSame(Storage::disk('public')->url($user->banner_path), $user->banner_url);
+    }
+
+    public function test_banner_upload_replaces_the_previous_local_banner()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'banner' => UploadedFile::fake()->image('first.jpg'),
+            ]);
+
+        $previousPath = $user->refresh()->banner_path;
+
+        $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'banner' => UploadedFile::fake()->image('second.jpg'),
+            ]);
+
+        $user->refresh();
+
+        $this->assertNotSame($previousPath, $user->banner_path);
+        Storage::disk('public')->assertExists($user->banner_path);
+        Storage::disk('public')->assertMissing($previousPath);
+    }
+
+    public function test_banner_must_be_a_supported_image()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/settings/profile')
+            ->patch('/settings/profile', [
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'banner' => UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'),
+            ]);
+
+        $response
+            ->assertSessionHasErrors('banner')
+            ->assertRedirect('/settings/profile');
+
+        Storage::disk('public')->assertDirectoryEmpty('banners');
+    }
+
     public function test_user_can_delete_their_account()
     {
         $user = User::factory()->create();

@@ -30,6 +30,7 @@ class User extends Authenticatable
         'bio',
         'website',
         'avatar_path',
+        'banner_path',
         'is_private',
     ];
 
@@ -57,19 +58,29 @@ class User extends Authenticatable
         ];
     }
 
-    protected $appends = ['avatar_url'];
+    protected $appends = ['avatar_url', 'banner_url'];
 
     public function getAvatarUrlAttribute(): ?string
     {
-        if (! $this->avatar_path) {
+        return $this->profileImageUrl($this->avatar_path);
+    }
+
+    public function getBannerUrlAttribute(): ?string
+    {
+        return $this->profileImageUrl($this->banner_path);
+    }
+
+    private function profileImageUrl(?string $path): ?string
+    {
+        if (! $path) {
             return null;
         }
 
-        if (str_starts_with($this->avatar_path, 'http://') || str_starts_with($this->avatar_path, 'https://')) {
-            return $this->avatar_path;
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
         }
 
-        return Storage::disk('public')->url($this->avatar_path);
+        return Storage::disk('public')->url($path);
     }
 
     public function posts(): HasMany

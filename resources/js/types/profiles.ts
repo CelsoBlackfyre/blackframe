@@ -26,6 +26,7 @@ export interface PublicProfile {
     bio: string | null;
     website: string | null;
     avatar_url: string | null;
+    banner_url: string | null;
     is_private: boolean;
     is_self: boolean;
     is_following: boolean;

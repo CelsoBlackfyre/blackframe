@@ -52,6 +52,7 @@ class PublicProfileController extends Controller
                 'bio' => $user->bio,
                 'website' => $user->website,
                 'avatar_url' => $user->avatar_url,
+                'banner_url' => $user->banner_url,
                 'is_private' => (bool) $user->is_private,
                 'is_self' => $isSelf,
                 'is_following' => $isFollowing,

@@ -1,7 +1,7 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Camera } from 'lucide-react';
+import { Camera, ImagePlus } from 'lucide-react';
 import { ChangeEvent, FormEventHandler, useState } from 'react';
 
 import DeleteUser from '@/components/delete-user';
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { cn } from '@/lib/utils';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,6 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
     const [preview, setPreview] = useState<string | null>(null);
+    const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<{
         name: string;
@@ -34,6 +36,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         website: string;
         is_private: boolean;
         avatar: File | null;
+        banner: File | null;
     }>({
         name: auth.user.name,
         username: auth.user.username,
@@ -42,6 +45,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         website: auth.user.website ?? '',
         is_private: auth.user.is_private,
         avatar: null,
+        banner: null,
     });
 
     const initials = auth.user.name
@@ -52,15 +56,27 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         .join('')
         .toUpperCase();
 
-    const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
+    const pickImage = (files: FileList | null, current: string | null, setUrl: (url: string | null) => void): File | null => {
+        const file = files?.[0] ?? null;
 
-        if (preview) {
-            URL.revokeObjectURL(preview);
+        if (current) {
+            URL.revokeObjectURL(current);
         }
 
-        setPreview(file ? URL.createObjectURL(file) : null);
+        setUrl(file ? URL.createObjectURL(file) : null);
+
+        return file;
+    };
+
+    const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = pickImage(e.target.files, preview, setPreview);
         setData('avatar', file);
+        e.target.value = '';
+    };
+
+    const handleBannerChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = pickImage(e.target.files, bannerPreview, setBannerPreview);
+        setData('banner', file);
         e.target.value = '';
     };
 
@@ -73,8 +89,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     URL.revokeObjectURL(preview);
                 }
 
+                if (bannerPreview) {
+                    URL.revokeObjectURL(bannerPreview);
+                }
+
                 setPreview(null);
+                setBannerPreview(null);
                 setData('avatar', null);
+                setData('banner', null);
             },
         });
     };
@@ -88,6 +110,55 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
+                        <div className="grid gap-2">
+                            <Label>Profile banner</Label>
+
+                            <div
+                                className={cn(
+                                    'border-border bg-accent relative h-28 overflow-hidden rounded-xl border sm:h-36',
+                                    !bannerPreview && !auth.user.banner_url && 'border-dashed',
+                                )}
+                            >
+                                {bannerPreview || auth.user.banner_url ? (
+                                    <img
+                                        src={bannerPreview ?? auth.user.banner_url ?? undefined}
+                                        alt="Profile banner preview"
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="text-muted-foreground flex h-full items-center justify-center">
+                                        <ImagePlus className="size-6" strokeWidth={1.5} aria-hidden="true" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div>
+                                    <input
+                                        id="banner"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        className="sr-only"
+                                        onChange={handleBannerChange}
+                                        aria-describedby="banner-help"
+                                    />
+                                    <Label
+                                        htmlFor="banner"
+                                        className="border-input hover:bg-accent hover:text-accent-foreground inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-5 text-sm font-medium"
+                                    >
+                                        <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                                        {bannerPreview || auth.user.banner_url ? 'Change banner' : 'Add banner'}
+                                    </Label>
+                                </div>
+
+                                <p id="banner-help" className="text-muted-foreground text-xs">
+                                    Shown across the top of your profile. JPG, PNG, or WebP. Up to 4 MB.
+                                </p>
+                            </div>
+
+                            <InputError message={errors.banner} />
+                        </div>
+
                         <div className="grid gap-2">
                             <Label>Profile photo</Label>
 

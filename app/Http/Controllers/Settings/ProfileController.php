@@ -33,10 +33,20 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $validated = $request->safe()->except(['avatar']);
+        $validated = $request->safe()->except(['avatar', 'banner']);
 
-        if ($request->hasFile('avatar')) {
-            $validated['avatar_path'] = $this->storeAvatar($request->file('avatar'), $request->user());
+        $uploads = [
+            'avatar_path' => ['file' => $request->file('avatar'), 'directory' => 'avatars'],
+            'banner_path' => ['file' => $request->file('banner'), 'directory' => 'banners'],
+        ];
+
+        foreach ($uploads as $column => $upload) {
+            if (! $upload['file']) {
+                continue;
+            }
+
+            $validated[$column] = $this->storeProfileImage($upload['file'], $request->user(), $upload['directory']);
+            $this->deletePreviousProfileImage($request->user()->getOriginal($column));
         }
 
         $request->user()->fill($validated);
@@ -50,21 +60,22 @@ class ProfileController extends Controller
         return to_route('profile.edit');
     }
 
-    private function storeAvatar(UploadedFile $file, User $user): string
+    private function storeProfileImage(UploadedFile $file, User $user, string $directory): string
     {
-        $path = $file->store('avatars/'.$user->getKey(), 'public');
+        $path = $file->store($directory.'/'.$user->getKey(), 'public');
 
         if (! $path) {
-            throw new RuntimeException('The profile photo could not be stored.');
-        }
-
-        $previous = $user->avatar_path;
-
-        if ($previous && ! str_starts_with($previous, 'http')) {
-            Storage::disk('public')->delete($previous);
+            throw new RuntimeException('The image could not be stored.');
         }
 
         return $path;
+    }
+
+    private function deletePreviousProfileImage(?string $path): void
+    {
+        if ($path && ! str_starts_with($path, 'http')) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     /**
