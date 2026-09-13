@@ -26,6 +26,31 @@ services:
         security_opt:
             - no-new-privileges:true
 
+    migrate:
+        image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
+        build:
+            context: .
+            target: runtime
+        restart: 'no'
+        init: true
+        user: www-data
+        env_file:
+            - ${BLACKFRAME_ENV_FILE:-/srv/blackframe-data/config/app.env}
+        command:
+            - php
+            - artisan
+            - migrate
+            - --force
+            - --no-interaction
+            - --no-ansi
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - data
+        security_opt:
+            - no-new-privileges:true
+
     web:
         image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
         build:
@@ -38,6 +63,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            migrate:
+                condition: service_completed_successfully
         expose:
             - '80'
         volumes:
@@ -78,6 +105,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            migrate:
+                condition: service_completed_successfully
         volumes:
             - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/post-media:/var/www/html/storage/app/post-media
             - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/public-media:/var/www/html/storage/app/public
