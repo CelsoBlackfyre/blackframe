@@ -28,9 +28,6 @@ services:
 
     migrate:
         image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
-        build:
-            context: .
-            target: runtime
         restart: 'no'
         init: true
         user: www-data
