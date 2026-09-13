@@ -72,12 +72,15 @@ Confirm the SSH allow rule before enabling UFW so the VM is not locked out.
 ## 4. Create the production environment
 
 Copy the template outside the Git checkout and restrict it to the deployment
-user:
+user. The compose file reads the env file from Dokploy's persistent service
+directory by default (`/etc/dokploy/blackframe/app.env`), so place it there
+on hosts managed by Dokploy; on a bare Oracle VM keep using the data root:
 
 ```bash
+sudo install -d -m 700 /etc/dokploy/blackframe
 cp /opt/blackframe/.env.production.example \
-  /srv/blackframe-data/config/app.env
-chmod 600 /srv/blackframe-data/config/app.env
+  /etc/dokploy/blackframe/app.env
+chmod 600 /etc/dokploy/blackframe/app.env
 ```
 
 Generate, rather than invent, the two primary secrets:
