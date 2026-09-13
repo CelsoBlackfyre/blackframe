@@ -50,7 +50,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                                 aria-label={`View photo by ${post.author.name}`}
                             >
                                 <img
-                                    src={image.url}
+                                    src={image.medium_url ?? image.url}
                                     alt={image.alt_text}
                                     width={image.width ?? 1200}
                                     height={image.height ?? 1500}

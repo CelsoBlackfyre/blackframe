@@ -13,5 +13,9 @@
         -Server
     }
 
-    reverse_proxy blackframe-web:80
+    route {
+        @reverb path /app/*
+        reverse_proxy @reverb reverb:8080
+        reverse_proxy blackframe-web:80
+    }
 }

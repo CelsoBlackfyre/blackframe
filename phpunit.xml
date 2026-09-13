@@ -26,6 +26,7 @@
         <server name="CACHE_STORE" value="array"/>
         <server name="MAIL_MAILER" value="array"/>
         <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="BROADCAST_CONNECTION" value="log"/>
         <server name="SESSION_DRIVER" value="array"/>
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
@@ -41,6 +42,7 @@
         <env name="MAIL_MAILER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="BROADCAST_CONNECTION" value="log" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>

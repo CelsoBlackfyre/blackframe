@@ -53,6 +53,14 @@ class HandleInertiaRequests extends Middleware
                         ->sum('unread_count')
                     : 0,
             ],
+            'reverb' => fn () => [
+                'key' => config('broadcasting.default') === 'reverb'
+                    ? config('broadcasting.connections.reverb.key')
+                    : null,
+                'host' => (string) (config('broadcasting.connections.reverb.options.host') ?? 'localhost'),
+                'port' => (int) (config('broadcasting.connections.reverb.options.port') ?? 443),
+                'scheme' => (string) (config('broadcasting.connections.reverb.options.scheme') ?? 'https'),
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
             ],

@@ -1,4 +1,18 @@
 services:
+    reverb:
+        networks:
+            - edge
+            - dokploy-network
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=dokploy-network
+            - traefik.http.routers.blackframe-reverb.entrypoints=websecure
+            - traefik.http.routers.blackframe-reverb.rule=(Host(`${BLACKFRAME_DOMAIN}`) || Host(`${BLACKFRAME_SECONDARY_DOMAIN}`)) && PathPrefix(`/app`)
+            - traefik.http.routers.blackframe-reverb.priority=200
+            - traefik.http.routers.blackframe-reverb.tls=true
+            - traefik.http.routers.blackframe-reverb.tls.certresolver=letsencrypt
+            - traefik.http.services.blackframe-reverb.loadbalancer.server.port=8080
+
     web:
         networks:
             - edge

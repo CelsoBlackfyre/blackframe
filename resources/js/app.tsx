@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
 import { AppErrorBoundary } from './components/app-error-boundary';
 import { initializeTheme } from './hooks/use-appearance';
+import { initEcho, type ReverbConfig } from './lib/echo';
 
 declare global {
     const route: typeof routeFn;
@@ -18,6 +19,8 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
+        initEcho(props.initialPage.props.reverb as ReverbConfig | undefined);
+
         const root = createRoot(el);
 
         root.render(

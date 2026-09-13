@@ -30,6 +30,8 @@ class FeedController extends Controller
             'media' => $post->media->map(fn ($media) => [
                 'id' => $media->id,
                 'url' => $media->url,
+                'thumb_url' => $media->thumb_url,
+                'medium_url' => $media->medium_url,
                 'alt_text' => $media->alt_text ?: 'Photo shared by '.$post->user->name,
                 'width' => $media->width,
                 'height' => $media->height,

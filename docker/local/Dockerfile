@@ -10,7 +10,7 @@ RUN apt-get update \
         ca-certificates \
         curl \
         git \
-        libfreetype6-dev \
+        libfreetype6-dev libwebp-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
         libonig-dev \
@@ -18,7 +18,7 @@ RUN apt-get update \
         libpq-dev \
         libzip-dev \
         unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         bcmath \
         exif \

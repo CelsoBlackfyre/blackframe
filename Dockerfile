@@ -35,13 +35,13 @@ FROM php:8.4-apache-trixie AS php-extensions
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libfreetype6-dev \
+        libfreetype6-dev libwebp-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
         libpq-dev \
         libzip-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         bcmath \
         gd \
@@ -64,6 +64,7 @@ RUN apt-get update \
         libicu76 \
         libjpeg62-turbo \
         libpng16-16t64 \
+        libwebp7 \
         libpq5 \
         libzip5 \
     && a2enmod expires headers remoteip rewrite \

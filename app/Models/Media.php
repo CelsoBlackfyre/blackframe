@@ -16,9 +16,47 @@ class Media extends Model
         'width',
         'height',
         'alt_text',
+        'variants',
     ];
 
-    protected $appends = ['url'];
+    protected $appends = ['url', 'thumb_url', 'medium_url'];
+
+    protected function casts(): array
+    {
+        return [
+            'variants' => 'array',
+        ];
+    }
+
+    /**
+     * @return array<string, array{path: string, width: int|null, height: int|null}>
+     */
+    public function variants(): array
+    {
+        return (array) $this->variants;
+    }
+
+    public function getThumbUrlAttribute(): string
+    {
+        return $this->variantUrl('thumb');
+    }
+
+    public function getMediumUrlAttribute(): string
+    {
+        return $this->variantUrl('medium');
+    }
+
+    public function variantUrl(string $variant): string
+    {
+        if ($this->disk === 'post-media' && array_key_exists($variant, $this->variants())) {
+            return route('posts.media.show', [
+                'post' => $this->mediaable_id,
+                'media' => $this->getKey(),
+            ]).'?variant='.$variant;
+        }
+
+        return $this->url;
+    }
 
     public function mediaable(): MorphTo
     {

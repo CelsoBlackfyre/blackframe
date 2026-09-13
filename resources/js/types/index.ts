@@ -21,6 +21,12 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    reverb: {
+        key: string | null;
+        host: string;
+        port: number;
+        scheme: string;
+    };
     flash: {
         success?: string | null;
     };

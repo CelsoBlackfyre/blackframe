@@ -4,12 +4,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import { getEcho } from '@/lib/echo';
 import { cn } from '@/lib/utils';
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, SharedData } from '@/types';
 import { DirectActiveConversation, DirectConversationSummary, DirectMessage } from '@/types/direct';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, BookHeart, Inbox, LoaderCircle, MessageSquareText, Search, Send, Sparkles } from 'lucide-react';
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
+
+interface BroadcastMessagePayload {
+    id: number;
+    body: string;
+    created_at: string;
+    author: { id: number; name: string; username: string; avatar_url: string | null };
+}
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Direct', href: route('direct.index') }];
 
@@ -226,13 +234,13 @@ function MessageBubble({ message }: { message: DirectMessage }) {
     );
 }
 
-function ConversationPane({ active }: { active: DirectActiveConversation | null }) {
+function ConversationPane({ active, messages }: { active: DirectActiveConversation | null; messages: DirectMessage[] }) {
     const { data, setData, post, processing, errors, reset } = useForm({ body: '' });
     const messageEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
-    }, [active?.id, active?.messages.length]);
+    }, [active?.id, messages.length]);
 
     if (!active) {
         return (
@@ -304,7 +312,7 @@ function ConversationPane({ active }: { active: DirectActiveConversation | null 
             )}
 
             <div className="bg-muted/25 min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6" role="log" aria-label="Messages" aria-live="polite">
-                {active.messages.length === 0 ? (
+                {messages.length === 0 ? (
                     <div className="flex min-h-full flex-col items-center justify-center py-10 text-center">
                         <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
                             <Sparkles className="size-6" strokeWidth={1.8} aria-hidden="true" />
@@ -318,7 +326,7 @@ function ConversationPane({ active }: { active: DirectActiveConversation | null 
                     </div>
                 ) : (
                     <ol className="space-y-3">
-                        {active.messages.map((message) => (
+                        {messages.map((message) => (
                             <MessageBubble key={message.id} message={message} />
                         ))}
                     </ol>
@@ -373,6 +381,63 @@ function ConversationPane({ active }: { active: DirectActiveConversation | null 
 
 export default function DirectIndex({ conversations, active }: DirectPageProps) {
     const activeId = active?.id;
+    const authId = usePage<SharedData>().props.auth.user.id;
+    const [liveMessages, setLiveMessages] = useState<DirectMessage[]>([]);
+    const seenMessageIds = useRef<Set<number>>(new Set());
+
+    useEffect(() => {
+        setLiveMessages([]);
+    }, [activeId]);
+
+    const messages = useMemo(() => {
+        if (!active) {
+            return [];
+        }
+
+        const serverIds = new Set(active.messages.map((message) => message.id));
+
+        return [...active.messages, ...liveMessages.filter((message) => !serverIds.has(message.id))].sort(
+            (a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id,
+        );
+    }, [active, liveMessages]);
+
+    useEffect(() => {
+        const echo = getEcho();
+
+        if (!echo || !activeId) {
+            return;
+        }
+
+        const channel = echo.private(`conversation.${activeId}`).listen('.MessageSent', (payload: unknown) => {
+            const event = payload as BroadcastMessagePayload;
+
+            if (seenMessageIds.current.has(event.id)) {
+                return;
+            }
+            seenMessageIds.current.add(event.id);
+
+            setLiveMessages((current) => [
+                ...current,
+                {
+                    id: event.id,
+                    body: event.body,
+                    created_at: event.created_at,
+                    is_mine: event.author.id === authId,
+                    author: { ...event.author, bio: null },
+                },
+            ]);
+
+            if (event.author.id !== authId) {
+                // Revisiting the conversation marks it read server-side and
+                // reconciles the message list with what the server has.
+                router.reload({ only: ['active', 'direct'] });
+            }
+        });
+
+        return () => {
+            channel.stopListening('.MessageSent');
+        };
+    }, [activeId, authId]);
 
     useEffect(() => {
         let navigating = false;
@@ -404,7 +469,7 @@ export default function DirectIndex({ conversations, active }: DirectPageProps) 
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-3 py-4 pb-24 sm:px-5 md:pb-5" tabIndex={-1}>
                 <div className="border-border bg-card grid h-[calc(100dvh-10.5rem)] min-h-[24rem] min-w-0 overflow-hidden rounded-2xl border md:h-[calc(100dvh-7rem)] lg:grid-cols-[20rem_minmax(0,1fr)]">
                     <InboxPane conversations={conversations} activeId={active?.id} />
-                    <ConversationPane active={active} />
+                    <ConversationPane active={active} messages={messages} />
                 </div>
             </main>
         </AppLayout>

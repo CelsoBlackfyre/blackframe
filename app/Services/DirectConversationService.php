@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\MatchDecisionType;
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\MatchDecision;
 use App\Models\Message;
@@ -56,7 +57,7 @@ class DirectConversationService
 
     public function send(Conversation $conversation, User $author, string $body): Message
     {
-        return DB::transaction(function () use ($conversation, $author, $body): Message {
+        $message = DB::transaction(function () use ($conversation, $author, $body): Message {
             $message = $conversation->messages()->create([
                 'user_id' => $author->id,
                 'body' => trim($body),
@@ -80,6 +81,12 @@ class DirectConversationService
 
             return $message;
         });
+
+        broadcast(new MessageSent($message, $conversation, $conversation->participants->reject(
+            fn (User $participant) => $participant->is($author),
+        )->values()));
+
+        return $message;
     }
 
     public function markRead(Conversation $conversation, User $viewer): void

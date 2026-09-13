@@ -44,6 +44,32 @@ services:
         security_opt:
             - no-new-privileges:true
 
+    reverb:
+        image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
+        build:
+            context: .
+            target: runtime
+        restart: unless-stopped
+        init: true
+        user: www-data
+        env_file:
+            - ./.env
+        command:
+            - php
+            - artisan
+            - reverb:start
+            - --host=0.0.0.0
+            - --port=8080
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
+        expose:
+            - '8080'
+        networks:
+            - edge
+        security_opt:
+            - no-new-privileges:true
+
     web:
         image: blackframe-app:${BLACKFRAME_IMAGE_TAG:-production}
         build:
@@ -53,6 +79,10 @@ services:
         init: true
         env_file:
             - ./.env
+        environment:
+            REVERB_CLIENT_HOST: ${BLACKFRAME_DOMAIN}
+            REVERB_CLIENT_PORT: '443'
+            REVERB_CLIENT_SCHEME: https
         depends_on:
             postgres:
                 condition: service_healthy

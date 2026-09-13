@@ -4,9 +4,12 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { ConnectionStatus } from '@/components/connection-status';
 import { MobileNav } from '@/components/social/mobile-nav';
+import { useLiveUnreadBadge } from '@/hooks/use-live-unread';
 import { type BreadcrumbItem } from '@/types';
 
 export default function AppSidebarLayout({ children, breadcrumbs = [] }: { children: React.ReactNode; breadcrumbs?: BreadcrumbItem[] }) {
+    useLiveUnreadBadge();
+
     return (
         <AppShell variant="sidebar">
             <a

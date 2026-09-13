@@ -10,6 +10,8 @@ export interface FeedAuthor {
 export interface FeedMedia {
     id: number;
     url: string;
+    thumb_url: string;
+    medium_url: string;
     alt_text: string;
     width: number | null;
     height: number | null;
