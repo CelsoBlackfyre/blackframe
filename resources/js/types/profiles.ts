@@ -57,3 +57,35 @@ export interface ProfilePageProps {
     pulse: Paginated<PulsePost> | null;
     shelf: Paginated<ProfileShelfEntry> | null;
 }
+
+export type ProfileConnectionList = 'followers' | 'following';
+
+export interface ConnectionSummary {
+    id: number;
+    name: string;
+    username: string;
+    bio: string | null;
+    avatar_url: string | null;
+    is_private: boolean;
+    is_viewer: boolean;
+    is_following: boolean;
+    follows_you: boolean;
+    follow_request_pending: boolean;
+}
+
+export interface ConnectionsProfile {
+    id: number;
+    name: string;
+    username: string;
+    avatar_url: string | null;
+    is_private: boolean;
+    is_self: boolean;
+    can_view_connections: boolean;
+    counts: { followers: number; following: number };
+}
+
+export interface ConnectionsPageProps {
+    profile: ConnectionsProfile;
+    filters: { list: ProfileConnectionList };
+    connections: Paginated<ConnectionSummary> | null;
+}

@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { Paginated } from '@/types/feed';
-import { ProfilePageProps, ProfileShelfEntry, ProfileView } from '@/types/profiles';
+import { ProfileConnectionList, ProfilePageProps, ProfileShelfEntry, ProfileView } from '@/types/profiles';
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     CalendarDays,
@@ -36,6 +36,26 @@ const tabs: Array<{ value: ProfileView; label: string }> = [
 
 function profileUrl(username: string, tab: ProfileView): string {
     return route('profiles.show', { user: username, ...(tab === 'posts' ? {} : { tab }) });
+}
+
+function connectionsUrl(username: string, list: ProfileConnectionList): string {
+    return route('profiles.connections', { user: username, list });
+}
+
+function StatLink({ href, count, label }: { href: string; count: number; label: string }) {
+    return (
+        <Link
+            href={href}
+            className="group focus-visible:ring-ring focus-visible:ring-offset-background -my-1 flex flex-col rounded-lg py-1 pr-1 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden"
+        >
+            <span className="group-hover:text-primary group-focus-visible:text-primary text-lg font-semibold tabular-nums transition-colors">
+                {count}
+            </span>
+            <span className="text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground text-xs transition-colors">
+                {label}
+            </span>
+        </Link>
+    );
 }
 
 function FollowProfileButton({ profile }: Pick<ProfilePageProps, 'profile'>) {
@@ -278,24 +298,12 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                     )}
                                 </div>
                             </div>
-                            <dl className="flex flex-wrap gap-x-6 gap-y-3 text-sm sm:gap-x-8">
-                                <div>
-                                    <dd className="text-lg font-semibold tabular-nums">{profile.counts.posts}</dd>
-                                    <dt className="text-muted-foreground text-xs">Posts</dt>
-                                </div>
-                                <div>
-                                    <dd className="text-lg font-semibold tabular-nums">{profile.counts.followers}</dd>
-                                    <dt className="text-muted-foreground text-xs">Followers</dt>
-                                </div>
-                                <div>
-                                    <dd className="text-lg font-semibold tabular-nums">{profile.counts.following}</dd>
-                                    <dt className="text-muted-foreground text-xs">Following</dt>
-                                </div>
-                                <div>
-                                    <dd className="text-lg font-semibold tabular-nums">{profile.counts.shelf}</dd>
-                                    <dt className="text-muted-foreground text-xs">On shelf</dt>
-                                </div>
-                            </dl>
+                            <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm sm:gap-x-8">
+                                <StatLink href={profileUrl(profile.username, 'posts')} count={profile.counts.posts} label="Posts" />
+                                <StatLink href={connectionsUrl(profile.username, 'followers')} count={profile.counts.followers} label="Followers" />
+                                <StatLink href={connectionsUrl(profile.username, 'following')} count={profile.counts.following} label="Following" />
+                                <StatLink href={profileUrl(profile.username, 'shelf')} count={profile.counts.shelf} label="On shelf" />
+                            </div>
                         </div>
 
                         {profile.can_view_content && (profile.current_activity || profile.shared_subjects.length > 0) && (

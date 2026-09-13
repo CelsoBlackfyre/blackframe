@@ -13,6 +13,7 @@ use App\Http\Controllers\MatchDecisionController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostMediaController;
+use App\Http\Controllers\ProfileConnectionsController;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\ShelfController;
@@ -31,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:people-search')
         ->name('people.index');
     Route::get('profiles/{user:username}', PublicProfileController::class)->name('profiles.show');
+    Route::get('profiles/{user:username}/connections', ProfileConnectionsController::class)
+        ->name('profiles.connections');
     Route::get('matches', MatchController::class)->name('matches.index');
     Route::post('matches/{user}/decision', [MatchDecisionController::class, 'store'])
         ->middleware('throttle:match-decisions')
