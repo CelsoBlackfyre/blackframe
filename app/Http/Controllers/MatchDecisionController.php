@@ -37,7 +37,7 @@ class MatchDecisionController extends Controller
             ]);
         }
 
-        $decision = MatchDecisionType::from($request->string('decision')->toString());
+        $decision = $request->enum('decision', MatchDecisionType::class) ?? abort(400, 'Invalid match decision.');
 
         $viewer->matchDecisions()->updateOrCreate(
             ['target_user_id' => $user->id],

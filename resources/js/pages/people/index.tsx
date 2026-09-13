@@ -1,5 +1,6 @@
 import { FlashMessage } from '@/components/flash-message';
 import { PageHeading } from '@/components/page-heading';
+import { Pagination } from '@/components/pagination';
 import { PersonCard } from '@/components/social/person-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { LoaderCircle, Search, UsersRound, X } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Discover', href: '/people' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Discover', href: route('people.index') }];
 
 interface PeoplePageProps {
     people: Paginated<PersonSummary>;
@@ -292,35 +293,7 @@ export default function People({ people, follow_requests: followRequests, filter
                     )}
                 </section>
 
-                {(people.prev_page_url || people.next_page_url) && (
-                    <nav className="mt-8 flex items-center justify-between gap-4" aria-label="People pages">
-                        {people.prev_page_url ? (
-                            <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                <Link href={people.prev_page_url} preserveScroll preserveState>
-                                    Previous
-                                </Link>
-                            </Button>
-                        ) : (
-                            <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                Previous
-                            </Button>
-                        )}
-                        <p className="text-muted-foreground text-xs tabular-nums">
-                            Page {people.current_page} of {people.last_page}
-                        </p>
-                        {people.next_page_url ? (
-                            <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                <Link href={people.next_page_url} preserveScroll preserveState>
-                                    Next
-                                </Link>
-                            </Button>
-                        ) : (
-                            <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                Next
-                            </Button>
-                        )}
-                    </nav>
-                )}
+                <Pagination resource={people} previousLabel="Previous" nextLabel="Next" ariaLabel="People pages" className="mt-8" preserveState />
             </main>
         </AppLayout>
     );

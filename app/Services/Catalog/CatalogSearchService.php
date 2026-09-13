@@ -140,7 +140,9 @@ class CatalogSearchService
 
                 return $requests;
             });
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            report($exception);
+
             return [[], $this->sourceLabels($requestNames), $this->sourceLabels($requestNames)];
         }
 

@@ -22,7 +22,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
     const form = useForm<ShelfEntryForm>({
         status: entry.status,
         favorite: entry.favorite,
-        rating: entry.rating ?? '',
+        rating: entry.rating === null ? '' : String(entry.rating),
         progress: entry.progress ?? '',
     });
 

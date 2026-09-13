@@ -11,7 +11,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, BookHeart, Inbox, LoaderCircle, MessageSquareText, Search, Send, Sparkles } from 'lucide-react';
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Direct', href: '/direct' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Direct', href: route('direct.index') }];
 
 interface DirectPageProps {
     conversations: DirectConversationSummary[];
@@ -54,7 +54,7 @@ function EmptyInbox() {
                 Private conversations unlock when you and another person both choose Connect in Shelf Match.
             </p>
             <Button asChild className="mt-6 min-h-11 rounded-xl px-5">
-                <Link href="/matches?view=connections">View Shelf Matches</Link>
+                <Link href={route('matches.index', { view: 'connections' })}>View Shelf Matches</Link>
             </Button>
         </div>
     );
@@ -263,7 +263,7 @@ function ConversationPane({ active }: { active: DirectActiveConversation | null 
         <section className="flex min-h-0 min-w-0 flex-col" aria-label={`Conversation with ${active.person.name}`}>
             <header className="border-border flex min-h-20 items-center gap-3 border-b px-4 py-3 sm:px-5">
                 <Button asChild variant="ghost" size="icon" className="-ml-2 size-11 rounded-xl lg:hidden">
-                    <Link href="/direct" aria-label="Back to Direct inbox">
+                    <Link href={route('direct.index')} aria-label="Back to Direct inbox">
                         <ArrowLeft className="size-5" aria-hidden="true" />
                     </Link>
                 </Button>

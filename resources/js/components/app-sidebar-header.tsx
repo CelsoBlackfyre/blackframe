@@ -23,7 +23,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         <header className="border-border bg-background sticky top-0 z-20 h-[4.5rem] shrink-0 border-b">
             <div className="mx-auto flex h-full w-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
                 <SidebarTrigger className="size-11 shrink-0 rounded-xl" />
-                <Link href="/feed" className="flex items-center md:hidden" aria-label="BlackFrame home">
+                <Link href={route('feed')} className="flex items-center md:hidden" aria-label="BlackFrame home">
                     <AppLogo compact />
                 </Link>
                 <div className="hidden min-w-0 lg:block">

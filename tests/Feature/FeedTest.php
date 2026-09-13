@@ -25,7 +25,7 @@ class FeedTest extends TestCase
         $followed = User::factory()->create();
         $stranger = User::factory()->create();
 
-        $viewer->following()->attach($followed);
+        $viewer->following()->attach($followed, ['accepted_at' => now()]);
 
         $ownPost = Post::factory()->for($viewer)->create(['published_at' => now()->subMinute()]);
         $followedPost = Post::factory()->for($followed)->create(['published_at' => now()]);
@@ -85,7 +85,7 @@ class FeedTest extends TestCase
     {
         $viewer = User::factory()->create();
         $deleted = User::factory()->create();
-        $viewer->following()->attach($deleted);
+        $viewer->following()->attach($deleted, ['accepted_at' => now()]);
         Post::factory()->for($deleted)->create(['published_at' => now()]);
         $own = Post::factory()->for($viewer)->create(['published_at' => now()]);
         $own->comments()->create(['user_id' => $deleted->id, 'body' => 'Previous comment']);

@@ -1,3 +1,5 @@
+import { PostSubject } from '@/types/subjects';
+
 export interface FeedAuthor {
     id: number;
     name: string;
@@ -68,4 +70,3 @@ export interface Paginated<T> {
     prev_page_url: string | null;
     total: number;
 }
-import { PostSubject } from '@/types/subjects';

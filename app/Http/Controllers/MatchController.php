@@ -13,7 +13,7 @@ class MatchController extends Controller
     public function __invoke(IndexMatchesRequest $request, MatchCompatibilityService $compatibility): Response
     {
         $viewer = $request->user();
-        $view = MatchView::from($request->string('view')->toString());
+        $view = $request->enum('view', MatchView::class) ?? MatchView::Discover;
         $candidates = $view === MatchView::Connections
             ? $compatibility->connections($viewer)
             : $compatibility->discover($viewer);
@@ -24,7 +24,9 @@ class MatchController extends Controller
             'summary' => [
                 'shelf_count' => $viewer->shelfEntries()->count(),
                 'remaining_count' => $view === MatchView::Discover ? $candidates->count() : null,
-                'connections_count' => $compatibility->connections($viewer)->count(),
+                'connections_count' => $view === MatchView::Connections
+                    ? $candidates->count()
+                    : $compatibility->connectionsCount($viewer),
             ],
             'score_model' => [
                 ['label' => 'Collection overlap', 'weight' => 55],

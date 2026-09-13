@@ -14,7 +14,7 @@ class PeopleController extends Controller
     public function __invoke(IndexPeopleRequest $request, PeopleSearchService $peopleSearch): Response
     {
         $viewer = $request->user();
-        $view = PeopleView::from($request->string('view')->toString());
+        $view = $request->enum('view', PeopleView::class) ?? PeopleView::Discover;
         $term = $request->validated('query');
 
         $people = $peopleSearch->search($viewer, $view, $term)

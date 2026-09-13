@@ -20,14 +20,14 @@ export function AppSidebar() {
     const cleanup = useMobileNavigation();
     const { auth, direct } = usePage<SharedData>().props;
     const mainNavItems: NavItem[] = [
-        { title: 'Home', url: '/feed', icon: House },
-        { title: 'Pulse', url: '/pulse', icon: MessageCircleMore },
-        { title: 'Discover', url: '/people', icon: UsersRound },
-        { title: 'Matches', url: '/matches', icon: HeartHandshake },
-        { title: 'Direct', url: '/direct', icon: MessagesSquare, badge: direct.unread_count },
+        { title: 'Home', url: route('feed'), icon: House },
+        { title: 'Pulse', url: route('pulse'), icon: MessageCircleMore },
+        { title: 'Discover', url: route('people.index'), icon: UsersRound },
+        { title: 'Matches', url: route('matches.index'), icon: HeartHandshake },
+        { title: 'Direct', url: route('direct.index'), icon: MessagesSquare, badge: direct.unread_count },
     ];
     const cultureNavItems: NavItem[] = [
-        { title: 'Geek Shelf', url: '/shelf', icon: LibraryBig },
+        { title: 'Geek Shelf', url: route('shelf.index'), icon: LibraryBig },
         { title: 'Profile', url: route('profiles.show', auth.user.username), icon: UserRound },
     ];
 
@@ -37,7 +37,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/feed" prefetch onClick={cleanup}>
+                            <Link href={route('feed')} prefetch onClick={cleanup}>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

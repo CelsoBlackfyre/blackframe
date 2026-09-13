@@ -28,7 +28,7 @@ class ShelfController extends Controller
                 'status' => $entry->status->value,
                 'status_label' => $entry->status->labelFor($entry->subject->type),
                 'favorite' => $entry->favorite,
-                'rating' => $entry->rating,
+                'rating' => $entry->rating === null ? null : (float) $entry->rating,
                 'progress' => $entry->progress,
                 'subject' => $this->subjectData($entry->subject),
             ]);

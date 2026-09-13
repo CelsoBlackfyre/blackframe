@@ -44,7 +44,7 @@ class SocialInteractionTest extends TestCase
             ->post(route('posts.likes.store', $draft))
             ->assertNotFound();
 
-        $viewer->following()->attach($privateAuthor);
+        $viewer->following()->attach($privateAuthor, ['accepted_at' => now()]);
 
         $this->actingAs($viewer)
             ->post(route('posts.likes.store', $privatePost))
@@ -77,7 +77,7 @@ class SocialInteractionTest extends TestCase
     {
         $viewer = User::factory()->create();
         $creator = User::factory()->create(['username' => 'former.friend']);
-        $viewer->following()->attach($creator);
+        $viewer->following()->attach($creator, ['accepted_at' => now()]);
 
         $this->actingAs($viewer)
             ->from('/people?view=following')

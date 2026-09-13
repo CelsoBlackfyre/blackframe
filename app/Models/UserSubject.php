@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ShelfStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +24,17 @@ class UserSubject extends Model
             'favorite' => 'boolean',
             'rating' => 'decimal:1',
         ];
+    }
+
+    /**
+     * Restrict entries to subjects the given user has shelved as well.
+     */
+    public function scopeSharedWith(Builder $query, User $user): Builder
+    {
+        return $query->whereIn(
+            'subject_id',
+            UserSubject::query()->select('subject_id')->where('user_id', $user->id),
+        );
     }
 
     public function user(): BelongsTo

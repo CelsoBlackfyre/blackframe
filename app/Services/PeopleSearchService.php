@@ -95,7 +95,9 @@ class PeopleSearchService
         $viewer->loadMissing('shelfEntries.subject');
         $user->loadMissing('shelfEntries.subject');
 
-        $canViewCulture = $viewer->canViewContentFrom($user);
+        // baseQuery() computes followed_by_viewer with withExists, which mirrors
+        // canViewContentFrom() without issuing another query per presented user.
+        $canViewCulture = (bool) $user->followed_by_viewer || ! $user->is_private;
         $viewerSubjectIds = $viewer->shelfEntries->pluck('subject_id');
         $sharedEntries = $canViewCulture
             ? $user->shelfEntries->whereIn('subject_id', $viewerSubjectIds)->take(3)

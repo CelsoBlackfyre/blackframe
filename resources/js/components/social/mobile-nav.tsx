@@ -3,16 +3,15 @@ import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { House, MessageCircleMore, MessagesSquare, SquarePlus, UsersRound } from 'lucide-react';
 
-const items = [
-    { label: 'Home', href: '/feed', icon: House },
-    { label: 'Pulse', href: '/pulse', icon: MessageCircleMore },
-    { label: 'Create', href: '/posts/create', icon: SquarePlus },
-    { label: 'Discover', href: '/people', icon: UsersRound },
-    { label: 'Direct', href: '/direct', icon: MessagesSquare },
-];
-
 export function MobileNav() {
     const page = usePage<SharedData>();
+    const items = [
+        { id: 'feed', label: 'Home', href: route('feed'), icon: House },
+        { id: 'pulse', label: 'Pulse', href: route('pulse'), icon: MessageCircleMore },
+        { id: 'create', label: 'Create', href: route('posts.create'), icon: SquarePlus },
+        { id: 'people', label: 'Discover', href: route('people.index'), icon: UsersRound },
+        { id: 'direct', label: 'Direct', href: route('direct.index'), icon: MessagesSquare },
+    ];
 
     return (
         <nav
@@ -36,7 +35,7 @@ export function MobileNav() {
                         >
                             <span className="relative">
                                 <item.icon className="size-5" strokeWidth={active ? 2.2 : 1.8} aria-hidden="true" />
-                                {item.href === '/direct' && page.props.direct.unread_count > 0 && (
+                                {item.id === 'direct' && page.props.direct.unread_count > 0 && (
                                     <span className="border-background bg-primary text-primary-foreground absolute -top-2 -right-2 min-w-4 rounded-full border px-1 text-center text-[0.625rem] leading-4 font-semibold tabular-nums">
                                         {page.props.direct.unread_count > 9 ? '9+' : page.props.direct.unread_count}
                                         <span className="sr-only"> unread messages</span>

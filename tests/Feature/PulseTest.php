@@ -24,7 +24,7 @@ class PulseTest extends TestCase
         $followed = User::factory()->create();
         $stranger = User::factory()->create();
 
-        $viewer->following()->attach($followed);
+        $viewer->following()->attach($followed, ['accepted_at' => now()]);
 
         $ownPost = Post::factory()->for($viewer)->create([
             'type' => 'text',

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\MatchDecisionType;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MatchDecision extends Model
 {
@@ -18,15 +17,5 @@ class MatchDecision extends Model
         return [
             'decision' => MatchDecisionType::class,
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function targetUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'target_user_id');
     }
 }

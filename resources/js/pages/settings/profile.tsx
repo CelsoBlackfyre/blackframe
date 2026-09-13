@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { cn } from '@/lib/utils';
@@ -19,7 +21,7 @@ import { cn } from '@/lib/utils';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Profile settings',
-        href: '/settings/profile',
+        href: route('profile.edit'),
     },
 ];
 
@@ -48,13 +50,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         banner: null,
     });
 
-    const initials = auth.user.name
-        .split(' ')
-        .map((part) => part.charAt(0))
-        .filter(Boolean)
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
+    const getInitials = useInitials();
+    const initials = getInitials(auth.user.name);
 
     const pickImage = (files: FileList | null, current: string | null, setUrl: (url: string | null) => void): File | null => {
         const file = files?.[0] ?? null;
@@ -251,13 +248,13 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                         <div className="grid gap-2">
                             <Label htmlFor="bio">Bio</Label>
-                            <textarea
+                            <Textarea
                                 id="bio"
                                 value={data.bio}
                                 onChange={(e) => setData('bio', e.target.value)}
                                 maxLength={160}
                                 rows={4}
-                                className="border-input bg-background placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30 min-h-28 w-full resize-y rounded-xl border px-3 py-2 text-sm transition-colors outline-none focus-visible:ring-2"
+                                className="min-h-28 resize-y px-3 py-2 text-sm"
                                 placeholder="What do you like to share?"
                             />
                             <div className="text-muted-foreground flex items-center justify-between gap-4 text-xs">

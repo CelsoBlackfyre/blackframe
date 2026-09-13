@@ -12,7 +12,7 @@ class CatalogController extends Controller
     public function search(SearchCatalogRequest $request, CatalogSearchService $catalog): JsonResponse
     {
         $data = $request->validated();
-        $type = isset($data['type']) ? SubjectType::from($data['type']) : null;
+        $type = $request->enum('type', SubjectType::class);
 
         return response()->json($catalog->search($data['query'], $type));
     }

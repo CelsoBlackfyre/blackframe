@@ -41,7 +41,7 @@ interface AddShelfEntryForm {
 
 type ShelfFilter = 'all' | 'favorites' | ShelfStatus;
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Geek Shelf', href: '/shelf' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Geek Shelf', href: route('shelf.index') }];
 
 export default function GeekShelf({ entries, statusOptions, stats }: ShelfPageProps) {
     const [adding, setAdding] = useState(false);
@@ -64,7 +64,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
             return matchesStatus && entry.subject.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase());
         })
         .sort((a, b) =>
-            sort === 'title' ? a.subject.name.localeCompare(b.subject.name) : sort === 'rating' ? Number(b.rating ?? 0) - Number(a.rating ?? 0) : 0,
+            sort === 'title' ? a.subject.name.localeCompare(b.subject.name) : sort === 'rating' ? (b.rating ?? 0) - (a.rating ?? 0) : 0,
         );
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -177,7 +177,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                 </Select>
                             </div>
                         </div>
-                        <div className="mt-4 flex flex-wrap gap-2" aria-label="Filter shelf entries">
+                        <div role="group" aria-label="Filter shelf entries" className="mt-4 flex flex-wrap gap-2">
                             {shelfFilters.map((filter) => (
                                 <button
                                     key={filter.value}

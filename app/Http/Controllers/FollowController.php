@@ -75,7 +75,16 @@ class FollowController extends Controller
                 'updated_at' => now(),
             ]);
 
-        abort_unless($updated === 1, 404);
+        if ($updated === 0) {
+            $exists = DB::table('follows')
+                ->where('follower_id', $user->id)
+                ->where('following_id', $request->user()->id)
+                ->exists();
+
+            abort_unless($exists, 404);
+
+            return back();
+        }
 
         return back()->with('success', 'You accepted '.$user->username.'\'s follow request.');
     }

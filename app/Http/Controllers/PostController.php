@@ -29,6 +29,8 @@ class PostController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($request, $data, $mediaService, $subjects): void {
+            $subject = $subjects->resolve($data['subject_id'] ?? null, $data['subject_reference'] ?? null, $request->user());
+
             $post = $request->user()->posts()->create([
                 'caption' => $data['caption'] ?? null,
                 'location' => $data['location'] ?? null,
@@ -39,8 +41,6 @@ class PostController extends Controller
             if ($data['type'] === 'image') {
                 $mediaService->storePostImage($post, $request->file('media'), $data['alt_text']);
             }
-
-            $subject = $subjects->resolve($data['subject_id'] ?? null, $data['subject_reference'] ?? null, $request->user());
 
             if ($subject) {
                 $post->subjects()->attach($subject);

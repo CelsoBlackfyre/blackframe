@@ -35,7 +35,7 @@ class DirectController extends Controller
     {
         $conversations = $viewer->conversations()
             ->with([
-                'participants:id,name,username,avatar_path',
+                'participants:id,name,username,bio,avatar_path',
                 'latestMessage.author:id,name,username,avatar_path',
             ])
             ->orderByRaw('conversations.last_message_at desc nulls last')
@@ -131,10 +131,7 @@ class DirectController extends Controller
 
         return UserSubject::query()
             ->where('user_id', $other->id)
-            ->whereIn(
-                'subject_id',
-                UserSubject::query()->select('subject_id')->where('user_id', $viewer->id),
-            )
+            ->sharedWith($viewer)
             ->with('subject:id,name,slug,type,image_url')
             ->limit(3)
             ->get()

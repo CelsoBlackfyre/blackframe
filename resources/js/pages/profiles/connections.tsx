@@ -1,13 +1,15 @@
+import { EmptyState } from '@/components/empty-state';
 import { FlashMessage } from '@/components/flash-message';
+import { Pagination } from '@/components/pagination';
 import { SocialAvatar } from '@/components/social/avatar';
+import { FollowButton } from '@/components/social/follow-button';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { ConnectionSummary, ConnectionsPageProps, ProfileConnectionList } from '@/types/profiles';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Check, Clock3, LoaderCircle, LockKeyhole, UserPlus, UsersRound } from 'lucide-react';
-import { ReactNode } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { LockKeyhole, UserPlus, UsersRound } from 'lucide-react';
 
 const lists: Array<{ value: ProfileConnectionList; label: string }> = [
     { value: 'followers', label: 'Followers' },
@@ -16,42 +18,6 @@ const lists: Array<{ value: ProfileConnectionList; label: string }> = [
 
 function listUrl(username: string, list: ProfileConnectionList): string {
     return route('profiles.connections', { user: username, list });
-}
-
-function ConnectionAction({ connection }: { connection: ConnectionSummary }) {
-    const form = useForm({});
-    const options = { preserveScroll: true, only: ['connections', 'flash'] };
-
-    const toggle = () => {
-        if (connection.is_following || connection.follow_request_pending) {
-            form.delete(route('people.follow.destroy', connection.id), options);
-            return;
-        }
-
-        form.post(route('people.follow.store', connection.id), options);
-    };
-
-    return (
-        <Button
-            type="button"
-            variant={connection.is_following || connection.follow_request_pending ? 'outline' : 'default'}
-            onClick={toggle}
-            disabled={form.processing}
-            aria-label={`${connection.is_following ? 'Unfollow' : connection.follow_request_pending ? 'Cancel follow request to' : 'Follow'} ${connection.name}`}
-            className="min-h-11 shrink-0 cursor-pointer rounded-xl px-4"
-        >
-            {form.processing ? (
-                <LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-            ) : connection.is_following ? (
-                <Check aria-hidden="true" />
-            ) : connection.follow_request_pending ? (
-                <Clock3 aria-hidden="true" />
-            ) : (
-                <UserPlus aria-hidden="true" />
-            )}
-            {connection.is_following ? 'Following' : connection.follow_request_pending ? 'Requested' : connection.is_private ? 'Request' : 'Follow'}
-        </Button>
-    );
 }
 
 function ConnectionRow({ connection }: { connection: ConnectionSummary }) {
@@ -80,31 +46,17 @@ function ConnectionRow({ connection }: { connection: ConnectionSummary }) {
                     )}
                 </div>
             </div>
-            {!connection.is_viewer && <ConnectionAction connection={connection} />}
+            {!connection.is_viewer && (
+                <FollowButton
+                    id={connection.id}
+                    name={connection.name}
+                    is_following={connection.is_following}
+                    follow_request_pending={connection.follow_request_pending}
+                    is_private={connection.is_private}
+                    only={['connections', 'flash']}
+                />
+            )}
         </article>
-    );
-}
-
-function ConnectionsEmpty({
-    icon: Icon,
-    title,
-    children,
-    action,
-}: {
-    icon: typeof UsersRound;
-    title: string;
-    children: ReactNode;
-    action?: ReactNode;
-}) {
-    return (
-        <section className="border-border bg-card rounded-[1.5rem] border border-dashed px-6 py-14 text-center">
-            <span className="bg-primary/10 text-primary mx-auto flex size-12 items-center justify-center rounded-2xl">
-                <Icon className="size-6" strokeWidth={1.8} aria-hidden="true" />
-            </span>
-            <h2 className="mt-5 text-xl font-semibold">{title}</h2>
-            <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">{children}</p>
-            {action && <div className="mt-6">{action}</div>}
-        </section>
     );
 }
 
@@ -180,9 +132,9 @@ export default function ShowConnections({ profile, filters, connections }: Conne
 
                 <div className="mt-7">
                     {!profile.can_view_connections ? (
-                        <ConnectionsEmpty icon={LockKeyhole} title="This profile is private">
+                        <EmptyState icon={LockKeyhole} title="This profile is private">
                             Send {profile.name.split(' ')[0]} a follow request to see who follows them and who they follow.
-                        </ConnectionsEmpty>
+                        </EmptyState>
                     ) : connections && connections.data.length > 0 ? (
                         <>
                             <section
@@ -194,44 +146,16 @@ export default function ShowConnections({ profile, filters, connections }: Conne
                                     <ConnectionRow key={connection.id} connection={connection} />
                                 ))}
                             </section>
-                            {(connections.prev_page_url || connections.next_page_url) && (
-                                <nav className="mt-7 flex items-center justify-between gap-4" aria-label="Connection pages">
-                                    {connections.prev_page_url ? (
-                                        <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                            <Link href={connections.prev_page_url} preserveScroll>
-                                                Newer
-                                            </Link>
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                            Newer
-                                        </Button>
-                                    )}
-                                    <span className="text-muted-foreground text-xs tabular-nums">
-                                        {connections.current_page} / {connections.last_page}
-                                    </span>
-                                    {connections.next_page_url ? (
-                                        <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                            <Link href={connections.next_page_url} preserveScroll>
-                                                Older
-                                            </Link>
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                            Older
-                                        </Button>
-                                    )}
-                                </nav>
-                            )}
+                            <Pagination resource={connections} ariaLabel="Connection pages" />
                         </>
                     ) : isFollowers ? (
-                        <ConnectionsEmpty icon={UsersRound} title={profile.is_self ? 'No followers yet' : `${profile.name} has no followers yet`}>
+                        <EmptyState icon={UsersRound} title={profile.is_self ? 'No followers yet' : `${profile.name} has no followers yet`}>
                             {profile.is_self
                                 ? 'When someone follows you, they will appear here so you can find and connect with them.'
                                 : 'Once people start following this profile, they will appear here.'}
-                        </ConnectionsEmpty>
+                        </EmptyState>
                     ) : (
-                        <ConnectionsEmpty
+                        <EmptyState
                             icon={UserPlus}
                             title={profile.is_self ? 'You are not following anyone yet' : `${profile.name} is not following anyone yet`}
                             action={
@@ -245,7 +169,7 @@ export default function ShowConnections({ profile, filters, connections }: Conne
                             {profile.is_self
                                 ? 'Explore the BlackFrame community and follow people whose posts you want in your feed.'
                                 : 'The people they follow will appear here.'}
-                        </ConnectionsEmpty>
+                        </EmptyState>
                     )}
                 </div>
             </main>

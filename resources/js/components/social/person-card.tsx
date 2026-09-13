@@ -1,9 +1,10 @@
 import { SocialAvatar } from '@/components/social/avatar';
+import { FollowButton } from '@/components/social/follow-button';
 import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { Button } from '@/components/ui/button';
 import { PersonSummary } from '@/types/people';
 import { Link, useForm } from '@inertiajs/react';
-import { ArrowUpRight, Check, Clock3, LibraryBig, LoaderCircle, LockKeyhole, Sparkles, UserPlus, UsersRound, X } from 'lucide-react';
+import { ArrowUpRight, Check, LibraryBig, LoaderCircle, LockKeyhole, Sparkles, UsersRound, X } from 'lucide-react';
 import { useState } from 'react';
 
 const numberFormatter = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
@@ -18,18 +19,6 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
         onError: () => setActionError('We could not update this connection. Please try again.'),
     };
 
-    const toggleRelationship = () => {
-        setActionError(null);
-
-        if (person.is_following) {
-            form.delete(route('people.follow.destroy', person.id), options);
-
-            return;
-        }
-
-        form.post(route('people.follow.store', person.id), options);
-    };
-
     if (person.incoming_follow_request) {
         return (
             <div className="flex shrink-0 flex-col gap-2">
@@ -41,7 +30,7 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
                     className="min-h-11 cursor-pointer rounded-xl px-4"
                 >
                     {form.processing ? (
-                        <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                        <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.8} aria-hidden="true" />
                     ) : (
                         <Check aria-hidden="true" />
                     )}
@@ -68,43 +57,16 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
     }
 
     return (
-        <div className="shrink-0 text-right">
-            <Button
-                type="button"
-                variant={person.is_following || person.follow_request_pending ? 'outline' : 'default'}
-                onClick={toggleRelationship}
-                disabled={form.processing}
-                aria-label={`${person.is_following ? 'Unfollow' : person.follow_request_pending ? 'Cancel follow request to' : 'Follow'} ${person.name}`}
-                className="min-h-11 min-w-[6.75rem] cursor-pointer rounded-xl px-4"
-            >
-                {form.processing ? (
-                    <>
-                        <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.8} aria-hidden="true" />
-                        <span className="sr-only">Updating connection</span>
-                    </>
-                ) : person.is_following ? (
-                    <>
-                        <Check className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                        Unfollow
-                    </>
-                ) : person.follow_request_pending ? (
-                    <>
-                        <Clock3 className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                        Requested
-                    </>
-                ) : (
-                    <>
-                        <UserPlus className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                        {person.is_private ? 'Request' : 'Follow'}
-                    </>
-                )}
-            </Button>
-            {actionError && (
-                <p role="alert" className="text-destructive mt-2 max-w-44 text-xs leading-5">
-                    {actionError}
-                </p>
-            )}
-        </div>
+        <FollowButton
+            id={person.id}
+            name={person.name}
+            is_following={person.is_following}
+            follow_request_pending={person.follow_request_pending}
+            is_private={person.is_private}
+            only={['people', 'follow_requests', 'network', 'flash']}
+            preserveState
+            className="min-w-[6.75rem]"
+        />
     );
 }
 

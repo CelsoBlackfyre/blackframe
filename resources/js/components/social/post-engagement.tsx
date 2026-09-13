@@ -242,7 +242,7 @@ export function PostEngagement({ post }: { post: { id: number; liked_by_viewer: 
     }
     return (
         <div>
-            <div className="-ml-2 flex items-center gap-2" aria-label="Post engagement">
+            <div role="group" aria-label="Post engagement" className="-ml-2 flex items-center gap-2">
                 <Button
                     variant="ghost"
                     onClick={toggleLike}

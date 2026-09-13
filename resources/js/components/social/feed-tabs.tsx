@@ -6,8 +6,8 @@ export function FeedTabs({ active }: { active: 'home' | 'pulse' }) {
     return (
         <nav className="border-border flex items-center gap-6 border-b" aria-label="Timeline views">
             {[
-                { id: 'home', label: 'Home', href: '/feed', icon: Images },
-                { id: 'pulse', label: 'Pulse', href: '/pulse', icon: MessageCircleMore },
+                { id: 'home', label: 'Home', href: route('feed'), icon: Images },
+                { id: 'pulse', label: 'Pulse', href: route('pulse'), icon: MessageCircleMore },
             ].map((tab) => (
                 <Link
                     key={tab.id}

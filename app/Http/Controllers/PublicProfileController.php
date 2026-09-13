@@ -17,7 +17,7 @@ class PublicProfileController extends Controller
     public function __invoke(ShowProfileRequest $request, User $user): Response
     {
         $viewer = $request->user();
-        $tab = ProfileView::from($request->string('tab')->toString());
+        $tab = $request->enum('tab', ProfileView::class) ?? ProfileView::Posts;
         $isSelf = $viewer->is($user);
         $isFollowing = ! $isSelf && $viewer->following()->whereKey($user->id)->exists();
         $followsYou = ! $isSelf && $user->following()->whereKey($viewer->id)->exists();
@@ -181,10 +181,7 @@ class PublicProfileController extends Controller
             ->with('subject:id,name,slug,type,image_url')
             ->when(
                 ! $isSelf,
-                fn ($query) => $query->whereIn(
-                    'subject_id',
-                    UserSubject::query()->select('subject_id')->where('user_id', $viewer->id),
-                ),
+                fn ($query) => $query->sharedWith($viewer),
             )
             ->orderByDesc('favorite')
             ->latest('updated_at')

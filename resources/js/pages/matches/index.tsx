@@ -28,7 +28,7 @@ import { PointerEvent as ReactPointerEvent, useCallback, useRef, useState } from
 
 gsap.registerPlugin(useGSAP);
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Shelf Match', href: '/matches' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Shelf Match', href: route('matches.index') }];
 const statusLabels: Record<string, string> = {
     current: 'In progress',
     completed: 'Completed',
@@ -354,7 +354,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                 icon={Check}
                 title="You are caught up"
                 description="You have reviewed every compatible shelf nearby. Add more titles or return later as the community grows."
-                action={{ label: 'Grow your shelf', href: '/shelf' }}
+                action={{ label: 'Grow your shelf', href: route('shelf.index') }}
             />
         );
     }
@@ -467,7 +467,7 @@ function Connections({ candidates }: { candidates: MatchCandidate[] }) {
                 icon={HeartHandshake}
                 title="No mutual matches yet"
                 description="A connection appears here only after both people choose Connect. Your outgoing choices stay private until then."
-                action={{ label: 'Find shelf matches', href: '/matches?view=discover' }}
+                action={{ label: 'Find shelf matches', href: route('matches.index', { view: 'discover' }) }}
             />
         );
     }
@@ -508,7 +508,7 @@ function Connections({ candidates }: { candidates: MatchCandidate[] }) {
 }
 
 function MessageMatchButton({ candidate }: { candidate: MatchCandidate }) {
-    const { post, processing, errors } = useForm<{ person: string }>({ person: '' });
+    const { post, processing, errors } = useForm<{ person?: string }>({});
 
     return (
         <div className="mt-4">
@@ -600,7 +600,7 @@ export default function Matches({ candidates, filters, summary, score_model: sco
                             icon={LibraryBig}
                             title="Your shelf starts the conversation"
                             description="Add at least one book, game, film, series, comic, or fandom. BlackFrame only recommends people after finding a real title you share."
-                            action={{ label: 'Build my shelf', href: '/shelf' }}
+                            action={{ label: 'Build my shelf', href: route('shelf.index') }}
                         />
                     ) : filters.view === 'connections' ? (
                         <Connections candidates={candidates} />

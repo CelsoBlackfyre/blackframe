@@ -45,6 +45,20 @@ class MatchCompatibilityService
     {
         $viewer->loadMissing('shelfEntries.subject');
 
+        return $this->connectionsQuery($viewer)
+            ->get()
+            ->map(fn (User $candidate) => $this->present($viewer, $candidate))
+            ->sortByDesc(fn (array $candidate) => [$candidate['compatibility']['score'], $candidate['compatibility']['shared_count']])
+            ->values();
+    }
+
+    public function connectionsCount(User $viewer): int
+    {
+        return $this->connectionsQuery($viewer)->count();
+    }
+
+    private function connectionsQuery(User $viewer): Builder
+    {
         return $this->candidateQuery($viewer)
             ->whereHas(
                 'matchDecisions',
@@ -57,21 +71,14 @@ class MatchCompatibilityService
                 fn (Builder $query) => $query
                     ->where('user_id', $viewer->id)
                     ->where('decision', MatchDecisionType::Connect->value),
-            )
-            ->get()
-            ->map(fn (User $candidate) => $this->present($viewer, $candidate))
-            ->sortByDesc(fn (array $candidate) => [$candidate['compatibility']['score'], $candidate['compatibility']['shared_count']])
-            ->values();
+            );
     }
 
     public function sharesShelfTitle(User $viewer, User $candidate): bool
     {
         return UserSubject::query()
             ->where('user_id', $candidate->id)
-            ->whereIn(
-                'subject_id',
-                UserSubject::query()->select('subject_id')->where('user_id', $viewer->id),
-            )
+            ->sharedWith($viewer)
             ->exists();
     }
 

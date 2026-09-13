@@ -30,8 +30,8 @@ class PeopleDiscoveryTest extends TestCase
             'username' => 'new.perspective',
         ]);
 
-        $viewer->following()->attach($mutual);
-        $mutual->following()->attach($viewer);
+        $viewer->following()->attach($mutual, ['accepted_at' => now()]);
+        $mutual->following()->attach($viewer, ['accepted_at' => now()]);
         Post::factory()->for($mutual)->create(['published_at' => now()]);
         Post::factory()->for($mutual)->create(['published_at' => null]);
 
@@ -86,9 +86,9 @@ class PeopleDiscoveryTest extends TestCase
         $followed = User::factory()->create(['name' => 'Outgoing Friend']);
         $mutual = User::factory()->create(['name' => 'Mutual Friend']);
 
-        $follower->following()->attach($viewer);
-        $viewer->following()->attach([$followed->id, $mutual->id]);
-        $mutual->following()->attach($viewer);
+        $follower->following()->attach($viewer, ['accepted_at' => now()]);
+        $viewer->following()->attach([$followed->id, $mutual->id], ['accepted_at' => now()]);
+        $mutual->following()->attach($viewer, ['accepted_at' => now()]);
 
         $this->actingAs($viewer)
             ->get('/people?view=followers')
@@ -183,7 +183,7 @@ class PeopleDiscoveryTest extends TestCase
             'subject_id' => $sharedSubject->id,
             'status' => 'current',
         ]);
-        User::factory()->count(3)->create()->each(fn (User $follower) => $follower->following()->attach($popularPerson));
+        User::factory()->count(3)->create()->each(fn (User $follower) => $follower->following()->attach($popularPerson, ['accepted_at' => now()]));
 
         $this->actingAs($viewer)
             ->get('/people')

@@ -28,13 +28,14 @@ interface PostFormData {
     subject_reference: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Create', href: '/posts/create' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Create', href: route('posts.create') }];
 
 export default function CreatePost({ initialFormat = 'image' }: { initialFormat?: PostFormat }) {
     const { auth } = usePage<SharedData>().props;
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedSubject, setSelectedSubject] = useState<CatalogCandidate | null>(null);
     const errorSummaryRef = useRef<HTMLDivElement>(null);
+    const mediaInputRef = useRef<HTMLInputElement>(null);
     const form = useForm<PostFormData>({
         type: initialFormat,
         caption: '',
@@ -59,10 +60,16 @@ export default function CreatePost({ initialFormat = 'image' }: { initialFormat?
         return () => URL.revokeObjectURL(nextPreviewUrl);
     }, [form.data.media]);
 
+    const hadErrors = useRef(false);
+
     useEffect(() => {
-        if (Object.keys(form.errors).length > 0) {
+        const hasErrors = Object.keys(form.errors).length > 0;
+
+        if (hasErrors && !hadErrors.current) {
             errorSummaryRef.current?.focus();
         }
+
+        hadErrors.current = hasErrors;
     }, [form.errors]);
 
     const selectFormat = (format: PostFormat) => {
@@ -71,6 +78,9 @@ export default function CreatePost({ initialFormat = 'image' }: { initialFormat?
 
         if (format === 'text') {
             form.setData('media', null);
+            if (mediaInputRef.current) {
+                mediaInputRef.current.value = '';
+            }
             form.setData('alt_text', '');
             form.setData('location', '');
             form.setData('caption', form.data.caption.slice(0, 500));
@@ -218,6 +228,7 @@ export default function CreatePost({ initialFormat = 'image' }: { initialFormat?
                                 <div className="space-y-2">
                                     <Label htmlFor="media">Image</Label>
                                     <Input
+                                        ref={mediaInputRef}
                                         id="media"
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"

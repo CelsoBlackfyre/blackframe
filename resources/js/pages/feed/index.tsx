@@ -1,5 +1,6 @@
 import { FlashMessage } from '@/components/flash-message';
 import { PageHeading } from '@/components/page-heading';
+import { Pagination } from '@/components/pagination';
 import { CreatorSuggestions } from '@/components/social/creator-suggestions';
 import { FeedActivationPanel } from '@/components/social/feed-activation-panel';
 import { FeedComposer } from '@/components/social/feed-composer';
@@ -13,7 +14,7 @@ import { CreatorSuggestion, FeedActivation, FeedPost, FeedShelfEntry, Paginated 
 import { Head, Link } from '@inertiajs/react';
 import { Images, SquarePen, UsersRound } from 'lucide-react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Home', href: '/feed' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Home', href: route('feed') }];
 
 interface FeedPageProps {
     posts: Paginated<FeedPost>;
@@ -67,35 +68,7 @@ export default function Feed({ posts, suggestions, current_shelf: currentShelf, 
                         </section>
                     )}
 
-                    {(posts.prev_page_url || posts.next_page_url) && (
-                        <nav className="flex items-center justify-between gap-4 pt-2" aria-label="Feed pages">
-                            {posts.prev_page_url ? (
-                                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                    <Link href={posts.prev_page_url} preserveScroll>
-                                        Newer posts
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                    Newer posts
-                                </Button>
-                            )}
-                            <p className="text-muted-foreground text-xs">
-                                Page {posts.current_page} of {posts.last_page}
-                            </p>
-                            {posts.next_page_url ? (
-                                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                    <Link href={posts.next_page_url} preserveScroll>
-                                        Older posts
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                    Older posts
-                                </Button>
-                            )}
-                        </nav>
-                    )}
+                    <Pagination resource={posts} previousLabel="Newer posts" nextLabel="Older posts" ariaLabel="Feed pages" className="pt-2" />
                 </main>
 
                 <FeedContextRail suggestions={suggestions} currentShelf={currentShelf} />

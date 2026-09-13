@@ -1,5 +1,8 @@
+import { EmptyState } from '@/components/empty-state';
 import { FlashMessage } from '@/components/flash-message';
+import { Pagination } from '@/components/pagination';
 import { SocialAvatar } from '@/components/social/avatar';
+import { FollowButton } from '@/components/social/follow-button';
 import { PostCard } from '@/components/social/post-card';
 import { PulsePostCard } from '@/components/social/pulse-post-card';
 import { SubjectBadge } from '@/components/subjects/subject-badge';
@@ -7,13 +10,11 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
-import { Paginated } from '@/types/feed';
 import { ProfileConnectionList, ProfilePageProps, ProfileShelfEntry, ProfileView } from '@/types/profiles';
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     CalendarDays,
     Check,
-    Clock3,
     ExternalLink,
     Heart,
     LibraryBig,
@@ -22,10 +23,8 @@ import {
     MessageCircleMore,
     Pencil,
     Sparkles,
-    UserPlus,
     X,
 } from 'lucide-react';
-import { ReactNode } from 'react';
 
 const tabs: Array<{ value: ProfileView; label: string }> = [
     { value: 'posts', label: 'Posts' },
@@ -61,22 +60,6 @@ function StatLink({ href, count, label }: { href: string; count: number; label: 
 function FollowProfileButton({ profile }: Pick<ProfilePageProps, 'profile'>) {
     const form = useForm({});
 
-    const toggle = () => {
-        const options = { preserveScroll: true, only: ['profile', 'posts', 'pulse', 'shelf', 'flash'] };
-
-        if (profile.is_following) {
-            form.delete(route('people.follow.destroy', profile.id), options);
-            return;
-        }
-
-        if (profile.follow_request_pending) {
-            form.delete(route('people.follow.destroy', profile.id), options);
-            return;
-        }
-
-        form.post(route('people.follow.store', profile.id), options);
-    };
-
     if (profile.incoming_follow_request) {
         return (
             <div className="flex items-center gap-2">
@@ -108,74 +91,15 @@ function FollowProfileButton({ profile }: Pick<ProfilePageProps, 'profile'>) {
     }
 
     return (
-        <Button
-            type="button"
-            variant={profile.is_following || profile.follow_request_pending ? 'outline' : 'default'}
-            onClick={toggle}
-            disabled={form.processing}
-            aria-label={`${profile.is_following ? 'Unfollow' : profile.follow_request_pending ? 'Cancel follow request to' : 'Follow'} ${profile.name}`}
-            className="min-h-11 cursor-pointer rounded-xl px-5"
-        >
-            {form.processing ? (
-                <LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-            ) : profile.is_following ? (
-                <Check aria-hidden="true" />
-            ) : profile.follow_request_pending ? (
-                <Clock3 aria-hidden="true" />
-            ) : (
-                <UserPlus aria-hidden="true" />
-            )}
-            {profile.is_following ? 'Following' : profile.follow_request_pending ? 'Requested' : profile.is_private ? 'Request follow' : 'Follow'}
-        </Button>
-    );
-}
-
-function Pagination({ resource }: { resource: Paginated<unknown> }) {
-    if (!resource.prev_page_url && !resource.next_page_url) return null;
-
-    return (
-        <nav className="mt-7 flex items-center justify-between gap-4" aria-label="Profile content pages">
-            {resource.prev_page_url ? (
-                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                    <Link href={resource.prev_page_url} preserveScroll>
-                        Newer
-                    </Link>
-                </Button>
-            ) : (
-                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                    Newer
-                </Button>
-            )}
-            <span className="text-muted-foreground text-xs tabular-nums">
-                {resource.current_page} / {resource.last_page}
-            </span>
-            {resource.next_page_url ? (
-                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                    <Link href={resource.next_page_url} preserveScroll>
-                        Older
-                    </Link>
-                </Button>
-            ) : (
-                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                    Older
-                </Button>
-            )}
-        </nav>
-    );
-}
-
-function EmptyTab({ icon, title, children, action }: { icon: typeof LibraryBig; title: string; children: ReactNode; action?: ReactNode }) {
-    const Icon = icon;
-
-    return (
-        <section className="border-border bg-card rounded-[1.5rem] border border-dashed px-6 py-14 text-center">
-            <span className="bg-primary/10 text-primary mx-auto flex size-12 items-center justify-center rounded-2xl">
-                <Icon className="size-6" strokeWidth={1.8} aria-hidden="true" />
-            </span>
-            <h2 className="mt-5 text-xl font-semibold">{title}</h2>
-            <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">{children}</p>
-            {action && <div className="mt-6">{action}</div>}
-        </section>
+        <FollowButton
+            id={profile.id}
+            name={profile.name}
+            is_following={profile.is_following}
+            follow_request_pending={profile.follow_request_pending}
+            is_private={profile.is_private}
+            only={['profile', 'posts', 'pulse', 'shelf', 'flash']}
+            className="px-5"
+        />
     );
 }
 
@@ -382,9 +306,9 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
 
                 <div className="mt-7">
                     {!profile.can_view_content ? (
-                        <EmptyTab icon={LockKeyhole} title="This profile is private">
+                        <EmptyState icon={LockKeyhole} title="This profile is private">
                             Send {profile.name.split(' ')[0]} a follow request to see their posts, Pulse updates, and Geek Shelf after approval.
-                        </EmptyTab>
+                        </EmptyState>
                     ) : filters.tab === 'posts' && posts ? (
                         posts.data.length > 0 ? (
                             <>
@@ -393,10 +317,10 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                         <PostCard key={post.id} post={post} eager={index === 0} />
                                     ))}
                                 </section>
-                                <Pagination resource={posts} />
+                                <Pagination resource={posts} ariaLabel="Profile content pages" />
                             </>
                         ) : (
-                            <EmptyTab
+                            <EmptyState
                                 icon={Sparkles}
                                 title={profile.is_self ? 'Your visual story starts here' : 'No visual posts yet'}
                                 action={
@@ -410,7 +334,7 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                 {profile.is_self
                                     ? 'Share an image connected to the culture you care about.'
                                     : `${profile.name} has not published a visual post yet.`}
-                            </EmptyTab>
+                            </EmptyState>
                         )
                     ) : filters.tab === 'pulse' && pulse ? (
                         pulse.data.length > 0 ? (
@@ -420,12 +344,12 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                         <PulsePostCard key={post.id} post={post} />
                                     ))}
                                 </section>
-                                <Pagination resource={pulse} />
+                                <Pagination resource={pulse} ariaLabel="Profile content pages" />
                             </>
                         ) : (
-                            <EmptyTab icon={MessageCircleMore} title={profile.is_self ? 'Say what is on your mind' : 'No Pulse posts yet'}>
+                            <EmptyState icon={MessageCircleMore} title={profile.is_self ? 'Say what is on your mind' : 'No Pulse posts yet'}>
                                 Short thoughts, questions, and recommendations will appear here.
-                            </EmptyTab>
+                            </EmptyState>
                         )
                     ) : filters.tab === 'shelf' && shelf ? (
                         shelf.data.length > 0 ? (
@@ -438,10 +362,10 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                         <ShelfCard key={entry.id} entry={entry} />
                                     ))}
                                 </section>
-                                <Pagination resource={shelf} />
+                                <Pagination resource={shelf} ariaLabel="Profile content pages" />
                             </>
                         ) : (
-                            <EmptyTab
+                            <EmptyState
                                 icon={LibraryBig}
                                 title={profile.is_self ? 'Build your culture shelf' : 'This shelf is waiting'}
                                 action={
@@ -453,7 +377,7 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                 }
                             >
                                 Books, games, films, series, and fandoms added to the Geek Shelf will shape this profile.
-                            </EmptyTab>
+                            </EmptyState>
                         )
                     ) : (
                         <section className="border-border bg-card grid gap-6 rounded-[1.5rem] border p-6 sm:p-8 lg:grid-cols-2">

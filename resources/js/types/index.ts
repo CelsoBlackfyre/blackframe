@@ -9,11 +9,6 @@ export interface BreadcrumbItem {
     href: string;
 }
 
-export interface NavGroup {
-    title: string;
-    items: NavItem[];
-}
-
 export interface NavItem {
     title: string;
     url: string;
@@ -40,7 +35,6 @@ export interface User {
     name: string;
     username: string;
     email: string;
-    avatar?: string;
     avatar_url?: string | null;
     banner_url?: string | null;
     bio?: string | null;

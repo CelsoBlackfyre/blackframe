@@ -14,7 +14,7 @@ class ProfileConnectionsController extends Controller
     public function __invoke(ShowConnectionsRequest $request, User $user): Response
     {
         $viewer = $request->user();
-        $list = ProfileConnectionList::from($request->string('list')->toString());
+        $list = $request->enum('list', ProfileConnectionList::class) ?? ProfileConnectionList::Followers;
         $canViewConnections = $viewer->canViewContentFrom($user);
 
         $user->loadCount(['followers', 'following']);

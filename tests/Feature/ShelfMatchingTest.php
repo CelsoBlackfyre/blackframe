@@ -133,7 +133,7 @@ class ShelfMatchingTest extends TestCase
             ->post("/matches/{$privateCandidate->id}/decision", ['decision' => 'connect'])
             ->assertSessionHasErrors('target');
 
-        $viewer->following()->attach($privateCandidate);
+        $viewer->following()->attach($privateCandidate, ['accepted_at' => now()]);
 
         $this->actingAs($viewer)
             ->get('/matches')

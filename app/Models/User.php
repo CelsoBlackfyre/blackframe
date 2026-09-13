@@ -127,21 +127,9 @@ class User extends Authenticatable
             || $this->following()->whereKey($profile->id)->exists();
     }
 
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class);
-    }
-
     public function shelfEntries(): HasMany
     {
         return $this->hasMany(UserSubject::class);
-    }
-
-    public function subjects(): BelongsToMany
-    {
-        return $this->belongsToMany(Subject::class, 'user_subjects')
-            ->withPivot(['id', 'status', 'favorite', 'rating', 'progress'])
-            ->withTimestamps();
     }
 
     public function matchDecisions(): HasMany
@@ -159,10 +147,5 @@ class User extends Authenticatable
         return $this->belongsToMany(Conversation::class)
             ->withPivot(['last_read_at', 'unread_count'])
             ->withTimestamps();
-    }
-
-    public function messages(): HasMany
-    {
-        return $this->hasMany(Message::class);
     }
 }

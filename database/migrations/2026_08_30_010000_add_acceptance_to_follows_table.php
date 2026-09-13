@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('follows', function (Blueprint $table) {
-            $table->timestampTz('accepted_at')->nullable()->useCurrent()->index();
+            $table->timestampTz('accepted_at')->nullable()->index();
         });
 
         DB::table('follows')->whereNull('accepted_at')->update([

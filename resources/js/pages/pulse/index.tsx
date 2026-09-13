@@ -1,5 +1,6 @@
 import { FlashMessage } from '@/components/flash-message';
 import { PageHeading } from '@/components/page-heading';
+import { Pagination } from '@/components/pagination';
 import { FeedComposer } from '@/components/social/feed-composer';
 import { FeedTabs } from '@/components/social/feed-tabs';
 import { PulsePostCard } from '@/components/social/pulse-post-card';
@@ -10,7 +11,7 @@ import { PulsePosts } from '@/types/pulse';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowUpRight, LibraryBig, MessageCircleMore } from 'lucide-react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pulse', href: '/pulse' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pulse', href: route('pulse') }];
 
 export default function Pulse({ posts }: { posts: PulsePosts }) {
     return (
@@ -42,35 +43,7 @@ export default function Pulse({ posts }: { posts: PulsePosts }) {
                         </section>
                     )}
 
-                    {(posts.prev_page_url || posts.next_page_url) && (
-                        <nav className="flex items-center justify-between gap-3 pt-2" aria-label="Pulse pages">
-                            {posts.prev_page_url ? (
-                                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                    <Link href={posts.prev_page_url} preserveScroll>
-                                        Newer
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                    Newer
-                                </Button>
-                            )}
-                            <p className="text-muted-foreground text-xs tabular-nums">
-                                {posts.current_page} / {posts.last_page}
-                            </p>
-                            {posts.next_page_url ? (
-                                <Button asChild variant="outline" className="min-h-11 rounded-xl">
-                                    <Link href={posts.next_page_url} preserveScroll>
-                                        Older
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                                    Older
-                                </Button>
-                            )}
-                        </nav>
-                    )}
+                    <Pagination resource={posts} ariaLabel="Pulse pages" className="pt-2" />
                 </main>
 
                 <aside className="sticky top-24 hidden self-start xl:block" aria-labelledby="pulse-about-heading">

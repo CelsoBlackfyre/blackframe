@@ -16,17 +16,9 @@ class Media extends Model
         'width',
         'height',
         'alt_text',
-        'variants',
     ];
 
     protected $appends = ['url'];
-
-    protected function casts(): array
-    {
-        return [
-            'variants' => 'array',
-        ];
-    }
 
     public function mediaable(): MorphTo
     {

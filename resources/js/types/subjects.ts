@@ -44,7 +44,7 @@ export interface ShelfEntry {
     status: ShelfStatus;
     status_label: string;
     favorite: boolean;
-    rating: string | null;
+    rating: number | null;
     progress: string | null;
     subject: SubjectSummary;
 }

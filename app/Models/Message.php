@@ -15,11 +15,6 @@ class Message extends Model
         'body',
     ];
 
-    public function conversation(): BelongsTo
-    {
-        return $this->belongsTo(Conversation::class);
-    }
-
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
