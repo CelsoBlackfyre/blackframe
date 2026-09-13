@@ -19,7 +19,9 @@ class PostController extends Controller
     {
         Gate::authorize('create', Post::class);
 
-        return Inertia::render('posts/create');
+        return Inertia::render('posts/create', [
+            'initialFormat' => $request->query('type') === 'text' ? 'text' : 'image',
+        ]);
     }
 
     public function store(StorePostRequest $request, MediaService $mediaService, SubjectResolver $subjects): RedirectResponse

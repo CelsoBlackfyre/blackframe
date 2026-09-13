@@ -17,6 +17,8 @@ const dockerServer =
               },
               watch: {
                   usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
+                  interval: Number(process.env.CHOKIDAR_INTERVAL ?? 2000),
+                  ignored: ['**/vendor/**', '**/node_modules/**', '**/storage/**', '**/public/build/**'],
               },
           }
         : undefined;

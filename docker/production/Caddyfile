@@ -1,5 +1,9 @@
 {
     admin off
+
+    servers {
+        trusted_proxies static private_ranges
+    }
 }
 
 {$CADDY_SITE_ADDRESS:http://} {
@@ -9,5 +13,5 @@
         -Server
     }
 
-    reverse_proxy web:80
+    reverse_proxy blackframe-web:80
 }

@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { PageHeading } from '@/components/page-heading';
 import { SocialAvatar } from '@/components/social/avatar';
 import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { SubjectPicker } from '@/components/subjects/subject-picker';
@@ -29,13 +30,13 @@ interface PostFormData {
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Create', href: '/posts/create' }];
 
-export default function CreatePost() {
+export default function CreatePost({ initialFormat = 'image' }: { initialFormat?: PostFormat }) {
     const { auth } = usePage<SharedData>().props;
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedSubject, setSelectedSubject] = useState<CatalogCandidate | null>(null);
     const errorSummaryRef = useRef<HTMLDivElement>(null);
     const form = useForm<PostFormData>({
-        type: 'image',
+        type: initialFormat,
         caption: '',
         location: '',
         alt_text: '',
@@ -95,13 +96,15 @@ export default function CreatePost() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create" />
             <main id="main-content" className="mx-auto w-full max-w-[1040px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
-                <div className="mb-6 max-w-2xl space-y-1">
-                    <h1 className="text-2xl font-semibold tracking-tight">Create</h1>
-                    <p className="text-muted-foreground text-sm">Share a photo with Home or start a conversation in Pulse.</p>
+                <div className="mb-8">
+                    <PageHeading title="Make it a moment." description="Share a photo with Home or a thought with Pulse." />
                 </div>
 
                 <form onSubmit={submit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] lg:gap-8">
-                    <section className="border-border bg-card overflow-hidden rounded-2xl border" aria-labelledby="preview-heading">
+                    <section
+                        className="border-border bg-card order-2 overflow-hidden rounded-2xl border lg:order-1"
+                        aria-labelledby="preview-heading"
+                    >
                         <div className="border-border flex items-center justify-between border-b px-4 py-3">
                             <h2 id="preview-heading" className="text-sm font-semibold">
                                 Preview
@@ -110,7 +113,7 @@ export default function CreatePost() {
                         </div>
 
                         {isImage ? (
-                            <div className="bg-muted relative flex aspect-[4/5] items-center justify-center overflow-hidden">
+                            <div className="bg-muted relative flex aspect-[4/3] items-center justify-center overflow-hidden lg:aspect-[4/5]">
                                 {previewUrl ? (
                                     <img src={previewUrl} alt="Preview of the selected upload." className="h-full w-full object-cover" />
                                 ) : (
@@ -144,7 +147,7 @@ export default function CreatePost() {
                         )}
                     </section>
 
-                    <section className="border-border bg-card rounded-2xl border p-4 sm:p-6" aria-labelledby="composer-heading">
+                    <section className="border-border bg-card order-1 rounded-2xl border p-4 sm:p-6 lg:order-2" aria-labelledby="composer-heading">
                         <div className="flex items-center gap-3">
                             <SocialAvatar name={auth.user.name} src={auth.user.avatar_url} />
                             <div className="min-w-0">
@@ -221,6 +224,7 @@ export default function CreatePost() {
                                         required
                                         onChange={(event) => form.setData('media', event.target.files?.[0] ?? null)}
                                         aria-describedby="media-help media-error"
+                                        aria-invalid={!!form.errors.media}
                                         className="h-12 cursor-pointer rounded-xl file:mr-3 file:cursor-pointer"
                                     />
                                     <p id="media-help" className="text-muted-foreground text-xs leading-5">
@@ -246,6 +250,7 @@ export default function CreatePost() {
                                     rows={isImage ? 4 : 7}
                                     placeholder={isImage ? 'Write a caption' : 'Share a thought, question, or update'}
                                     aria-describedby="caption-count caption-error"
+                                    aria-invalid={!!form.errors.caption}
                                     className={isImage ? 'min-h-28' : 'min-h-40'}
                                 />
                                 <InputError id="caption-error" message={form.errors.caption} />
@@ -264,6 +269,7 @@ export default function CreatePost() {
                                             rows={3}
                                             placeholder="Describe the important visual details"
                                             aria-describedby="alt-help alt-error"
+                                            aria-invalid={!!form.errors.alt_text}
                                             className="min-h-24"
                                         />
                                         <p id="alt-help" className="text-muted-foreground text-xs leading-5">
@@ -282,6 +288,7 @@ export default function CreatePost() {
                                             placeholder="Optional"
                                             className="h-11 rounded-xl"
                                             aria-describedby="location-error"
+                                            aria-invalid={!!form.errors.location}
                                         />
                                         <InputError id="location-error" message={form.errors.location} />
                                     </div>
@@ -308,7 +315,11 @@ export default function CreatePost() {
                             <Button asChild variant="ghost" className="min-h-11 cursor-pointer rounded-xl">
                                 <Link href={isImage ? route('feed') : route('pulse')}>Cancel</Link>
                             </Button>
-                            <Button type="submit" disabled={form.processing} className="min-h-11 min-w-28 cursor-pointer rounded-xl px-5">
+                            <Button
+                                type="submit"
+                                disabled={form.processing || (isImage ? !form.data.media || !form.data.alt_text.trim() : !form.data.caption.trim())}
+                                className="min-h-11 min-w-28 cursor-pointer rounded-xl px-5"
+                            >
                                 {form.processing ? (
                                     <>
                                         <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />

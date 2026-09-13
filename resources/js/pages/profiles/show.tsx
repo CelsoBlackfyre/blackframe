@@ -214,8 +214,8 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
             <main id="main-content" className="mx-auto w-full max-w-[1200px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
                 <FlashMessage />
 
-                <section className="border-border bg-card overflow-hidden rounded-[1.75rem] border">
-                    <div className="bg-primary/8 h-24 border-b sm:h-32" aria-hidden="true" />
+                <section className="border-border bg-card overflow-hidden rounded-2xl border">
+                    <div className="bg-accent h-28 border-b sm:h-36" aria-hidden="true" />
                     <div className="px-5 pb-6 sm:px-8 sm:pb-8">
                         <div className="-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
                             <div className="flex min-w-0 items-end gap-4 sm:gap-5">
@@ -226,7 +226,7 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                 />
                                 <div className="min-w-0 pb-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <h1 className="line-clamp-2 text-2xl leading-tight font-semibold tracking-[-0.03em] sm:text-3xl">
+                                        <h1 className="line-clamp-2 text-2xl leading-tight font-semibold tracking-[-0.03em] sm:text-4xl">
                                             {profile.name}
                                         </h1>
                                         {profile.is_private && <LockKeyhole className="text-muted-foreground size-4" aria-label="Private profile" />}

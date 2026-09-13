@@ -44,8 +44,10 @@ services:
             - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/post-media:/var/www/html/storage/app/post-media
             - ${BLACKFRAME_DATA_ROOT:-/srv/blackframe-data}/public-media:/var/www/html/storage/app/public
         networks:
-            - edge
-            - data
+            edge:
+                aliases:
+                    - blackframe-web
+            data:
         healthcheck:
             test:
                 - CMD-SHELL

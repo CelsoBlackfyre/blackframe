@@ -37,7 +37,7 @@ export function MobileNav() {
                             <span className="relative">
                                 <item.icon className="size-5" strokeWidth={active ? 2.2 : 1.8} aria-hidden="true" />
                                 {item.href === '/direct' && page.props.direct.unread_count > 0 && (
-                                    <span className="border-background bg-primary absolute -top-2 -right-2 min-w-4 rounded-full border px-1 text-center text-[0.5625rem] leading-3.5 font-semibold text-white tabular-nums">
+                                    <span className="border-background bg-primary text-primary-foreground absolute -top-2 -right-2 min-w-4 rounded-full border px-1 text-center text-[0.625rem] leading-4 font-semibold tabular-nums">
                                         {page.props.direct.unread_count > 9 ? '9+' : page.props.direct.unread_count}
                                         <span className="sr-only"> unread messages</span>
                                     </span>

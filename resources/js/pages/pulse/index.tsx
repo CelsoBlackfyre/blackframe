@@ -1,40 +1,27 @@
 import { FlashMessage } from '@/components/flash-message';
-import { SocialAvatar } from '@/components/social/avatar';
+import { PageHeading } from '@/components/page-heading';
+import { FeedComposer } from '@/components/social/feed-composer';
+import { FeedTabs } from '@/components/social/feed-tabs';
 import { PulsePostCard } from '@/components/social/pulse-post-card';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, SharedData } from '@/types';
+import { BreadcrumbItem } from '@/types';
 import { PulsePosts } from '@/types/pulse';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { MessageCircleMore, SquarePen } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowUpRight, LibraryBig, MessageCircleMore } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pulse', href: '/pulse' }];
 
 export default function Pulse({ posts }: { posts: PulsePosts }) {
-    const { auth } = usePage<SharedData>().props;
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pulse" />
-            <div className="mx-auto grid w-full max-w-[1000px] grid-cols-1 gap-8 px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10 lg:grid-cols-[minmax(0,640px)_280px] lg:gap-10">
+            <div className="mx-auto grid w-full max-w-[1100px] grid-cols-1 gap-8 px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10 xl:grid-cols-[minmax(0,640px)_280px] xl:gap-8">
                 <main id="main-content" className="min-w-0 space-y-5" tabIndex={-1}>
-                    <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold tracking-tight">Pulse</h1>
-                        <p className="text-muted-foreground text-sm">Short updates and conversations from people you follow.</p>
-                    </div>
-
+                    <PageHeading title="Small thoughts. Big conversations." description="What’s on your mind, and what’s on theirs." />
                     <FlashMessage />
-
-                    <section className="border-border bg-card flex items-center gap-3 rounded-2xl border p-4" aria-label="Create a Pulse post">
-                        <SocialAvatar name={auth.user.name} src={auth.user.avatar_url} />
-                        <p className="text-muted-foreground min-w-0 flex-1 truncate text-sm">What is on your mind, {auth.user.name.split(' ')[0]}?</p>
-                        <Button asChild className="min-h-11 cursor-pointer rounded-xl px-4">
-                            <Link href={route('posts.create')}>
-                                <SquarePen className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                                Create
-                            </Link>
-                        </Button>
-                    </section>
+                    <FeedComposer format="text" />
+                    <FeedTabs active="pulse" />
 
                     {posts.data.length > 0 ? (
                         <div className="space-y-4">
@@ -50,7 +37,7 @@ export default function Pulse({ posts }: { posts: PulsePosts }) {
                                 Share the first short update in your network or follow more people from Home.
                             </p>
                             <Button asChild className="mt-5 min-h-11 rounded-xl">
-                                <Link href={route('posts.create')}>Create</Link>
+                                <Link href={route('posts.create', { type: 'text' })}>Create</Link>
                             </Button>
                         </section>
                     )}
@@ -86,16 +73,24 @@ export default function Pulse({ posts }: { posts: PulsePosts }) {
                     )}
                 </main>
 
-                <aside className="sticky top-24 hidden self-start lg:block" aria-labelledby="pulse-about-heading">
+                <aside className="sticky top-24 hidden self-start xl:block" aria-labelledby="pulse-about-heading">
                     <div className="border-border bg-card rounded-2xl border p-5">
                         <MessageCircleMore className="text-primary size-6" strokeWidth={1.8} aria-hidden="true" />
                         <h2 id="pulse-about-heading" className="mt-4 font-semibold">
-                            One graph, another view
+                            Something worth talking about.
                         </h2>
                         <p className="text-muted-foreground mt-2 text-sm leading-6">
-                            Pulse uses the same identity, follows, likes, and moderation foundation as your visual Home feed.
+                            A book you finished. A film that surprised you. Share a thought and see where the conversation goes.
                         </p>
                     </div>
+                    <Link
+                        href={route('shelf.index')}
+                        className="hover:bg-accent mt-5 flex items-center gap-3 rounded-xl p-3 text-sm font-medium transition-colors"
+                    >
+                        <LibraryBig className="text-primary size-5" aria-hidden="true" />
+                        Find inspiration on your shelf
+                        <ArrowUpRight className="ml-auto size-4 shrink-0" aria-hidden="true" />
+                    </Link>
                 </aside>
             </div>
         </AppLayout>

@@ -17,7 +17,7 @@ Direct is BlackFrame's private continuation of a mutual Shelf Match. It is not a
 - Desktop uses a two-pane workspace: searchable inbox on the left, selected conversation on the right.
 - Mobile shows one focus at a time. Opening a conversation replaces the inbox and exposes a clear Back to Direct action.
 - The composer stays adjacent to the conversation log. The message log is the only scrolling region in the conversation pane.
-- Direct remains in desktop navigation and the compact mobile top bar. The five-item bottom navigation is not expanded.
+- Direct remains in desktop navigation and the five-item mobile bottom bar.
 
 ## States
 
@@ -34,3 +34,7 @@ Direct is BlackFrame's private continuation of a mutual Shelf Match. It is not a
 - The conversation log uses semantic list markup and each timestamp uses a `time` element.
 - Ctrl+Enter and Command+Enter submit the composer; the button remains the primary discoverable action.
 - Message bubbles have sufficient foreground contrast in both themes and do not depend on left/right position alone: the current user's messages expose an accessible label.
+
+## Refresh behavior
+
+Refresh the inbox and active conversation while the page is visible and online. Pause background refresh during navigation and form submissions.

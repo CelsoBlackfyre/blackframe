@@ -30,6 +30,8 @@ class ProfileUpdateRequest extends FormRequest
             'website' => ['nullable', 'url:http,https', 'max:255'],
             'is_private' => ['sometimes', 'boolean'],
 
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+
             'email' => [
                 'required',
                 'string',

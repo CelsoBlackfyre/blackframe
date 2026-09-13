@@ -11,6 +11,7 @@
 /.vscode
 /.zed
 /.agents
+/.commandcode
 /bootstrap/ssr
 /node_modules
 /public/build

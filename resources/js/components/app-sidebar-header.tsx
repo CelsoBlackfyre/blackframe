@@ -1,62 +1,82 @@
+import AppLogo from '@/components/app-logo';
+import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SocialAvatar } from '@/components/social/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
-import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { MessagesSquare, Search, SquarePlus } from 'lucide-react';
-import AppLogo from './app-logo';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
+import { MessagesSquare, Search } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
-export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItem[] }) {
     const { auth, direct } = usePage<SharedData>().props;
-
+    const [query, setQuery] = useState('');
+    function search(event: FormEvent) {
+        event.preventDefault();
+        router.get(route('people.index'), query.trim() ? { query: query.trim() } : {});
+    }
     return (
-        <header className="border-sidebar-border/70 bg-background/92 sticky top-0 z-20 h-[4.5rem] shrink-0 border-b backdrop-blur-lg">
-            <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-2 px-4 sm:px-5 lg:px-7">
+        <header className="border-border bg-background sticky top-0 z-20 h-[4.5rem] shrink-0 border-b">
+            <div className="mx-auto flex h-full w-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+                <SidebarTrigger className="size-11 shrink-0 rounded-xl" />
                 <Link href="/feed" className="flex items-center md:hidden" aria-label="BlackFrame home">
                     <AppLogo compact />
                 </Link>
-
-                <div className="hidden min-w-0 items-center gap-2 md:flex">
-                    <SidebarTrigger className="-ml-1 size-10 cursor-pointer rounded-xl" />
+                <div className="hidden min-w-0 lg:block">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
-
-                <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-                    <Button asChild variant="ghost" className="min-h-11 rounded-xl px-3 sm:px-4">
+                <form onSubmit={search} role="search" className="relative ml-auto hidden w-full max-w-[330px] sm:block">
+                    <label htmlFor="global-search" className="sr-only">
+                        Search people
+                    </label>
+                    <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-4 size-4" aria-hidden="true" />
+                    <Input
+                        id="global-search"
+                        type="search"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        maxLength={80}
+                        placeholder="Find your people"
+                        className="bg-muted/70 border-transparent pr-14 pl-10"
+                    />
+                    <button
+                        type="submit"
+                        aria-label="Search BlackFrame"
+                        className="hover:text-primary absolute inset-y-0 right-1 flex w-11 items-center justify-center rounded-lg"
+                    >
+                        <ArrowSearch />
+                    </button>
+                </form>
+                <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
+                    <Button asChild variant="ghost" size="icon" className="sm:hidden">
                         <Link href={route('people.index')} aria-label="Search BlackFrame">
-                            <Search className="size-5" strokeWidth={1.8} aria-hidden="true" />
-                            <span className="hidden sm:inline">Search</span>
+                            <Search className="size-5!" aria-hidden="true" />
                         </Link>
                     </Button>
-
-                    <Button asChild className="hidden min-h-11 rounded-xl px-4 md:inline-flex">
-                        <Link href={route('posts.create')}>
-                            <SquarePlus className="size-4" strokeWidth={1.9} aria-hidden="true" />
-                            Create
-                        </Link>
-                    </Button>
-
-                    <Button asChild variant="ghost" size="icon" className="relative hidden size-11 rounded-xl md:inline-flex">
-                        <Link href={route('direct.index')} aria-label="Open Direct messages">
-                            <MessagesSquare className="size-5" strokeWidth={1.8} aria-hidden="true" />
+                    <AppearanceToggleDropdown className="hidden sm:block" />
+                    <Button asChild variant="ghost" size="icon" className="relative hidden md:inline-flex">
+                        <Link
+                            href={route('direct.index')}
+                            aria-label={`Open Direct messages${direct.unread_count ? `, ${direct.unread_count} unread` : ''}`}
+                        >
+                            <MessagesSquare className="size-5!" strokeWidth={1.8} aria-hidden="true" />
                             {direct.unread_count > 0 && (
-                                <span className="border-background bg-primary absolute top-1 right-1 min-w-4 rounded-full border px-1 text-center text-[0.5625rem] leading-3.5 font-semibold text-white tabular-nums">
+                                <span className="bg-primary text-primary-foreground absolute top-0 right-0 min-w-4 rounded-full px-1 text-center text-[10px] leading-4 font-semibold">
                                     {direct.unread_count > 9 ? '9+' : direct.unread_count}
-                                    <span className="sr-only"> unread messages</span>
                                 </span>
                             )}
                         </Link>
                     </Button>
-
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
                                 aria-label="Open account menu"
-                                className="hover:bg-muted focus-visible:ring-ring flex size-11 cursor-pointer items-center justify-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                                className="hover:bg-muted flex size-11 items-center justify-center rounded-xl"
                             >
                                 <SocialAvatar name={auth.user.name} src={auth.user.avatar_url} className="size-8" />
                             </button>
@@ -68,5 +88,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 </div>
             </div>
         </header>
+    );
+}
+function ArrowSearch() {
+    return (
+        <span className="text-muted-foreground text-lg" aria-hidden="true">
+            ↵
+        </span>
     );
 }

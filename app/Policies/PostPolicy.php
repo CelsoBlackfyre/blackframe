@@ -18,6 +18,7 @@ class PostPolicy
         $author = $post->user;
 
         return $post->published_at !== null
+            && $post->published_at->lte(now())
             && $author !== null
             && $user->canViewContentFrom($author)
                 ? Response::allow()

@@ -1,106 +1,60 @@
-# BlackFrame Design System
+# BlackFrame design system
 
-This file is the product-wide visual source of truth. Before building a page, check `design-system/blackframe/pages/<page>.md`. A page file may override this document only where it is explicit.
+This is the product-wide visual source of truth. Explicit page overrides in `pages/` extend it. Updated September 2026 using **ui-ux-pro-max** and **design-taste-frontend**.
 
-## Product read
+## Design read
 
-BlackFrame is a culture-aware social web application for sharing life, curating a personal shelf, and meeting people through shared taste. The interface is editorial, content-first, quick to scan, and familiar without copying Instagram or dating-app visual identity.
+An editorial social app for people who connect through books, films, games, and shared taste. The product should feel personal and easy to explore. Existing brand artwork, route names, social privacy rules, and the culture catalog remain the foundation.
 
-Design dials:
+`DESIGN_VARIANCE: 7` · `MOTION_INTENSITY: 3` · `VISUAL_DENSITY: 5`
 
-- Variance: 7/10. Strong editorial hierarchy, cinematic media, and deliberate asymmetry.
-- Motion: 5/10. Purposeful entrance, drag, decision, and scroll choreography with reduced-motion parity.
-- Density: 6/10. Compact navigation with more breathing room around identity, culture, and compatibility content.
+The ui-ux-pro-max community/social search supported expressive typography, rose, and a clear feature hierarchy. Its additional blue accent and mixed font recommendations were rejected in favor of the established BlackFrame identity. The design-taste audit informed simpler copy, real photography, consistent themes, and fewer decorative containers.
 
-## Tokens
+## Foundations
 
-The live token definitions are in `resources/css/app.css`.
+- **Typography:** locally bundled Outfit Variable; system sans fallback. Body 16px with 1.5 line height; secondary app text 14px. Headings 30–40px in the app and responsive display type on the public landing page. User content wraps naturally.
+- **Color:** cool neutral canvas and surfaces. Light primary `hsl(345 61% 45%)`, dark primary `hsl(345 72% 70%)`. The actual token definitions in `resources/css/app.css` are authoritative. Destructive actions use semantic error tokens, with separate foreground colors per theme.
+- **Shape:** 16px cards/dialogs, 12px controls/navigation, circular identity avatars, 6px small cover artwork. These are semantic roles, not interchangeable decoration.
+- **Elevation:** borders and spacing establish hierarchy. Use a light shadow for the movable match card and a scrim for dialogs; avoid shadowed containers elsewhere.
+- **Icons:** Lucide, generally 1.6–1.8px strokes. Never add a second icon family.
+- **Motion:** short feedback transitions and existing match gestures. Honor reduced motion. No decorative hero animations or scroll dependencies.
+- **Layers:** sidebar 10, sticky header 20, mobile bottom navigation 30, Radix overlays and skip link 50. Page content stays in the default stacking context.
 
-| Role             | Light              | Dark               | Notes                                        |
-| ---------------- | ------------------ | ------------------ | -------------------------------------------- |
-| Background       | `hsl(240 7% 97%)`  | `hsl(240 7% 6%)`   | Neutral canvas                               |
-| Card             | `hsl(0 0% 100%)`   | `hsl(240 6% 9%)`   | Posts and raised surfaces                    |
-| Foreground       | `hsl(240 6% 10%)`  | `hsl(240 5% 96%)`  | Primary text                                 |
-| Muted foreground | `hsl(240 4% 40%)`  | `hsl(240 5% 70%)`  | Must retain 4.5:1 contrast for normal text   |
-| Primary          | `hsl(347 77% 50%)` | `hsl(347 80% 62%)` | The only brand accent                        |
-| Border           | `hsl(240 5% 88%)`  | `hsl(240 4% 20%)`  | Structural separation                        |
-| Destructive      | semantic red       | semantic red       | Never use the brand accent as an error state |
+## Shared components
 
-Do not introduce a second decorative accent. Blue is reserved for platform/browser conventions only if needed.
-
-## Typography
-
-- Family: locally bundled Outfit Variable with system sans fallbacks.
-- Base: 16px, line height 1.5 or greater.
-- Type scale: 12, 14, 16, 18, 24, 32, 48, 64.
-- Feed usernames and action counts use 600 weight.
-- User content stays at 400 weight and must wrap naturally.
-- Avoid serif display faces, oversized social-app headings, and letter-spaced micro-labels.
-
-## Shape and elevation
-
-- Cards and media: 16px radius.
-- Buttons and inputs: 12px to 16px radius.
-- Avatars: circular because the shape conveys identity.
-- Use borders before shadows. A post may use one low-contrast tinted shadow in light mode.
-- Modals use a measured scrim and the same radius family.
+- `PageHeading`: consistent title, description, and optional action.
+- `FeedComposer`: explicit Photo/Text entry points, with format preserved in the URL.
+- `FeedTabs`: Home/Pulse navigation and current-page semantics.
+- `PostEngagement`: likes, paginated comments, writing, confirmation before deletion, network/validation feedback.
+- `PasswordInput`: accessible reveal control and password-manager support.
+- `ConnectionStatus` and `AppErrorBoundary`: useful feedback when the connection or rendering fails.
 
 ## Layout
 
-- Mobile first at 375px, then 768px, 1024px, and 1440px.
-- Desktop uses persistent left navigation, a feed up to 640px, and an optional 300px discovery rail.
-- Mobile uses a compact top brand bar and bottom navigation with no more than five destinations.
-- Fixed navigation must reserve content padding, including safe-area insets.
-- Avoid nested scrolling and horizontal page overflow. Horizontal creator suggestions are the intentional exception.
+- Persistent collapsible desktop sidebar; usable navigation drawer on mobile, including Geek Shelf and Matches.
+- Header search opens the real people directory. Account and theme controls stay in predictable places.
+- Home: 640px content column and optional 280px context rail. Photo lightboxes show the uncropped original; carousel controls have explicit labels.
+- Pulse: the same navigation and composer, with a readable text measure and shared comment behavior.
+- Shelf: collection first, flat summary, search/sort/status filters, collapsed editors, and an Add title dialog. Keep in-progress edits visibly marked.
+- Discover: search and relationship filters above people cards; real shared-title context and processing/error feedback.
+- Profiles: clear identity, consistent tabs, and the same visual/text post components.
+- Settings: responsive navigation and a single focused settings surface, with a valid main landmark.
+- Public pages: split hero with original photography, one primary action label per intent, and coherent light/dark presentation. Authentication continues the same visual identity.
 
-## Interaction
+## Accessibility and state
 
-- Primary actions have at least 44px visual height in touch contexts.
-- Adjacent controls maintain at least 8px spacing.
-- Every icon-only control has an accessible name and applicable pressed/expanded state.
-- All state changes show feedback within 100ms. Network actions expose a disabled processing state.
-- Use Inertia `Link` for internal navigation.
-- Preserve feed scroll position for likes and follows.
-- Motion is limited to opacity/transform and honors `prefers-reduced-motion`.
+Use semantic links and buttons; retain browser keyboard order and visible focus. Controls have at least 44px touch targets. All meaningful images need truthful alt text. Reserve media space and lazy-load below the first post. Input errors must be associated with fields. Dialogs have a title, description, close control, and focus containment. Fixed navigation reserves bottom padding and safe areas.
 
-## Content and media
+Theme selection supports system preference, persistence, multiple mounted controls, and other tabs. Storage failures must not crash the UI. Do not access browser globals at module load or during server rendering.
 
-- Media is the strongest visual element on feed and profile screens.
-- Every meaningful image needs specific alt text. Decorative images use empty alt text.
-- Reserve image dimensions to avoid layout shift. Eager-load only the first feed image.
-- Seed/demo imagery must be clearly non-production and replaceable through the media service boundary.
-- Do not build fake screenshots from decorative divs.
+Every feature defines loading, empty, error, success, and disabled behavior. No decorative controls implying future functionality.
 
-## Required states
+## Product boundaries
 
-Every interactive feature must define loading, success, empty, error, and disabled states. Destructive actions require confirmation or a practical undo route.
+Laravel owns authorization, validation, and persistence. Private content requires permission. Drafts and future-dated posts stay hidden. Deleted authors/commenters must not break timelines. Only comment authors and post owners may delete a comment.
 
-Catalog selection uses search-first progressive disclosure: show canonical sourced matches before exposing the moderated missing-title request. Never render the complete catalog as a static select.
+Matching uses structured shared shelf data, never demographics or popularity. Direct opens only after mutual Connect decisions, and only participants can read or write. See page overrides for the scoring and messaging contracts.
 
-People discovery uses one URL-addressable directory with Discover, Followers, and Following views. Search is debounced, case-insensitive, and state-preserving; every card must expose relationship context and an explicit processing state for Follow or Unfollow.
+## Review matrix
 
-Shelf Match uses real shared shelf data rather than inferred demographics or popularity. A candidate must share at least one title. Compatibility must expose collection overlap, shared favorites, status agreement, and rating closeness. Pass and Connect remain explicit buttons even when drag gestures are available; decisions require a practical Undo route, and a match is shown only after mutual Connect decisions.
-
-Direct messaging is available only between mutual Shelf Matches. A mutual pair reuses one participant-only conversation, unread state belongs to each participant, and shared shelf titles provide context without entering the message body. Desktop uses a two-pane inbox; mobile uses a single-focus conversation with a predictable Back to Direct action.
-
-## Accessibility baseline
-
-- WCAG AA text contrast in both themes.
-- Visible 2px focus indicator with at least 3:1 state contrast.
-- Logical heading and keyboard order.
-- No color-only status communication.
-- Sticky navigation must not obscure focused controls.
-- Authentication supports paste, autofill, and password managers.
-
-## Icon system
-
-Use Lucide consistently because it is part of the official Laravel React starter. Use 1.8px strokes for standard controls and 2.2px only for selected navigation state. Do not add another icon family.
-
-## Avoid
-
-- Instagram logos, copied wordmarks, or trademarked brand assets.
-- Generic glass panels, neon glows, and multiple accent colors.
-- Emoji as navigation icons.
-- Dead controls for features that have not shipped.
-- Hover-only actions and layout-shifting hover transforms.
-- Animation without a state, hierarchy, or feedback purpose.
+375px, 768px, 1024px, 1440px; light/dark; keyboard-only navigation; reduced motion; unavailable media; loading and empty states. Recheck affected flows after changing a shared component.

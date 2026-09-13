@@ -49,7 +49,7 @@ function EmptyInbox() {
             <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
                 <Inbox className="size-6" strokeWidth={1.8} aria-hidden="true" />
             </span>
-            <h2 className="mt-5 text-lg font-semibold">Your Direct inbox is quiet</h2>
+            <h2 className="mt-5 text-lg font-semibold">Your next conversation starts here.</h2>
             <p className="text-muted-foreground mt-2 max-w-xs text-sm leading-6">
                 Private conversations unlock when you and another person both choose Connect in Shelf Match.
             </p>
@@ -67,9 +67,7 @@ function EmptySelection() {
                 <MessageSquareText className="size-7" strokeWidth={1.7} aria-hidden="true" />
             </span>
             <h2 className="mt-5 text-xl font-semibold">Choose a conversation</h2>
-            <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-6">
-                Direct is where mutual Shelf Matches can move from shared taste to a private conversation.
-            </p>
+            <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-6">Pick someone from your inbox and carry on where you left off.</p>
         </div>
     );
 }
@@ -153,7 +151,7 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
                 <div className="flex items-center justify-between gap-3">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-[-0.025em]">Direct</h1>
-                        <p className="text-muted-foreground mt-1 text-xs">Private conversations from Shelf Match</p>
+                        <p className="text-muted-foreground mt-1 text-xs">A shared favorite is just the beginning.</p>
                     </div>
                     <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
                         <MessageSquareText className="size-5" strokeWidth={1.8} aria-hidden="true" />
@@ -377,15 +375,24 @@ export default function DirectIndex({ conversations, active }: DirectPageProps) 
     const activeId = active?.id;
 
     useEffect(() => {
-        if (!activeId) return;
-
+        let navigating = false;
+        const stopStart = router.on('start', () => {
+            navigating = true;
+        });
+        const stopFinish = router.on('finish', () => {
+            navigating = false;
+        });
         const interval = window.setInterval(() => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' && navigator.onLine && !navigating) {
                 router.reload({ only: ['conversations', 'active', 'direct'] });
             }
         }, 10_000);
 
-        return () => window.clearInterval(interval);
+        return () => {
+            window.clearInterval(interval);
+            stopStart();
+            stopFinish();
+        };
     }, [activeId]);
 
     return (
@@ -395,7 +402,7 @@ export default function DirectIndex({ conversations, active }: DirectPageProps) 
             </Head>
 
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-3 py-4 pb-24 sm:px-5 md:pb-5" tabIndex={-1}>
-                <div className="border-border bg-card grid h-[calc(100dvh-10.5rem)] min-h-[34rem] min-w-0 overflow-hidden rounded-[1.5rem] border shadow-sm md:h-[calc(100dvh-7rem)] lg:grid-cols-[22rem_minmax(0,1fr)]">
+                <div className="border-border bg-card grid h-[calc(100dvh-10.5rem)] min-h-[24rem] min-w-0 overflow-hidden rounded-2xl border md:h-[calc(100dvh-7rem)] lg:grid-cols-[20rem_minmax(0,1fr)]">
                     <InboxPane conversations={conversations} activeId={active?.id} />
                     <ConversationPane active={active} />
                 </div>

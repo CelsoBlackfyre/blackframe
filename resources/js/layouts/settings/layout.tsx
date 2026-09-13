@@ -1,62 +1,41 @@
-import Heading from '@/components/heading';
+import { PageHeading } from '@/components/page-heading';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { LockKeyhole, Palette, UserRound } from 'lucide-react';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        url: '/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        url: '/settings/password',
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        url: '/settings/appearance',
-        icon: null,
-    },
+const sections = [
+    { title: 'Profile', url: '/settings/profile', icon: UserRound },
+    { title: 'Password', url: '/settings/password', icon: LockKeyhole },
+    { title: 'Appearance', url: '/settings/appearance', icon: Palette },
 ];
-
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-    const currentPath = window.location.pathname;
-
+    const currentPath = usePage().url.split('?')[0];
     return (
-        <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
-
-            <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item) => (
+        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1100px] px-4 py-6 pb-28 sm:px-6 sm:py-8 md:pb-10">
+            <PageHeading title="Make yourself at home." description="Your profile, your preferences, your BlackFrame." />
+            <div className="mt-8 grid gap-8 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-12">
+                <aside>
+                    <nav aria-label="Settings" className="flex flex-wrap gap-2 lg:flex-col">
+                        {sections.map((section) => (
                             <Button
-                                key={item.url}
-                                size="sm"
-                                variant="ghost"
+                                key={section.url}
                                 asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.url,
-                                })}
+                                variant="ghost"
+                                className={cn('justify-start gap-3 lg:w-full', currentPath === section.url && 'bg-accent text-accent-foreground')}
                             >
-                                <Link href={item.url} prefetch>
-                                    {item.title}
+                                <Link href={section.url} prefetch aria-current={currentPath === section.url ? 'page' : undefined}>
+                                    <section.icon aria-hidden="true" />
+                                    {section.title}
                                 </Link>
                             </Button>
                         ))}
                     </nav>
                 </aside>
-
-                <Separator className="my-6 md:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                <div className="border-border bg-card min-w-0 rounded-2xl border p-5 sm:p-8">
+                    <section className="max-w-xl space-y-10">{children}</section>
                 </div>
             </div>
-        </div>
+        </main>
     );
 }

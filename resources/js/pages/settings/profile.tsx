@@ -1,11 +1,13 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Camera } from 'lucide-react';
+import { ChangeEvent, FormEventHandler, useState } from 'react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -22,20 +24,59 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
+    const [preview, setPreview] = useState<string | null>(null);
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<{
+        name: string;
+        username: string;
+        email: string;
+        bio: string;
+        website: string;
+        is_private: boolean;
+        avatar: File | null;
+    }>({
         name: auth.user.name,
         username: auth.user.username,
         email: auth.user.email,
         bio: auth.user.bio ?? '',
         website: auth.user.website ?? '',
         is_private: auth.user.is_private,
+        avatar: null,
     });
+
+    const initials = auth.user.name
+        .split(' ')
+        .map((part) => part.charAt(0))
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
+    const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+
+        if (preview) {
+            URL.revokeObjectURL(preview);
+        }
+
+        setPreview(file ? URL.createObjectURL(file) : null);
+        setData('avatar', file);
+        e.target.value = '';
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        patch(route('profile.update'), {
+            onSuccess: () => {
+                if (preview) {
+                    URL.revokeObjectURL(preview);
+                }
+
+                setPreview(null);
+                setData('avatar', null);
+            },
+        });
     };
 
     return (
@@ -47,6 +88,43 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
+                        <div className="grid gap-2">
+                            <Label>Profile photo</Label>
+
+                            <div className="flex items-center gap-4">
+                                <Avatar className="border-border h-20 w-20 border">
+                                    <AvatarImage src={preview ?? auth.user.avatar_url ?? undefined} alt={`${auth.user.name}'s profile photo`} />
+                                    <AvatarFallback>{initials}</AvatarFallback>
+                                </Avatar>
+
+                                <div className="grid gap-2">
+                                    <div>
+                                        <input
+                                            id="avatar"
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            className="sr-only"
+                                            onChange={handleAvatarChange}
+                                            aria-describedby="avatar-help"
+                                        />
+                                        <Label
+                                            htmlFor="avatar"
+                                            className="border-input hover:bg-accent hover:text-accent-foreground inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-5 text-sm font-medium"
+                                        >
+                                            <Camera className="h-4 w-4" aria-hidden="true" />
+                                            {preview || auth.user.avatar_url ? 'Change photo' : 'Upload photo'}
+                                        </Label>
+                                    </div>
+
+                                    <p id="avatar-help" className="text-muted-foreground text-xs">
+                                        JPG, PNG, or WebP. Up to 2 MB.
+                                    </p>
+
+                                    <InputError message={errors.avatar} />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
 

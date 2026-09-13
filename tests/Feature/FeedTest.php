@@ -68,6 +68,34 @@ class FeedTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('posts.data', 0));
     }
 
+    public function test_scheduled_posts_stay_hidden_across_timelines_profiles_and_likes(): void
+    {
+        $viewer = User::factory()->create();
+        $scheduled = Post::factory()->for($viewer)->create(['published_at' => now()->addHour()]);
+        Post::factory()->for($viewer)->create(['type' => 'text', 'published_at' => now()->addHour()]);
+
+        $this->actingAs($viewer)->get('/feed')->assertInertia(fn (Assert $page) => $page->has('posts.data', 0));
+        $this->get('/pulse')->assertInertia(fn (Assert $page) => $page->has('posts.data', 0));
+        $this->get(route('profiles.show', $viewer->username))->assertInertia(fn (Assert $page) => $page
+            ->has('posts.data', 0)->where('profile.counts.posts', 0));
+        $this->post(route('posts.likes.store', $scheduled))->assertNotFound();
+    }
+
+    public function test_deleted_authors_and_commenters_do_not_break_the_feed(): void
+    {
+        $viewer = User::factory()->create();
+        $deleted = User::factory()->create();
+        $viewer->following()->attach($deleted);
+        Post::factory()->for($deleted)->create(['published_at' => now()]);
+        $own = Post::factory()->for($viewer)->create(['published_at' => now()]);
+        $own->comments()->create(['user_id' => $deleted->id, 'body' => 'Previous comment']);
+        $deleted->delete();
+
+        $this->actingAs($viewer)->get('/feed')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('posts.data', 1)->where('posts.data.0.id', $own->id)
+            ->where('posts.data.0.comments_count', 0)->has('posts.data.0.comments', 0));
+    }
+
     public function test_home_includes_activation_and_current_culture_context(): void
     {
         $viewer = User::factory()->create();

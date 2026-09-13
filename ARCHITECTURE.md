@@ -114,7 +114,7 @@ Authenticated Create request with optional subject
 - `Post`: author, caption, location, type, publication time, soft deletion.
 - `Media`: polymorphic attachment with disk/path, order, dimensions, alt text, and future variants.
 - `Like`: polymorphic engagement with a unique user/target constraint.
-- `Comment`: threaded post comments with soft deletion.
+- `Comment`: post comments with soft deletion and optional parent IDs. The current UI uses paginated flat threads; creation and author/post-owner deletion are policy-protected.
 - `Subject`: typed catalog entity with optional parent hierarchy, external-source provenance, importer audit field, and extensible JSON metadata.
 - `SubjectSuggestion`: normalized, globally deduplicated missing-title request awaiting catalog review.
 - `UserSubject`: viewer-owned Geek Shelf entry with status, progress, optional rating, and favorite state.
@@ -163,7 +163,7 @@ Development stores uploaded post media on a private local disk and streams it th
 
 ## Roadmap alignment
 
-1. Complete the core social loop with post management, carousels, comments, and richer profile grids.
+1. Extend the core social loop with post management, multi-image authoring, comment replies/editing, and richer profile grids. Paginated comment reading, creation, and author/post-owner deletion are implemented.
 2. Expand the shipped subject graph and shelf matching with spoiler controls, subject detail pages, structured reviews, fandom hubs, and compatibility preferences.
 3. Expand discovery with hashtags and subject-aware recommendations, then add notifications and Reverb events.
 4. Add stories and queued video/reel processing.

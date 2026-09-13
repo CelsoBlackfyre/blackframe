@@ -17,9 +17,9 @@ class FeedService
                 'user:id,name,username,avatar_path',
                 'media',
                 'subjects:id,name,slug,type',
-                'comments' => fn ($query) => $query->with('user:id,name,username')->limit(2),
+                'comments' => fn ($query) => $query->whereHas('user')->with('user:id,name,username')->reorder('id', 'desc')->limit(2),
             ])
-            ->withCount(['likes', 'comments'])
+            ->withCount(['likes', 'comments' => fn ($query) => $query->whereHas('user')])
             ->withExists([
                 'likes as liked_by_viewer' => fn ($query) => $query->where('user_id', $viewer->id),
             ])
@@ -33,7 +33,7 @@ class FeedService
         return $this->timelineFor($viewer)
             ->where('type', 'text')
             ->with(['user:id,name,username,avatar_path', 'subjects:id,name,slug,type'])
-            ->withCount(['likes', 'comments'])
+            ->withCount(['likes', 'comments' => fn ($query) => $query->whereHas('user')])
             ->withExists([
                 'likes as liked_by_viewer' => fn ($query) => $query->where('user_id', $viewer->id),
             ])
@@ -44,10 +44,11 @@ class FeedService
 
     private function timelineFor(User $viewer): Builder
     {
-        $visibleUserIds = $viewer->following()->pluck('users.id')->push($viewer->id);
-
         return Post::query()
-            ->whereIn('user_id', $visibleUserIds)
-            ->whereNotNull('published_at');
+            ->where(fn (Builder $query) => $query
+                ->where('user_id', $viewer->id)
+                ->orWhereIn('user_id', $viewer->following()->select('users.id')))
+            ->whereHas('user')
+            ->where('published_at', '<=', now());
     }
 }

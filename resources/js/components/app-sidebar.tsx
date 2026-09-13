@@ -10,12 +10,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { HeartHandshake, House, LibraryBig, MessageCircleMore, MessagesSquare, SquarePlus, UserRound, UsersRound } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
+    const cleanup = useMobileNavigation();
     const { auth, direct } = usePage<SharedData>().props;
     const mainNavItems: NavItem[] = [
         { title: 'Home', url: '/feed', icon: House },
@@ -30,12 +32,12 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+        <Sidebar collapsible="icon" variant="sidebar">
+            <SidebarHeader className="px-4 py-3 group-data-[collapsible=icon]:px-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/feed" prefetch>
+                            <Link href="/feed" prefetch onClick={cleanup}>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -43,9 +45,10 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="gap-3 px-3 group-data-[collapsible=icon]:px-2">
                 <NavMain items={mainNavItems} label="Explore" />
-                <SidebarGroup className="px-4 py-2">
+                <NavMain items={cultureNavItems} label="Your collection" />
+                <SidebarGroup className="px-2 py-3">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton
@@ -54,7 +57,7 @@ export function AppSidebar() {
                                 tooltip="Create"
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                             >
-                                <Link href={route('posts.create')} prefetch>
+                                <Link href={route('posts.create')} prefetch onClick={cleanup}>
                                     <SquarePlus />
                                     <span>Create</span>
                                 </Link>
@@ -62,10 +65,9 @@ export function AppSidebar() {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
-                <NavMain items={cultureNavItems} label="Your culture" />
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="border-border border-t px-4 py-4 group-data-[collapsible=icon]:px-2">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

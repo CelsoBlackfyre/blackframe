@@ -1,5 +1,7 @@
 # BlackFrame Project Context
 
+> September 4, 2026 update: see [OVERHAUL.md](OVERHAUL.md) for the current UI, working comments, test isolation, and validation (98 tests / 929 assertions). It supersedes older interface and comments-roadmap descriptions below.
+
 > A self-contained technical and product handoff for developers and AI assistants working on this repository.
 
 ## Document purpose
@@ -113,7 +115,7 @@ All layers should reuse the same BlackFrame users, follows, content records, per
 
 ### Partially implemented or schema-ready
 
-- Comments exist in the database and feed previews, but users cannot create, edit, delete, or reply to comments through the current UI.
+- Users can read paginated comments, create comments, and delete their own comments or comments on their posts. Comment editing and replies remain future work.
 - Media records support multiple ordered attachments and JSON variants, but the current feed card displays only the first media item.
 - Email-verification routes and screens exist from the starter kit, but the `User` model does not currently implement `MustVerifyEmail`; verification is therefore not enforced.
 - The post type field currently supports `image` and `text`; carousel, video, poll, and link behavior remain future work.
@@ -554,7 +556,7 @@ The starter includes email verification notice, signed verification, resend noti
 
 ### Social components
 
-- `PostCard`: author metadata, first media attachment, subject badges, like state, counts, caption, and comment previews.
+- `PostCard`: author metadata, media carousel and full-image viewer, subject badges, likes, expandable captions, and comment previews with the shared comment dialog.
 - `PulsePostCard`: short text content, subject badges, and the same like and comment-count graph presented in a conversation-first layout.
 - `CreatorSuggestions`: horizontally scrollable cards on compact screens and a sticky discovery rail on wide screens.
 - `PersonCard`: avatar, identity, mutual/follows-you context, follower/post counts, and an explicit Follow or Unfollow action.
@@ -562,8 +564,8 @@ The starter includes email verification notice, signed verification, resend noti
 - `ShelfEntryCard`: owned shelf state with context-aware status, rating, progress, favorite, save, and removal controls.
 - `SubjectBadge`: shared static topic marker for composer previews and timelines.
 - `SubjectPicker`: reusable modal search used by Shelf and Create, with debouncing, category filtering, source attribution, loading/error/empty states, and a progressively disclosed review request.
-- `MobileNav`: fixed Home, Pulse, Create, Shelf, and Profile navigation with safe-area padding; People remains directly accessible from the compact top bar without exceeding the five-item limit.
-- `AppSidebarHeader`: compact mobile access to both People and Match without expanding the fixed five-item bottom navigation.
+- `MobileNav`: fixed Home, Pulse, Create, Discover, and Direct navigation with safe-area padding. Matches, Geek Shelf, and Profile remain accessible in the navigation drawer.
+- `AppSidebarHeader`: mobile drawer toggle, people search, and account menu; desktop also includes breadcrumbs, theme controls, and Direct unread state.
 
 ### Media loading behavior
 
@@ -743,8 +745,8 @@ php artisan test
 Last verified result:
 
 ```text
-87 tests passed
-823 assertions
+98 tests passed
+929 assertions
 ```
 
 ### PHP formatting check
@@ -885,7 +887,7 @@ A complete feature should include the relevant items from this list:
 5. Completed: add authenticated member profile pages and responsive profile media grids.
 6. Completed: add follow, request, approval, cancellation, and unfollow controls on profiles and People.
 7. Completed: enforce private-account visibility for profiles, matching context, interactions, and uploaded post media.
-8. Add comment creation, deletion, and replies with validation and policies.
+8. Add comment editing and replies on top of the validated creation/deletion workflow.
 
 ### Phase 2: Expand geek identity and fandoms
 
@@ -976,4 +978,4 @@ Before describing a requested change as complete, the assistant should verify al
 
 ## Concise AI context summary
 
-BlackFrame is a Laravel 12 and React 19 geek-culture social application using Inertia 2, TypeScript, Tailwind CSS 4, Radix UI primitives, Lucide icons, locally bundled Outfit Variable typography, focused GSAP motion, PostgreSQL 18.6, and PHPUnit. Docker Compose provides persistent `frame` development data and an isolated `frame_testing` database; CI runs the same PostgreSQL version. Home, Pulse, People, member profiles, Geek Shelf, Shelf Match, and Direct share users, approved follows, posts, subjects, likes, comments, authorization, and one structured culture graph. Private accounts use recipient-approved follow requests, and post media stays outside the web root behind policy authorization. People search supports Discover, Followers, and Following views with relationship context and pagination. Create and Geek Shelf use the same search-first SubjectPicker, which combines local subjects with cached Open Library, TVmaze, Jikan, Wikidata, and optional TMDB matches. Shelf Match requires a real shared title, explains compatibility through overlap, favorites, status, and rating closeness, keeps decisions private, supports practical Undo, and shows a match only after mutual Connect decisions. Mutual matches can open one participant-only Direct thread with shared-title context, searchable recent conversations, validated text messages, and per-user unread state. Signed provider records are imported only after selection, deduplicated by provenance and exact type/title, and arbitrary missing items enter a rate-limited review queue. Laravel remains the server and routing authority; React is delivered through Inertia rather than a separate API. The next geek milestone is spoiler-aware subject content followed by subject pages, structured reviews, and an administrative catalog-review screen; the core social loop still needs carousels, post management, and comment authoring. All work must preserve the BlackFrame design system, accessibility requirements, database invariants, typed Inertia props, and test coverage.
+BlackFrame is a Laravel 12 and React 19 geek-culture social application using Inertia 2, TypeScript, Tailwind CSS 4, Radix UI primitives, Lucide icons, locally bundled Outfit Variable typography, focused GSAP motion, PostgreSQL 18.6, and PHPUnit. Docker Compose provides persistent `frame` development data and an isolated `frame_testing` database; CI runs the same PostgreSQL version. Home, Pulse, People, member profiles, Geek Shelf, Shelf Match, and Direct share users, approved follows, posts, subjects, likes, comments, authorization, and one structured culture graph. Private accounts use recipient-approved follow requests, and post media stays outside the web root behind policy authorization. People search supports Discover, Followers, and Following views with relationship context and pagination. Create and Geek Shelf use the same search-first SubjectPicker, which combines local subjects with cached Open Library, TVmaze, Jikan, Wikidata, and optional TMDB matches. Shelf Match requires a real shared title, explains compatibility through overlap, favorites, status, and rating closeness, keeps decisions private, supports practical Undo, and shows a match only after mutual Connect decisions. Mutual matches can open one participant-only Direct thread with shared-title context, searchable recent conversations, validated text messages, and per-user unread state. Signed provider records are imported only after selection, deduplicated by provenance and exact type/title, and arbitrary missing items enter a rate-limited review queue. Laravel remains the server and routing authority; React is delivered through Inertia rather than a separate API. The next geek milestone is spoiler-aware subject content followed by subject pages, structured reviews, and an administrative catalog-review screen; the core social loop still needs multi-image authoring, post management, and comment replies. All work must preserve the BlackFrame design system, accessibility requirements, database invariants, typed Inertia props, and test coverage.

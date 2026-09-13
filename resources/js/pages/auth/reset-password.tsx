@@ -1,3 +1,4 @@
+import { PasswordInput } from '@/components/ui/password-input';
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -46,6 +47,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
+                            aria-invalid={!!errors.email}
+                            aria-describedby="email-error"
                             type="email"
                             name="email"
                             autoComplete="email"
@@ -54,14 +57,15 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                             readOnly
                             onChange={(e) => setData('email', e.target.value)}
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        <InputError id="email-error" message={errors.email} className="mt-2" />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
+                            aria-invalid={!!errors.password}
+                            aria-describedby="password-error"
                             name="password"
                             autoComplete="new-password"
                             value={data.password}
@@ -70,14 +74,15 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                             onChange={(e) => setData('password', e.target.value)}
                             placeholder="Password"
                         />
-                        <InputError message={errors.password} />
+                        <InputError id="password-error" message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">Confirm password</Label>
-                        <Input
+                        <PasswordInput
                             id="password_confirmation"
-                            type="password"
+                            aria-invalid={!!errors.password_confirmation}
+                            aria-describedby="password_confirmation-error"
                             name="password_confirmation"
                             autoComplete="new-password"
                             value={data.password_confirmation}
@@ -85,7 +90,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             placeholder="Confirm password"
                         />
-                        <InputError message={errors.password_confirmation} className="mt-2" />
+                        <InputError id="password_confirmation-error" message={errors.password_confirmation} className="mt-2" />
                     </div>
 
                     <Button type="submit" className="mt-4 w-full" disabled={processing}>

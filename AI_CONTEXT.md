@@ -1,5 +1,7 @@
 # BlackFrame — AI Development Context
 
+> September 2026: [OVERHAUL.md](OVERHAUL.md) records the current design, comment workflow, database test guard, and checks. [DESIGN.md](DESIGN.md) and the design-system master are authoritative for UI implementation.
+
 > Self-contained project context for ChatGPT or another coding assistant. Attach this file to a new conversation before requesting changes.
 
 ## Instructions for the receiving AI
@@ -31,7 +33,7 @@ When implementing a feature:
 | Default branch        | `main`                                             |
 | License               | MIT                                                |
 | Local development URL | `http://localhost:8000` or `http://127.0.0.1:8000` |
-| Current verification  | 87 tests, 823 assertions                           |
+| Current verification  | 98 tests, 929 assertions                           |
 
 BlackFrame began from an Instagram-clone roadmap but has evolved into an original product. It combines visual sharing, short-form conversation, structured geek-culture identity, transparent people matching, and private conversations.
 
@@ -119,7 +121,7 @@ Core principles:
 - Polymorphic likes are implemented with an idempotent database uniqueness constraint.
 - Follow and unfollow actions work in creator suggestions and People discovery.
 - Post, Pulse, match, Direct, and discovery identities link to member profiles.
-- Thread-ready comments exist in the database with optional parent comments and soft deletion, but comment authoring UI is not implemented.
+- Comments have authenticated, paginated threads with creation, validation, and author/post-owner deletion in Home, Pulse, and profiles. The schema supports parent comments; reply and edit interfaces remain future work.
 - Like/follow interactions are rate-limited to 60 operations per minute per user.
 
 ### Federated subject catalog
@@ -491,8 +493,8 @@ Password: password
 
 Last verified locally:
 
-- **87 tests passed**
-- **823 assertions passed**
+- **98 tests passed**
+- **929 assertions passed**
 - TypeScript check passed
 - ESLint passed without errors or warnings
 - Prettier check passed

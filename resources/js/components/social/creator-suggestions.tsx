@@ -14,11 +14,12 @@ function FollowButton({ creatorId }: { creatorId: number }) {
             onClick={() =>
                 form.post(route('people.follow.store', creatorId), {
                     preserveScroll: true,
-                    only: ['posts', 'suggestions', 'flash'],
+                    only: ['posts', 'suggestions', 'activation', 'flash'],
                 })
             }
             disabled={form.processing}
-            className="h-10 min-w-20 cursor-pointer rounded-xl px-4"
+            variant="outline"
+            className="h-11 min-w-20 cursor-pointer rounded-xl px-3"
         >
             {form.processing ? (
                 <>
@@ -74,11 +75,11 @@ export function CreatorSuggestions({ suggestions, compact = false }: { suggestio
 
     return (
         <section aria-labelledby="suggestions-heading">
-            <div className="border-border bg-card rounded-2xl border p-5">
+            <div className="py-1">
                 <h2 id="suggestions-heading" className="text-base font-semibold">
                     People to discover
                 </h2>
-                <p className="text-muted-foreground mt-1 text-sm">Bring more perspectives into your feed.</p>
+                <p className="text-muted-foreground mt-1 text-sm">A little common ground goes a long way.</p>
                 <div className="mt-5 space-y-4">
                     {suggestions.map((creator) => (
                         <div key={creator.id} className="flex items-center gap-3">

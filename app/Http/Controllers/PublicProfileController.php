@@ -28,12 +28,12 @@ class PublicProfileController extends Controller
         $user->loadCount([
             'followers',
             'following',
-            'posts as posts_count' => fn (Builder $query) => $query->whereNotNull('published_at'),
+            'posts as posts_count' => fn (Builder $query) => $query->where('published_at', '<=', now()),
             'posts as visual_posts_count' => fn (Builder $query) => $query
-                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
                 ->whereIn('type', ['image', 'carousel']),
             'posts as pulse_posts_count' => fn (Builder $query) => $query
-                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
                 ->where('type', 'text'),
             'shelfEntries as shelf_count',
         ]);
@@ -84,7 +84,7 @@ class PublicProfileController extends Controller
             ->whereIn('type', ['image', 'carousel'])
             ->with([
                 'media',
-                'comments' => fn ($query) => $query->with('user:id,name,username')->limit(2),
+                'comments' => fn ($query) => $query->whereHas('user')->with('user:id,name,username')->reorder('id', 'desc')->limit(2),
             ])
             ->paginate(6)
             ->withQueryString()
@@ -113,9 +113,9 @@ class PublicProfileController extends Controller
     {
         return Post::query()
             ->whereBelongsTo($profile)
-            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->with(['user:id,name,username,avatar_path', 'subjects:id,name,slug,type'])
-            ->withCount(['likes', 'comments'])
+            ->withCount(['likes', 'comments' => fn ($query) => $query->whereHas('user')])
             ->withExists([
                 'likes as liked_by_viewer' => fn ($query) => $query->where('user_id', $viewer->id),
             ])

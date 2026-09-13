@@ -7,18 +7,29 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, variant = 'header' }: AppShellProps) {
-    const [isOpen, setIsOpen] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('sidebar') !== 'false' : true));
+    const [isOpen, setIsOpen] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        try {
+            return localStorage.getItem('sidebar') !== 'false';
+        } catch {
+            return true;
+        }
+    });
 
     const handleSidebarChange = (open: boolean) => {
         setIsOpen(open);
 
         if (typeof window !== 'undefined') {
-            localStorage.setItem('sidebar', String(open));
+            try {
+                localStorage.setItem('sidebar', String(open));
+            } catch {
+                /* Keep the selection in memory when storage is unavailable. */
+            }
         }
     };
 
     if (variant === 'header') {
-        return <div className="flex min-h-screen w-full flex-col">{children}</div>;
+        return <div className="flex min-h-dvh w-full flex-col">{children}</div>;
     }
 
     return (

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img alt="87 tests passing" src="https://img.shields.io/badge/tests-87%20passing-2E7D32">
+  <img alt="98 tests passing" src="https://img.shields.io/badge/tests-98%20passing-2E7D32">
   <img alt="Laravel 12" src="https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white">
@@ -31,7 +31,7 @@ BlackFrame began as an Instagram-inspired Laravel project and evolved into its o
 | **Shelf Match** | Finds people through shared titles and explains compatibility through overlap, favorites, statuses, and ratings. |
 | **Direct**      | Gives mutual Shelf Matches one private conversation with unread state and shared-title context.                  |
 
-Additional foundations include authentication, password reset, private-profile follow approval, protected image uploads, likes, follows, comments schema, rate limiting, responsive navigation, light and dark themes, and accessibility-focused interaction states.
+Additional foundations include authentication, password reset, private-profile follow approval, protected image uploads, likes, follows, paginated comment threads with authoring and deletion, rate limiting, responsive navigation, light and dark themes, and accessibility-focused interaction states.
 
 ## Product principles
 
@@ -152,14 +152,14 @@ Do not run `php artisan migrate:fresh --seed` against data you need to keep; it 
 
 ```powershell
 php artisan test
-npx tsc --noEmit
-npx eslint .
-npm run format:check
+npm run check
 php vendor/bin/pint --test
-npm run build
+npm run build:ssr
 ```
 
-The current verified baseline is **87 tests with 823 assertions**.
+The current verified baseline is **98 tests with 929 assertions** (September 4, 2026).
+
+PHPUnit forces the testing environment and `frame_testing` database even when Docker exports local application settings. `tests/TestCase.php` checks the resolved database before migration or truncation and refuses any other target. Clear cached configuration before testing if this guard reports a mismatch.
 
 ## Security posture
 
@@ -195,6 +195,7 @@ design-system/         Product-wide and page-specific interface rules
 
 ## Documentation
 
+- [September 2026 overhaul](OVERHAUL.md) — audit findings, implemented changes, checks, and next priorities
 - [AI context](AI_CONTEXT.md) — self-contained, ChatGPT-ready product and development context
 - [Project context](PROJECT_CONTEXT.md) — complete product and technical handoff
 - [Architecture](ARCHITECTURE.md) — backend boundaries, schema, security, and roadmap
@@ -205,7 +206,7 @@ design-system/         Product-wide and page-specific interface rules
 
 ## Current boundaries
 
-BlackFrame is an active application foundation, not a production-ready social network. Direct currently refreshes open conversations every ten seconds instead of using WebSockets. Comment authoring, subject pages, carousels, notifications, blocking, reporting, media transformation, and direct application media storage in OCI Object Storage remain future work.
+BlackFrame is an active application foundation, not a production-ready social network. Direct refreshes its inbox and active conversation every ten seconds while visible and online; it does not use WebSockets. Existing carousel posts can be viewed, while the composer currently uploads one image per post. Subject pages, notifications, blocking, reporting, media transformation, and application media storage in OCI Object Storage remain future work. A production performance audit and deployment validation are separate release steps.
 
 ## Author
 

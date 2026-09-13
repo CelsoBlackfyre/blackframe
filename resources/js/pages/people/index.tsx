@@ -1,4 +1,5 @@
 import { FlashMessage } from '@/components/flash-message';
+import { PageHeading } from '@/components/page-heading';
 import { PersonCard } from '@/components/social/person-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -138,27 +139,22 @@ export default function People({ people, follow_requests: followRequests, filter
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Discover people" />
             <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
-                <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-2xl">
-                        <div className="bg-primary/10 text-primary mb-4 flex size-11 items-center justify-center rounded-2xl">
-                            <UsersRound className="size-6" strokeWidth={1.8} aria-hidden="true" />
-                        </div>
-                        <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Discover your people</h1>
-                        <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-6 sm:text-base">
-                            Find people through shared stories, worlds, games, and the culture already on your Geek Shelf.
-                        </p>
-                    </div>
-                    <dl className="border-border bg-card flex shrink-0 gap-5 rounded-2xl border px-5 py-4">
-                        <div>
-                            <dd className="text-lg font-semibold tabular-nums">{network.followers_count}</dd>
-                            <dt className="text-muted-foreground text-xs">Followers</dt>
-                        </div>
-                        <div className="border-border border-l pl-5">
-                            <dd className="text-lg font-semibold tabular-nums">{network.following_count}</dd>
-                            <dt className="text-muted-foreground text-xs">Following</dt>
-                        </div>
-                    </dl>
-                </header>
+                <PageHeading
+                    title="Find your kind of people."
+                    description="Familiar favorites. Different perspectives. A little common ground."
+                    action={
+                        <dl className="flex shrink-0 gap-6">
+                            <div>
+                                <dd className="text-2xl font-semibold tabular-nums">{network.followers_count}</dd>
+                                <dt className="text-muted-foreground text-sm">Followers</dt>
+                            </div>
+                            <div className="border-border border-l pl-6">
+                                <dd className="text-2xl font-semibold tabular-nums">{network.following_count}</dd>
+                                <dt className="text-muted-foreground text-sm">Following</dt>
+                            </div>
+                        </dl>
+                    }
+                />
 
                 <div className="mt-6">
                     <FlashMessage />

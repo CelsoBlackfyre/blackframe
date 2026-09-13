@@ -1,0 +1,18 @@
+services:
+    caddy:
+        networks:
+            - edge
+            - dokploy-network
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=dokploy-network
+            - traefik.http.routers.blackframe.entrypoints=websecure
+            - traefik.http.routers.blackframe.rule=Host(`${BLACKFRAME_DOMAIN:?Set BLACKFRAME_DOMAIN in the production environment file}`) || Host(`${BLACKFRAME_SECONDARY_DOMAIN:?Set BLACKFRAME_SECONDARY_DOMAIN in the production environment file}`)
+            - traefik.http.routers.blackframe.priority=100
+            - traefik.http.routers.blackframe.tls=true
+            - traefik.http.routers.blackframe.tls.certresolver=letsencrypt
+            - traefik.http.services.blackframe.loadbalancer.server.port=80
+
+networks:
+    dokploy-network:
+        external: true

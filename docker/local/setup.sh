@@ -21,6 +21,7 @@ if ! grep -Eq '^APP_KEY=base64:.+' .env; then
     php artisan key:generate --force --no-interaction --no-ansi
 fi
 
-php artisan optimize:clear --no-ansi
 php artisan migrate --force --no-interaction --no-ansi
+php artisan db:seed --force --no-interaction --no-ansi
+php artisan optimize:clear --no-ansi
 php artisan storage:link --force --no-interaction --no-ansi

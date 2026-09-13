@@ -1,4 +1,5 @@
 import { FlashMessage } from '@/components/flash-message';
+import { PageHeading } from '@/components/page-heading';
 import { SocialAvatar } from '@/components/social/avatar';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -124,7 +125,7 @@ function CandidateCard({
             onPointerCancel={onPointerUp}
             aria-label={`Compatibility card for ${candidate.name}`}
             aria-disabled={disabled}
-            className="group border-border bg-card relative z-20 [touch-action:pan-y] overflow-hidden rounded-[1.75rem] border shadow-[0_24px_70px_rgba(19,16,18,0.18)] select-none"
+            className="group border-border bg-card relative z-20 [touch-action:pan-y] overflow-hidden rounded-2xl border shadow-[0_8px_30px_rgba(19,16,18,0.07)] select-none dark:shadow-none"
         >
             <div className="grid md:grid-cols-[0.88fr_1.12fr]">
                 <div className="relative min-h-72 overflow-hidden bg-neutral-950 md:min-h-[27rem]">
@@ -163,7 +164,7 @@ function CandidateCard({
                     </div>
 
                     <p className="text-muted-foreground mt-5 line-clamp-3 text-sm leading-6">
-                        {candidate.bio || 'Their shelf says more than a placeholder bio ever could.'}
+                        {candidate.bio || 'Explore the titles and favorites you have in common.'}
                     </p>
 
                     <dl className="mt-6 grid grid-cols-3 gap-2">
@@ -228,7 +229,7 @@ function CompatibilityRail({ candidate, scoreModel }: { candidate: MatchCandidat
             </section>
 
             {topShared && (
-                <section className="rounded-2xl bg-neutral-950 p-5 text-white dark:bg-neutral-100 dark:text-neutral-950">
+                <section className="bg-accent text-accent-foreground rounded-2xl p-5">
                     <BookHeart className="text-primary size-6" strokeWidth={1.8} aria-hidden="true" />
                     <h2 className="mt-4 text-lg font-semibold">Start with {topShared.name}</h2>
                     <p className="mt-2 text-sm leading-6 text-neutral-300 dark:text-neutral-600">
@@ -369,7 +370,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                             <div
                                 key={candidate.id}
                                 aria-hidden="true"
-                                className="border-border bg-card absolute inset-x-5 top-0 h-full rounded-[1.75rem] border shadow-sm sm:inset-x-10"
+                                className="border-border bg-card absolute inset-x-5 top-0 h-full rounded-2xl border shadow-sm sm:inset-x-10"
                                 style={{ transform: `translateY(${(index + 1) * 10}px) scale(${1 - (index + 1) * 0.025})`, zIndex: index + 1 }}
                             />
                         ))}
@@ -446,7 +447,7 @@ function EmptyMatches({
     action: { label: string; href: string };
 }) {
     return (
-        <section className="border-border bg-card rounded-[1.75rem] border border-dashed px-6 py-16 text-center sm:py-20">
+        <section className="border-border bg-card rounded-2xl border border-dashed px-6 py-16 text-center sm:py-20">
             <span className="bg-primary/10 text-primary mx-auto flex size-12 items-center justify-center rounded-2xl">
                 <Icon className="size-6" strokeWidth={1.8} aria-hidden="true" />
             </span>
@@ -549,24 +550,19 @@ export default function Matches({ candidates, filters, summary, score_model: sco
             </Head>
 
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
-                <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-2xl">
-                        <span className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-2xl">
-                            <Sparkles className="size-6" strokeWidth={1.8} aria-hidden="true" />
-                        </span>
-                        <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Shelf Match</h1>
-                        <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-6 sm:text-base">
-                            Meet people through the stories, worlds, and games you both chose to keep.
-                        </p>
-                    </div>
-                    <div className="border-border bg-card flex items-center gap-3 rounded-2xl border px-4 py-3">
-                        <LibraryBig className="text-primary size-5" strokeWidth={1.8} aria-hidden="true" />
-                        <div>
-                            <p className="text-sm font-semibold tabular-nums">{summary.shelf_count} on your shelf</p>
-                            <p className="text-muted-foreground text-xs">More titles improve matches</p>
-                        </div>
-                    </div>
-                </header>
+                <PageHeading
+                    title="A good place to connect."
+                    description="Meet people through the stories and worlds you both chose to keep."
+                    action={
+                        <Link
+                            href={route('shelf.index')}
+                            className="bg-accent text-accent-foreground inline-flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium"
+                        >
+                            <LibraryBig className="size-5" aria-hidden="true" />
+                            {summary.shelf_count} titles shaping your matches
+                        </Link>
+                    }
+                />
 
                 <div className="mt-6">
                     <FlashMessage />

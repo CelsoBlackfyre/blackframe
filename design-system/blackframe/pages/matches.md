@@ -11,7 +11,7 @@ Shelf Match is a friendship and creator-discovery surface, not a romance simulat
 - Desktop: one active card stack with a 304px sticky score rail.
 - Mobile: one vertical card followed by full-width Pass and Connect controls.
 - Connections: responsive two-column list of mutual matches.
-- Keep the five-item mobile bottom navigation unchanged; expose Match beside People in the compact header.
+- Keep the five-item mobile bottom navigation; expose Matches and Geek Shelf in the mobile navigation drawer.
 
 ## Compatibility model
 

@@ -1,3 +1,4 @@
+import { PasswordInput } from '@/components/ui/password-input';
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -43,17 +44,18 @@ export default function Register() {
                         <Label htmlFor="name">Name</Label>
                         <Input
                             id="name"
+                            aria-invalid={!!errors.name}
+                            aria-describedby="name-error"
                             type="text"
                             required
                             autoFocus
-                            tabIndex={1}
                             autoComplete="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
                             placeholder="Full name"
                         />
-                        <InputError message={errors.name} className="mt-2" />
+                        <InputError id="name-error" message={errors.name} className="mt-2" />
                     </div>
 
                     <div className="grid gap-2">
@@ -62,7 +64,6 @@ export default function Register() {
                             id="username"
                             type="text"
                             required
-                            tabIndex={2}
                             autoComplete="username"
                             value={data.username}
                             onChange={(e) => setData('username', e.target.value.toLowerCase())}
@@ -80,61 +81,59 @@ export default function Register() {
                         <Label htmlFor="email">Email address</Label>
                         <Input
                             id="email"
+                            aria-invalid={!!errors.email}
+                            aria-describedby="email-error"
                             type="email"
                             required
-                            tabIndex={3}
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
                             placeholder="email@example.com"
                         />
-                        <InputError message={errors.email} />
+                        <InputError id="email-error" message={errors.email} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
+                            aria-invalid={!!errors.password}
+                            aria-describedby="password-error"
                             required
-                            tabIndex={4}
                             autoComplete="new-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
                             placeholder="Password"
                         />
-                        <InputError message={errors.password} />
+                        <InputError id="password-error" message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">Confirm password</Label>
-                        <Input
+                        <PasswordInput
                             id="password_confirmation"
-                            type="password"
+                            aria-invalid={!!errors.password_confirmation}
+                            aria-describedby="password_confirmation-error"
                             required
-                            tabIndex={5}
                             autoComplete="new-password"
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
                             placeholder="Confirm password"
                         />
-                        <InputError message={errors.password_confirmation} />
+                        <InputError id="password_confirmation-error" message={errors.password_confirmation} />
                     </div>
 
-                    <Button type="submit" className="mt-2 min-h-11 w-full cursor-pointer rounded-xl" tabIndex={6} disabled={processing}>
+                    <Button type="submit" className="mt-2 min-h-11 w-full cursor-pointer rounded-xl" disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Create account
                     </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
-                    Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={7}>
-                        Log in
-                    </TextLink>
+                    Already have an account? <TextLink href={route('login')}>Log in</TextLink>
                 </div>
             </form>
         </AuthLayout>

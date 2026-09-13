@@ -1,23 +1,32 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
 export function NavMain({ items = [], label = 'Navigation' }: { items: NavItem[]; label?: string }) {
     const page = usePage();
     const currentPath = page.url.split('?')[0];
+    const cleanup = useMobileNavigation();
 
     return (
         <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel className="tracking-[0.12em] uppercase">{label}</SidebarGroupLabel>
-            <SidebarMenu>
+            <SidebarGroupLabel className="text-muted-foreground mb-2 text-xs font-medium">{label}</SidebarGroupLabel>
+            <SidebarMenu className="gap-1">
                 {items.map((item) => {
-                    const active = item.url === currentPath || currentPath.startsWith(`${item.url}/`);
+                    const path = item.url.replace(/^https?:\/\/[^/]+/, '');
+                    const active = path === currentPath || currentPath.startsWith(`${path}/`);
 
                     return (
                         <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild isActive={active} size="lg" tooltip={item.title}>
-                                <Link href={item.url} prefetch>
-                                    {item.icon && <item.icon />}
+                            <SidebarMenuButton
+                                asChild
+                                isActive={active}
+                                size="lg"
+                                tooltip={item.title}
+                                className="h-11 gap-3.5 rounded-xl px-3 text-[15px] data-[active=true]:font-semibold"
+                            >
+                                <Link href={item.url} prefetch onClick={cleanup} aria-current={active ? 'page' : undefined}>
+                                    {item.icon && <item.icon aria-hidden="true" strokeWidth={active ? 2 : 1.65} className="size-5!" />}
                                     <span>{item.title}</span>
                                     {!!item.badge && (
                                         <span className="bg-primary text-primary-foreground ml-auto min-w-5 rounded-full px-1.5 py-0.5 text-center text-[0.625rem] leading-4 font-semibold tabular-nums group-data-[collapsible=icon]:hidden">

@@ -1,91 +1,37 @@
 import { SubjectBadge } from '@/components/subjects/subject-badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { PulsePost } from '@/types/pulse';
-import { Link, useForm } from '@inertiajs/react';
-import { Heart, LoaderCircle, MessageCircle } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 import { SocialAvatar } from './avatar';
+import { PostEngagement } from './post-engagement';
 
 export function PulsePostCard({ post }: { post: PulsePost }) {
-    const likeForm = useForm({});
-
-    const toggleLike = () => {
-        const options = {
-            preserveScroll: true,
-            preserveState: true,
-            only: ['posts'],
-        };
-
-        if (post.liked_by_viewer) {
-            likeForm.delete(route('posts.likes.destroy', post.id), options);
-            return;
-        }
-
-        likeForm.post(route('posts.likes.store', post.id), options);
-    };
-
     return (
-        <article className="border-border bg-card rounded-2xl border px-4 py-4 sm:px-5 sm:py-5">
-            <div className="flex items-start gap-3">
+        <article className="border-border bg-card rounded-2xl border p-5 sm:p-6">
+            <header className="flex items-center gap-3">
                 <Link href={route('profiles.show', post.author.username)} aria-label={`View ${post.author.name}'s profile`} className="rounded-full">
                     <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
                 </Link>
                 <div className="min-w-0 flex-1">
-                    <header className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        <Link href={route('profiles.show', post.author.username)} className="hover:text-primary rounded font-semibold">
-                            {post.author.name}
-                        </Link>
-                        <Link
-                            href={route('profiles.show', post.author.username)}
-                            className="text-muted-foreground hover:text-primary rounded text-sm"
-                        >
-                            @{post.author.username}
-                        </Link>
-                        {post.published_at && <p className="text-muted-foreground text-sm">{post.published_at}</p>}
-                    </header>
-
-                    {post.subjects.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2" aria-label="Topics in this post">
-                            {post.subjects.map((subject) => (
-                                <SubjectBadge key={subject.id} subject={subject} />
-                            ))}
-                        </div>
-                    )}
-
-                    <p className="mt-2 text-[15px] leading-6 [overflow-wrap:anywhere] whitespace-pre-wrap sm:text-base">{post.body}</p>
-
-                    <div className="mt-3 flex items-center gap-3" aria-label="Post engagement">
-                        <div className="flex items-center gap-1">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleLike}
-                                disabled={likeForm.processing}
-                                aria-label={post.liked_by_viewer ? 'Unlike this post' : 'Like this post'}
-                                aria-pressed={post.liked_by_viewer}
-                                className={cn(
-                                    'size-11 cursor-pointer rounded-xl transition-colors',
-                                    post.liked_by_viewer && 'text-primary hover:text-primary',
-                                )}
-                            >
-                                {likeForm.processing ? (
-                                    <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                ) : (
-                                    <Heart className={cn('size-5', post.liked_by_viewer && 'fill-current')} strokeWidth={1.8} aria-hidden="true" />
-                                )}
-                            </Button>
-                            <span className="text-muted-foreground min-w-6 text-sm font-medium tabular-nums">
-                                {post.likes_count.toLocaleString()}
-                            </span>
-                        </div>
-
-                        <div className="text-muted-foreground flex min-h-11 items-center gap-2" aria-label={`${post.comments_count} replies`}>
-                            <MessageCircle className="size-5" strokeWidth={1.8} aria-hidden="true" />
-                            <span className="text-sm font-medium tabular-nums">{post.comments_count.toLocaleString()}</span>
-                        </div>
-                    </div>
+                    <Link
+                        href={route('profiles.show', post.author.username)}
+                        className="hover:text-primary block truncate rounded text-sm font-semibold"
+                    >
+                        {post.author.name}
+                    </Link>
+                    <p className="text-muted-foreground mt-0.5 truncate text-xs">@{post.author.username}</p>
                 </div>
+                <span className="text-muted-foreground text-xs">{post.published_at}</span>
+            </header>
+            <p className="mt-5 text-base leading-7 whitespace-pre-wrap sm:text-lg sm:leading-8">{post.body}</p>
+            {post.subjects.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2" aria-label="Topics in this post">
+                    {post.subjects.map((subject) => (
+                        <SubjectBadge key={subject.id} subject={subject} />
+                    ))}
+                </div>
+            )}
+            <div className="border-border mt-5 border-t pt-3">
+                <PostEngagement post={post} />
             </div>
         </article>
     );

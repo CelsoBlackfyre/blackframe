@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DirectController;
 use App\Http\Controllers\DirectConversationController;
 use App\Http\Controllers\DirectMessageController;
@@ -68,6 +69,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::get('posts/{post}/media/{media}', PostMediaController::class)->name('posts.media.show');
+    Route::get('posts/{post}/comments', [CommentController::class, 'index'])->name('posts.comments.index');
+    Route::post('posts/{post}/comments', [CommentController::class, 'store'])
+        ->middleware('throttle:social-interactions')
+        ->name('posts.comments.store');
+    Route::delete('posts/{post}/comments/{comment}', [CommentController::class, 'destroy'])
+        ->middleware('throttle:social-interactions')
+        ->name('posts.comments.destroy');
     Route::post('posts', [PostController::class, 'store'])
         ->middleware('throttle:content-creation')
         ->name('posts.store');
