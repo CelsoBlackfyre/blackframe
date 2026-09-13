@@ -223,12 +223,12 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                         )}
                     </div>
                     <div className="px-5 pb-6 sm:px-8 sm:pb-8">
-                        <div className="-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
-                            <div className="flex min-w-0 items-end gap-4 sm:gap-5">
+                        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                            <div className="flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-end sm:gap-5">
                                 <SocialAvatar
                                     name={profile.name}
                                     src={profile.avatar_url}
-                                    className="border-card size-24 border-4 text-2xl shadow-sm sm:size-28"
+                                    className="border-card -mt-12 size-24 border-4 text-2xl shadow-sm sm:-mt-14 sm:size-28"
                                 />
                                 <div className="min-w-0 pb-1">
                                     <div className="flex flex-wrap items-center gap-2">
