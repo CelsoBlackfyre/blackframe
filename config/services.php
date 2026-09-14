@@ -31,6 +31,8 @@ return [
     'catalog' => [
         'timeout' => (int) env('CATALOG_API_TIMEOUT', 4),
         'tmdb_token' => env('TMDB_API_TOKEN'),
+        'rawg_key' => env('RAWG_API_KEY'),
+        'rawg_timeout' => (int) env('CATALOG_RAWG_TIMEOUT', 8),
     ],
 
     'slack' => [

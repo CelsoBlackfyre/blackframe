@@ -30,6 +30,7 @@ const sourceLinks: Record<string, string> = {
     Jikan: 'https://jikan.moe',
     Wikidata: 'https://www.wikidata.org',
     TMDB: 'https://www.themoviedb.org',
+    RAWG: 'https://rawg.io',
 };
 
 interface SuggestionForm {

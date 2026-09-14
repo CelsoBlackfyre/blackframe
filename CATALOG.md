@@ -11,6 +11,7 @@ BlackFrame uses a federated search instead of shipping a small hard-coded list o
 | [Jikan](https://docs.api.jikan.moe/) | Anime and manga | None | Public, unofficial MyAnimeList search; failures do not block other sources |
 | [Wikidata](https://www.wikidata.org/wiki/Help:Data_access) | Games, films, characters, franchises, tabletop games, and other recognizable media entities | None | Entity search with conservative type inference from the provider description |
 | [TMDB](https://developer.themoviedb.org/reference/search-multi) | Films and television series | Optional bearer token | Enabled only when `TMDB_API_TOKEN` is configured |
+| [RAWG](https://api.rawg.io/docs/) | Video games | Optional API key | Enabled only when `RAWG_API_KEY` is configured; supplies genres, platforms, and Metacritic scores |
 
 Provider names and links are visible in the picker. Their data and imagery remain subject to their respective terms and licenses. Production owners should review those terms before commercial deployment.
 

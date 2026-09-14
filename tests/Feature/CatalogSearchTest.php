@@ -142,6 +142,105 @@ class CatalogSearchTest extends TestCase
             && str_contains($request->url(), 'q=1984'));
     }
 
+    public function test_digit_queries_match_roman_numeral_titles(): void
+    {
+        config(['services.catalog.rawg_key' => 'rawg-key']);
+
+        Http::fake([
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+            'api.rawg.io/*' => Http::response(['results' => [
+                [
+                    'id' => 345863,
+                    'slug' => 'baldurs-gate-3-toolkit',
+                    'name' => 'Baldur\'s Gate 3 Toolkit',
+                    'released' => null,
+                    'background_image' => null,
+                    'metacritic' => null,
+                    'genres' => [],
+                    'platforms' => [['platform' => ['name' => 'PC']]],
+                ],
+                [
+                    'id' => 3370166,
+                    'slug' => 'baldurs-gate-iii',
+                    'name' => 'Baldur\'s Gate III',
+                    'released' => '2023-08-03',
+                    'background_image' => 'https://media.rawg.io/media/games/bg3.jpg',
+                    'metacritic' => 97,
+                    'genres' => [['name' => 'RPG']],
+                    'platforms' => [['platform' => ['name' => 'PC']]],
+                ],
+            ]]),
+        ]);
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=baldurs%20gate%203&type=game')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('Baldur\'s Gate III (2023)', $data[0]['name']);
+        $this->assertSame('rawg', $data[0]['source']);
+    }
+
+    public function test_rawg_games_can_be_searched_and_imported(): void
+    {
+        config(['services.catalog.rawg_key' => 'rawg-key']);
+
+        Http::fake([
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+            'api.rawg.io/*' => Http::response(['results' => [
+                [
+                    'id' => 3498,
+                    'slug' => 'grand-theft-auto-v',
+                    'name' => 'Grand Theft Auto V',
+                    'released' => '2013-09-17',
+                    'background_image' => 'https://media.rawg.io/media/games/gtav.jpg',
+                    'metacritic' => 92,
+                    'genres' => [['name' => 'Action'], ['name' => 'Shooter']],
+                    'platforms' => [
+                        ['platform' => ['name' => 'PC']],
+                        ['platform' => ['name' => 'PlayStation 5']],
+                    ],
+                ],
+            ]]),
+        ]);
+        $user = User::factory()->create();
+
+        $search = $this->actingAs($user)->getJson('/catalog/search?query=grand%20theft%20auto&type=game');
+
+        $search
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Grand Theft Auto V (2013)',
+                'type' => 'game',
+                'source_label' => 'RAWG',
+            ]);
+
+        $candidate = collect($search->json('data'))->firstWhere('source', 'rawg');
+
+        $this->assertSame('Grand Theft Auto V (2013)', $candidate['name']);
+        $this->assertSame(2013, $candidate['year']);
+        $this->assertSame('https://rawg.io/games/grand-theft-auto-v', $candidate['source_url']);
+        $this->assertStringContainsString('Action', $candidate['description']);
+
+        $this->actingAs($user)
+            ->post('/shelf', [
+                'subject_reference' => $candidate['reference'],
+                'status' => 'current',
+                'favorite' => true,
+                'rating' => 9,
+                'progress' => null,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('subjects', [
+            'name' => 'Grand Theft Auto V (2013)',
+            'type' => 'game',
+            'source' => 'rawg',
+            'source_id' => '3498',
+        ]);
+    }
+
     public function test_exact_matches_rank_above_fuzzy_provider_results(): void
     {
         config(['services.catalog.tmdb_token' => 'tmdb-token']);
@@ -341,6 +440,7 @@ class CatalogSearchTest extends TestCase
             'api.jikan.moe/v4/anime*' => Http::response(['data' => []]),
             'api.jikan.moe/v4/manga*' => Http::response(['data' => []]),
             'www.wikidata.org/*' => Http::response(['search' => []]),
+            'api.rawg.io/*' => Http::response(['results' => []]),
         ]);
     }
 }

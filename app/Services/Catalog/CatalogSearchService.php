@@ -18,6 +18,24 @@ class CatalogSearchService
      */
     private const LOOSE_MATCH = 3;
 
+    /**
+     * Roman numerals providers use in sequel titles, mapped to how people type them.
+     *
+     * @var array<string, int>
+     */
+    private const ROMAN_NUMERALS = [
+        'i' => 1,
+        'ii' => 2,
+        'iii' => 3,
+        'iv' => 4,
+        'v' => 5,
+        'vi' => 6,
+        'vii' => 7,
+        'viii' => 8,
+        'ix' => 9,
+        'x' => 10,
+    ];
+
     /** @var array<string, string> */
     private const SOURCE_LABELS = [
         'openlibrary' => 'Open Library',
@@ -25,6 +43,7 @@ class CatalogSearchService
         'jikan' => 'Jikan',
         'wikidata' => 'Wikidata',
         'tmdb' => 'TMDB',
+        'rawg' => 'RAWG',
     ];
 
     /**
@@ -35,10 +54,11 @@ class CatalogSearchService
      */
     private const SOURCE_PRIORITY = [
         'tmdb' => 0,
-        'tvmaze' => 1,
-        'jikan' => 2,
-        'openlibrary' => 3,
-        'wikidata' => 4,
+        'rawg' => 1,
+        'tvmaze' => 2,
+        'jikan' => 3,
+        'openlibrary' => 4,
+        'wikidata' => 5,
     ];
 
     /**
@@ -150,7 +170,18 @@ class CatalogSearchService
 
     private function comparableText(string $value): string
     {
-        return (string) preg_replace('/[^a-z0-9]+/', '', Str::lower($value));
+        $value = Str::lower(Str::squish($value));
+
+        // Providers title sequels with roman numerals ("Baldur's Gate III") while
+        // people search with digits ("baldurs gate 3"); normalize the trailing
+        // token so both forms compare as the same title.
+        $value = (string) preg_replace_callback(
+            '/\b(i{1,3}|iv|v|vi{1,3}|ix|x)$/',
+            fn (array $matches): string => (string) self::ROMAN_NUMERALS[$matches[1]],
+            $value,
+        );
+
+        return (string) preg_replace('/[^a-z0-9]+/', '', $value);
     }
 
     /**
@@ -201,6 +232,13 @@ class CatalogSearchService
                                 'language' => 'en-US',
                                 'page' => 1,
                             ]),
+                        'rawg' => $request
+                            ->timeout(max($timeout, (int) config('services.catalog.rawg_timeout', 8)))
+                            ->get('https://api.rawg.io/api/games', [
+                                'key' => (string) config('services.catalog.rawg_key'),
+                                'search' => $query,
+                                'page_size' => 8,
+                            ]),
                     };
                 }
 
@@ -232,6 +270,7 @@ class CatalogSearchService
                 'jikan_manga' => $this->parseJikan($response, SubjectType::Manga),
                 'wikidata' => $this->parseWikidata($response, $type),
                 'tmdb' => $this->parseTmdb($response, $type),
+                'rawg' => $this->parseRawg($response, $type),
             }];
         }
 
@@ -268,6 +307,10 @@ class CatalogSearchService
         }
 
         $names[] = 'wikidata';
+
+        if (filled(config('services.catalog.rawg_key')) && ($type === null || $type === SubjectType::Game)) {
+            $names[] = 'rawg';
+        }
 
         if (filled(config('services.catalog.tmdb_token')) && ($type === null || in_array($type, [SubjectType::Movie, SubjectType::Series], true))) {
             $names[] = 'tmdb';
@@ -396,6 +439,40 @@ class CatalogSearchService
             ->when($requestedType, fn ($items) => $items->where('type', $requestedType->value))
             ->take(8)
             ->values()
+            ->all();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function parseRawg(Response $response, ?SubjectType $requestedType): array
+    {
+        if (filled($requestedType) && $requestedType !== SubjectType::Game) {
+            return [];
+        }
+
+        return collect($response->json('results', []))
+            ->filter(fn ($item): bool => is_array($item) && filled($item['id'] ?? null) && filled($item['name'] ?? null))
+            ->take(8)
+            ->map(function (array $item): array {
+                $genres = collect($item['genres'] ?? [])->pluck('name')->take(2)->implode(', ');
+                $platforms = collect($item['platforms'] ?? [])->pluck('platform.name')->take(3)->implode(', ');
+                $score = $item['metacritic'] ?? null;
+                $details = collect([
+                    $genres ?: null,
+                    $platforms ?: null,
+                    $score ? 'Metacritic '.$score : null,
+                ])->filter()->implode(' · ');
+
+                return $this->candidate([
+                    'source' => 'rawg',
+                    'source_id' => (string) $item['id'],
+                    'source_url' => filled($item['slug'] ?? null) ? 'https://rawg.io/games/'.$item['slug'] : null,
+                    'name' => $item['name'],
+                    'type' => SubjectType::Game,
+                    'description' => $details ?: null,
+                    'image_url' => $item['background_image'] ?? null,
+                    'year' => $this->yearFrom((string) ($item['released'] ?? '')),
+                ]);
+            })
             ->all();
     }
 

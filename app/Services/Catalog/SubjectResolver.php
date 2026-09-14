@@ -36,7 +36,7 @@ class SubjectResolver
 
         $data = Validator::make($payload, [
             'version' => ['required', 'integer', Rule::in([1])],
-            'source' => ['required', Rule::in(['openlibrary', 'tvmaze', 'jikan', 'wikidata', 'tmdb'])],
+            'source' => ['required', Rule::in(['openlibrary', 'tvmaze', 'jikan', 'wikidata', 'tmdb', 'rawg'])],
             'source_id' => ['required', 'string', 'max:160'],
             'source_url' => ['nullable', 'url:http,https', 'max:2000'],
             'name' => ['required', 'string', 'max:160'],
