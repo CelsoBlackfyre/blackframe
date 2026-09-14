@@ -27,9 +27,9 @@ export function NavMain({ items = [], label = 'Navigation' }: { items: NavItem[]
                             >
                                 <Link href={item.url} prefetch onClick={cleanup} aria-current={active ? 'page' : undefined}>
                                     {item.icon && <item.icon aria-hidden="true" strokeWidth={active ? 2 : 1.65} className="size-5!" />}
-                                    <span>{item.title}</span>
+                                    <span className="group-data-[collapsible=icon]:sr-only">{item.title}</span>
                                     {!!item.badge && (
-                                        <span className="bg-primary text-primary-foreground ml-auto min-w-5 rounded-full px-1.5 py-0.5 text-center text-[0.625rem] leading-4 font-semibold tabular-nums group-data-[collapsible=icon]:hidden">
+                                        <span className="bg-primary text-primary-foreground ml-auto min-w-5 rounded-full px-1.5 py-0.5 text-center text-[0.625rem] leading-4 font-semibold tabular-nums group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0.5 group-data-[collapsible=icon]:right-0.5 group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:min-w-4 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:py-0">
                                             {item.badge > 99 ? '99+' : item.badge}
                                             <span className="sr-only"> unread messages</span>
                                         </span>

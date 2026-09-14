@@ -9,6 +9,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type NavItem, type SharedData } from '@/types';
@@ -18,6 +19,7 @@ import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const cleanup = useMobileNavigation();
+    const { state } = useSidebar();
     const { auth, direct } = usePage<SharedData>().props;
     const mainNavItems: NavItem[] = [
         { title: 'Home', url: route('feed'), icon: House },
@@ -33,12 +35,12 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="sidebar">
-            <SidebarHeader className="px-4 py-3 group-data-[collapsible=icon]:px-2">
+            <SidebarHeader className="px-4 py-3">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton size="lg" asChild tooltip="BlackFrame" aria-label="BlackFrame">
                             <Link href={route('feed')} prefetch onClick={cleanup}>
-                                <AppLogo />
+                                <AppLogo compact={state === 'collapsed'} />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -58,8 +60,8 @@ export function AppSidebar() {
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                             >
                                 <Link href={route('posts.create')} prefetch onClick={cleanup}>
-                                    <SquarePlus />
-                                    <span>Create</span>
+                                    <SquarePlus className="size-5!" aria-hidden="true" />
+                                    <span className="group-data-[collapsible=icon]:sr-only">Create</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -67,7 +69,7 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-border border-t px-4 py-4 group-data-[collapsible=icon]:px-2">
+            <SidebarFooter className="border-border border-t px-4 py-4">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
