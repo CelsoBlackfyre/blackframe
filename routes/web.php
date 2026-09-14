@@ -82,6 +82,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('posts', [PostController::class, 'store'])
         ->middleware('throttle:content-creation')
         ->name('posts.store');
+    Route::delete('posts/{post}', [PostController::class, 'destroy'])
+        ->middleware('throttle:social-interactions')
+        ->name('posts.destroy');
 
     Route::post('posts/{post}/likes', [LikeController::class, 'store'])
         ->middleware('throttle:social-interactions')

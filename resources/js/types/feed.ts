@@ -33,6 +33,7 @@ export interface FeedPost {
     likes_count: number;
     comments_count: number;
     liked_by_viewer: boolean;
+    can_delete: boolean;
     subjects: PostSubject[];
     comments: FeedComment[];
 }

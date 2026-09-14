@@ -56,6 +56,24 @@ class MediaService
     }
 
     /**
+     * Removes every stored file and media row belonging to a post. The media
+     * table is a polymorphic relation without foreign keys, so nothing is
+     * cleaned up by deleting the post itself.
+     */
+    public function deletePostMedia(Post $post): void
+    {
+        foreach ($post->media as $media) {
+            Storage::disk(self::POST_DISK)->delete($media->path);
+
+            foreach ($media->variants() as $variant) {
+                Storage::disk(self::POST_DISK)->delete($variant['path']);
+            }
+
+            $media->delete();
+        }
+    }
+
+    /**
      * Best-effort resized renditions; the post still works from the original
      * when generation fails, so only the failure is reported here.
      *

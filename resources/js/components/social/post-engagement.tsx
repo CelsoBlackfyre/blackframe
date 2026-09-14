@@ -226,9 +226,15 @@ function Comments({ postId, count }: { postId: number; count: number }) {
     );
 }
 
-export function PostEngagement({ post }: { post: { id: number; liked_by_viewer: boolean; likes_count: number; comments_count: number } }) {
+export function PostEngagement({
+    post,
+}: {
+    post: { id: number; liked_by_viewer: boolean; likes_count: number; comments_count: number; can_delete: boolean };
+}) {
     const form = useForm({});
+    const deleteForm = useForm({});
     const [error, setError] = useState('');
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     function toggleLike() {
         setError('');
         const options = {
@@ -239,6 +245,14 @@ export function PostEngagement({ post }: { post: { id: number; liked_by_viewer: 
         };
         if (post.liked_by_viewer) form.delete(route('posts.likes.destroy', post.id), options);
         else form.post(route('posts.likes.store', post.id), options);
+    }
+    function deletePost() {
+        setError('');
+        deleteForm.delete(route('posts.destroy', post.id), {
+            preserveScroll: true,
+            only: ['posts', 'pulse', 'flash'],
+            onError: () => setError('Your post couldn’t be deleted. Please try again.'),
+        });
     }
     return (
         <div>
@@ -255,7 +269,34 @@ export function PostEngagement({ post }: { post: { id: number; liked_by_viewer: 
                     <span className="text-sm tabular-nums">{post.likes_count.toLocaleString()}</span>
                 </Button>
                 <Comments postId={post.id} count={post.comments_count} />
+                {post.can_delete && !confirmingDelete && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete this post"
+                        onClick={() => setConfirmingDelete(true)}
+                        className="text-muted-foreground hover:text-destructive ml-auto shrink-0"
+                    >
+                        <Trash2 className="size-5!" strokeWidth={1.8} aria-hidden="true" />
+                    </Button>
+                )}
             </div>
+            {confirmingDelete && (
+                <div
+                    role="alert"
+                    className="border-destructive/30 bg-destructive/5 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3.5 py-3"
+                >
+                    <p className="text-sm font-medium">Delete this post? This can’t be undone.</p>
+                    <div className="flex items-center gap-2">
+                        <Button size="sm" variant="destructive" onClick={deletePost} disabled={deleteForm.processing}>
+                            {deleteForm.processing ? 'Deleting…' : 'Delete post'}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setConfirmingDelete(false)} disabled={deleteForm.processing}>
+                            Keep post
+                        </Button>
+                    </div>
+                </div>
+            )}
             {error && (
                 <p role="alert" className="text-destructive mt-2 text-sm">
                     {error}

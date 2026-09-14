@@ -39,6 +39,7 @@ class FeedController extends Controller
             'likes_count' => $post->likes_count,
             'comments_count' => $post->comments_count,
             'liked_by_viewer' => $post->liked_by_viewer,
+            'can_delete' => $post->user_id === $viewer->id,
             'subjects' => $post->subjects->map(fn (Subject $subject) => [
                 'id' => $subject->id,
                 'name' => $subject->name,

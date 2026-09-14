@@ -29,4 +29,9 @@ class PostPolicy
     {
         return $this->view($user, $post);
     }
+
+    public function delete(User $user, Post $post): bool
+    {
+        return $post->user_id === $user->id;
+    }
 }

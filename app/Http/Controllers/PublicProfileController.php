@@ -89,7 +89,7 @@ class PublicProfileController extends Controller
             ])
             ->paginate(6)
             ->withQueryString()
-            ->through(fn (Post $post) => $this->presentVisualPost($post));
+            ->through(fn (Post $post) => $this->presentVisualPost($post, $viewer));
     }
 
     private function pulsePosts(User $viewer, User $profile)
@@ -106,6 +106,7 @@ class PublicProfileController extends Controller
                 'likes_count' => $post->likes_count,
                 'comments_count' => $post->comments_count,
                 'liked_by_viewer' => $post->liked_by_viewer,
+                'can_delete' => $post->user_id === $viewer->id,
                 'subjects' => $post->subjects->map(fn (Subject $subject) => $this->presentSubject($subject)),
             ]);
     }
@@ -126,7 +127,7 @@ class PublicProfileController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function presentVisualPost(Post $post): array
+    private function presentVisualPost(Post $post, User $viewer): array
     {
         return [
             'id' => $post->id,
@@ -146,6 +147,7 @@ class PublicProfileController extends Controller
             'likes_count' => $post->likes_count,
             'comments_count' => $post->comments_count,
             'liked_by_viewer' => $post->liked_by_viewer,
+            'can_delete' => $post->user_id === $viewer->id,
             'subjects' => $post->subjects->map(fn (Subject $subject) => $this->presentSubject($subject)),
             'comments' => $post->comments->map(fn ($comment) => [
                 'id' => $comment->id,

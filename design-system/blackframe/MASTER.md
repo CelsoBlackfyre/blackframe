@@ -51,7 +51,7 @@ Every feature defines loading, empty, error, success, and disabled behavior. No 
 
 ## Product boundaries
 
-Laravel owns authorization, validation, and persistence. Private content requires permission. Drafts and future-dated posts stay hidden. Deleted authors/commenters must not break timelines. Only comment authors and post owners may delete a comment.
+Laravel owns authorization, validation, and persistence. Private content requires permission. Drafts and future-dated posts stay hidden. Deleted authors/commenters must not break timelines. Only comment authors and post owners may delete a comment. Owners may delete their own posts, and deleting a post removes its stored media.
 
 Matching uses structured shared shelf data, never demographics or popularity. Direct opens only after mutual Connect decisions, and only participants can read or write. See page overrides for the scoring and messaging contracts.
 
