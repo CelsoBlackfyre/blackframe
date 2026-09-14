@@ -19,7 +19,7 @@ class CatalogSearchTest extends TestCase
         $this->post('/catalog/suggestions', [])->assertRedirect('/login');
     }
 
-    public function test_catalog_search_combines_local_and_external_results(): void
+    public function test_catalog_search_uses_only_external_sources(): void
     {
         Subject::factory()->create([
             'name' => 'Dune',
@@ -32,7 +32,6 @@ class CatalogSearchTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.0.name', 'Dune')
             ->assertJsonFragment([
                 'name' => 'Dune Messiah',
                 'type' => 'book',
@@ -44,10 +43,86 @@ class CatalogSearchTest extends TestCase
                 'source_label' => 'TVmaze',
             ]);
 
-        $external = collect($response->json('data'))->firstWhere('source', 'openlibrary');
+        $data = collect($response->json('data'));
+
+        $this->assertFalse($data->contains(fn (array $candidate): bool => $candidate['source'] === 'blackframe'));
+
+        $external = $data->firstWhere('source', 'openlibrary');
 
         $this->assertNull($external['subject_id']);
         $this->assertNotEmpty($external['reference']);
+    }
+
+    public function test_exact_matches_rank_above_fuzzy_provider_results(): void
+    {
+        config(['services.catalog.tmdb_token' => 'tmdb-token']);
+
+        Http::fake([
+            'openlibrary.org/*' => Http::response(['docs' => [[
+                'key' => '/works/OL9W',
+                'title' => 'Faust',
+                'author_name' => ['Goethe'],
+                'first_publish_year' => 1808,
+                'cover_i' => null,
+            ]]]),
+            'api.tvmaze.com/*' => Http::response([]),
+            'api.jikan.moe/v4/anime*' => Http::response(['data' => []]),
+            'api.jikan.moe/v4/manga*' => Http::response(['data' => []]),
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+            'api.themoviedb.org/*' => Http::response(['results' => [
+                [
+                    'media_type' => 'movie',
+                    'id' => 693134,
+                    'title' => 'Dune: Part Two',
+                    'overview' => 'Paul Atreides unites with the Fremen.',
+                    'poster_path' => '/dune-two.jpg',
+                ],
+                [
+                    'media_type' => 'movie',
+                    'id' => 999,
+                    'title' => 'The Dune Story',
+                    'overview' => null,
+                    'poster_path' => null,
+                ],
+            ]]),
+        ]);
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=dune%20part%20two')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('Dune: Part Two', $data[0]['name']);
+        $this->assertSame('tmdb', $data[0]['source']);
+
+        $names = collect($data)->pluck('name');
+
+        $this->assertFalse($names->contains('Faust'));
+        $this->assertFalse($names->contains('The Dune Story'));
+    }
+
+    public function test_fuzzy_results_are_kept_when_nothing_matches_closely(): void
+    {
+        Http::fake([
+            'openlibrary.org/*' => Http::response(['docs' => [[
+                'key' => '/works/OL7W',
+                'title' => 'Sand and Stone',
+                'author_name' => ['Someone'],
+                'first_publish_year' => 2001,
+                'cover_i' => null,
+            ]]]),
+            'api.tvmaze.com/*' => Http::response([]),
+            'api.jikan.moe/v4/anime*' => Http::response(['data' => []]),
+            'api.jikan.moe/v4/manga*' => Http::response(['data' => []]),
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+        ]);
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=quicksand%20chronicles')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame(['Sand and Stone'], collect($data)->pluck('name')->all());
     }
 
     public function test_chosen_external_result_is_imported_only_when_added_to_a_shelf(): void

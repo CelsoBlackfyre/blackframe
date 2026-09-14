@@ -3,7 +3,6 @@
 namespace App\Services\Catalog;
 
 use App\Enums\SubjectType;
-use App\Models\Subject;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
@@ -14,6 +13,11 @@ use Throwable;
 
 class CatalogSearchService
 {
+    /**
+     * Names that never contain the query are kept only when nothing else matched.
+     */
+    private const LOOSE_MATCH = 3;
+
     /** @var array<string, string> */
     private const SOURCE_LABELS = [
         'openlibrary' => 'Open Library',
@@ -29,21 +33,31 @@ class CatalogSearchService
     public function search(string $query, ?SubjectType $type = null): array
     {
         $query = Str::squish($query);
-        $cacheKey = 'catalog-search:v2:'.sha1(implode('|', [
+        $cacheKey = 'catalog-search:v3:'.sha1(implode('|', [
             Str::lower($query),
             $type?->value ?? 'all',
             filled(config('services.catalog.tmdb_token')) ? 'tmdb' : 'no-tmdb',
         ]));
 
         return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($query, $type): array {
-            $local = $this->localResults($query, $type);
             [$external, $searchedSources, $unavailableSources] = $this->externalResults($query, $type);
 
-            $results = collect([...$local, ...$external])
+            $ranked = collect($external)
                 ->unique(fn (array $candidate): string => $candidate['type'].'|'.Str::lower($candidate['name']))
-                ->take(30)
-                ->values()
-                ->all();
+                ->map(fn (array $candidate): array => [
+                    'relevance' => $this->relevance($candidate['name'], $query),
+                    'candidate' => $candidate,
+                ])
+                ->sortBy(fn (array $entry): int => $entry['relevance'])
+                ->values();
+
+            if ($ranked->contains(fn (array $entry): bool => $entry['relevance'] < self::LOOSE_MATCH)) {
+                $ranked = $ranked
+                    ->filter(fn (array $entry): bool => $entry['relevance'] < self::LOOSE_MATCH)
+                    ->values();
+            }
+
+            $results = $ranked->take(30)->pluck('candidate')->all();
 
             return [
                 'data' => $results,
@@ -57,34 +71,32 @@ class CatalogSearchService
         });
     }
 
-    /** @return array<int, array<string, mixed>> */
-    private function localResults(string $query, ?SubjectType $type): array
+    /**
+     * Rank a candidate by how closely its name matches the query. Exact matches
+     * (ignoring case and punctuation) come first, then prefixes, then names that
+     * contain the query, and finally fuzzy provider matches.
+     */
+    private function relevance(string $name, string $query): int
     {
-        return Subject::query()
-            ->when($type, fn ($builder) => $builder->where('type', $type->value))
-            ->where(function ($builder) use ($query): void {
-                $builder
-                    ->whereRaw('LOWER(name) LIKE ?', ['%'.Str::lower($query).'%'])
-                    ->orWhereRaw("LOWER(COALESCE(description, '')) LIKE ?", ['%'.Str::lower($query).'%']);
-            })
-            ->orderByRaw('CASE WHEN LOWER(name) = ? THEN 0 ELSE 1 END', [Str::lower($query)])
-            ->orderBy('name')
-            ->limit(8)
-            ->get()
-            ->map(fn (Subject $subject): array => [
-                'key' => 'blackframe:'.$subject->id,
-                'subject_id' => $subject->id,
-                'reference' => null,
-                'name' => $subject->name,
-                'type' => $subject->type->value,
-                'type_label' => $subject->type->label(),
-                'description' => $subject->description,
-                'image_url' => $subject->image_url,
-                'source' => 'blackframe',
-                'source_label' => 'BlackFrame',
-                'source_url' => $subject->source_url,
-            ])
-            ->all();
+        $needle = $this->comparableText($query);
+
+        if ($needle === '') {
+            return self::LOOSE_MATCH;
+        }
+
+        $haystack = $this->comparableText($name);
+
+        return match (true) {
+            $haystack === $needle => 0,
+            str_starts_with($haystack, $needle) => 1,
+            str_contains($haystack, $needle) => 2,
+            default => self::LOOSE_MATCH,
+        };
+    }
+
+    private function comparableText(string $value): string
+    {
+        return (string) preg_replace('/[^a-z0-9]+/', '', Str::lower($value));
     }
 
     /**

@@ -22,19 +22,21 @@ User enters at least 2 characters
   -> authenticated GET /catalog/search
   -> per-user rate limit
   -> 15-minute Laravel cache
-  -> local PostgreSQL search + parallel provider requests
-  -> normalize and deduplicate by type and title
-  -> return local ids or encrypted external references
+  -> parallel provider requests
+  -> normalize, deduplicate by type and title, rank by name relevance
+  -> return encrypted external references
 
 User selects a result and submits Shelf/Create
-  -> validate the local id or encrypted external reference
+  -> validate the encrypted external reference
   -> decrypt and verify provider fields on the server
   -> reuse source/source_id or exact existing type/title
   -> import only when no canonical subject exists
   -> attach the canonical subject to the shelf entry or post
 ```
 
-Provider timeouts are isolated. If one API is unavailable, local and successful provider results still appear, and the picker names the unavailable source.
+Search returns provider results only; existing BlackFrame subjects are not mixed in, so a catalog entry always reflects its source. Provider timeouts are isolated — if one API is unavailable, the remaining provider results still appear, and the picker names the unavailable source.
+
+Results are ranked by how closely the name matches the query (exact, then prefix, then containing). Provider results whose names never contain the query are dropped while better matches exist, so fuzzy provider noise cannot bury a real match.
 
 ## Why the client receives a signed reference
 
