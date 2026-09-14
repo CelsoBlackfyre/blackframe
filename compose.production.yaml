@@ -67,6 +67,7 @@ services:
             - '8080'
         networks:
             - edge
+            - data
         security_opt:
             - no-new-privileges:true
 
