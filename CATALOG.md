@@ -38,6 +38,10 @@ Search returns provider results only; existing BlackFrame subjects are not mixed
 
 Results are ranked by how closely the name matches the query (exact, then prefix, then containing). Provider results whose names never contain the query are dropped while better matches exist, so fuzzy provider noise cannot bury a real match.
 
+Provider names carry a release year (`Dune (2021)`) so works that share a title stay distinct in search, on shelves, and on profiles. A trailing year in the query narrows the results without being sent to providers, so `dune (1984)` and `dune 1984` both search for "dune" and rank the 1984 film first.
+
+When two providers describe the same title, the record with artwork and detail wins over a bare entry, with the provider order as tie-break.
+
 ## Why the client receives a signed reference
 
 External search results are not inserted while someone types. BlackFrame encrypts the provider id, type, name, description, image, and source URL into an opaque reference. The Shelf or Create submission sends that reference back to `SubjectResolver`, which rejects altered or invalid values before importing anything.

@@ -28,27 +28,56 @@ class CatalogSearchService
     ];
 
     /**
+     * When two providers describe the same work, keep the one with the richest
+     * record first, then fall back to this order.
+     *
+     * @var array<string, int>
+     */
+    private const SOURCE_PRIORITY = [
+        'tmdb' => 0,
+        'tvmaze' => 1,
+        'jikan' => 2,
+        'openlibrary' => 3,
+        'wikidata' => 4,
+    ];
+
+    /**
      * @return array{data: array<int, array<string, mixed>>, meta: array<string, mixed>}
      */
     public function search(string $query, ?SubjectType $type = null): array
     {
-        $query = Str::squish($query);
-        $cacheKey = 'catalog-search:v3:'.sha1(implode('|', [
-            Str::lower($query),
+        [$term, $year] = $this->splitYear(Str::squish($query));
+        $cacheKey = 'catalog-search:v4:'.sha1(implode('|', [
+            Str::lower($term),
+            (string) ($year ?? ''),
             $type?->value ?? 'all',
             filled(config('services.catalog.tmdb_token')) ? 'tmdb' : 'no-tmdb',
         ]));
 
-        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($query, $type): array {
-            [$external, $searchedSources, $unavailableSources] = $this->externalResults($query, $type);
+        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($term, $year, $type): array {
+            [$external, $searchedSources, $unavailableSources] = $this->externalResults($term, $type);
 
             $ranked = collect($external)
-                ->unique(fn (array $candidate): string => $candidate['type'].'|'.Str::lower($candidate['name']))
                 ->map(fn (array $candidate): array => [
-                    'relevance' => $this->relevance($candidate['name'], $query),
+                    'richness' => $candidate['image_url'] ? 0 : 1,
+                    'detailed' => $candidate['description'] ? 0 : 1,
+                    'depth' => -strlen((string) $candidate['description']),
+                    'priority' => self::SOURCE_PRIORITY[$candidate['source']] ?? 9,
+                    'relevance' => $this->relevance($candidate['name'], $term),
+                    'year_mismatch' => $year !== null && $candidate['year'] !== $year ? 1 : 0,
                     'candidate' => $candidate,
                 ])
-                ->sortBy(fn (array $entry): int => $entry['relevance'])
+                ->sortBy([
+                    ['richness', 'asc'],
+                    ['detailed', 'asc'],
+                    ['depth', 'asc'],
+                    ['priority', 'asc'],
+                ])
+                ->unique(fn (array $entry): string => $entry['candidate']['type'].'|'.Str::lower($entry['candidate']['name']))
+                ->sortBy([
+                    ['relevance', 'asc'],
+                    ['year_mismatch', 'asc'],
+                ])
                 ->values();
 
             if ($ranked->contains(fn (array $entry): bool => $entry['relevance'] < self::LOOSE_MATCH)) {
@@ -62,13 +91,33 @@ class CatalogSearchService
             return [
                 'data' => $results,
                 'meta' => [
-                    'query' => $query,
+                    'query' => $term,
+                    'year' => $year,
                     'type' => $type?->value,
                     'sources' => $searchedSources,
                     'unavailable_sources' => $unavailableSources,
                 ],
             ];
         });
+    }
+
+    /**
+     * Pull a trailing release year out of the query so providers receive a clean
+     * title: "dune (2021)" and "dune 2021" both search providers for "dune".
+     *
+     * @return array{0: string, 1: int|null}
+     */
+    private function splitYear(string $query): array
+    {
+        if (preg_match('/^(.+?)\s*\((\d{4})\)$/', $query, $matches) === 1) {
+            return [trim($matches[1]), (int) $matches[2]];
+        }
+
+        if (preg_match('/^(.+?\S)\s+((?:18|19|20)\d{2})$/', $query, $matches) === 1) {
+            return [trim($matches[1]), (int) $matches[2]];
+        }
+
+        return [$query, null];
     }
 
     /**
@@ -84,7 +133,7 @@ class CatalogSearchService
             return self::LOOSE_MATCH;
         }
 
-        $haystack = $this->comparableText($name);
+        $haystack = $this->comparableText((string) preg_replace('/\s*\(\d{4}\)$/', '', $name));
 
         return match (true) {
             $haystack === $needle => 0,
@@ -92,6 +141,11 @@ class CatalogSearchService
             str_contains($haystack, $needle) => 2,
             default => self::LOOSE_MATCH,
         };
+    }
+
+    private function yearFrom(string $value): ?int
+    {
+        return preg_match('/\b((?:18|19|20)\d{2})\b/', $value, $matches) === 1 ? (int) $matches[1] : null;
     }
 
     private function comparableText(string $value): string
@@ -244,6 +298,7 @@ class CatalogSearchService
                     'image_url' => filled($item['cover_i'] ?? null)
                         ? 'https://covers.openlibrary.org/b/id/'.$item['cover_i'].'-M.jpg'
                         : null,
+                    'year' => is_numeric($year) ? (int) $year : null,
                 ]);
             })
             ->all();
@@ -264,6 +319,7 @@ class CatalogSearchService
                 'type' => SubjectType::Series,
                 'description' => $this->plainText($show['summary'] ?? null),
                 'image_url' => data_get($show, 'image.medium') ?? data_get($show, 'image.original'),
+                'year' => $this->yearFrom((string) ($show['premiered'] ?? '')),
             ]))
             ->all();
     }
@@ -282,6 +338,7 @@ class CatalogSearchService
                 'type' => $type,
                 'description' => $this->plainText($item['synopsis'] ?? null),
                 'image_url' => data_get($item, 'images.jpg.large_image_url') ?? data_get($item, 'images.jpg.image_url'),
+                'year' => $this->yearFrom((string) ($item['year'] ?? data_get($item, 'published.prop.from.year', ''))),
             ]))
             ->all();
     }
@@ -306,6 +363,7 @@ class CatalogSearchService
                     'type' => $type,
                     'description' => $item['description'] ?? null,
                     'image_url' => null,
+                    'year' => $this->yearFrom((string) ($item['description'] ?? '')),
                 ]);
             })
             ->filter()
@@ -332,6 +390,7 @@ class CatalogSearchService
                     'type' => $type,
                     'description' => $item['overview'] ?? null,
                     'image_url' => filled($item['poster_path'] ?? null) ? 'https://image.tmdb.org/t/p/w342'.$item['poster_path'] : null,
+                    'year' => $this->yearFrom((string) ($item['release_date'] ?? $item['first_air_date'] ?? '')),
                 ]);
             })
             ->when($requestedType, fn ($items) => $items->where('type', $requestedType->value))
@@ -340,15 +399,22 @@ class CatalogSearchService
             ->all();
     }
 
-    /** @param array{source: string, source_id: string, source_url: ?string, name: string, type: SubjectType, description: ?string, image_url: ?string} $data */
+    /** @param array{source: string, source_id: string, source_url: ?string, name: string, type: SubjectType, description: ?string, image_url: ?string, year?: int|null} $data */
     private function candidate(array $data): array
     {
+        $year = $data['year'] ?? null;
+        $name = Str::squish((string) $data['name']);
+
+        if ($year !== null && ! str_contains($name, (string) $year)) {
+            $name = Str::limit($name, 150, '').' ('.$year.')';
+        }
+
         $payload = [
             'version' => 1,
             'source' => $data['source'],
             'source_id' => Str::limit((string) $data['source_id'], 160, ''),
             'source_url' => $this->httpsUrl($data['source_url']),
-            'name' => Str::limit(Str::squish((string) $data['name']), 160, ''),
+            'name' => Str::limit($name, 160, ''),
             'type' => $data['type']->value,
             'description' => $this->plainText($data['description']),
             'image_url' => $this->httpsUrl($data['image_url']),
@@ -359,6 +425,7 @@ class CatalogSearchService
             'subject_id' => null,
             'reference' => Crypt::encryptString(json_encode($payload, JSON_THROW_ON_ERROR)),
             'name' => $payload['name'],
+            'year' => $year,
             'type' => $payload['type'],
             'type_label' => $data['type']->label(),
             'description' => $payload['description'],

@@ -18,6 +18,7 @@ export interface CatalogCandidate {
     subject_id: number | null;
     reference: string | null;
     name: string;
+    year: number | null;
     type: SubjectType;
     type_label: string;
     description: string | null;

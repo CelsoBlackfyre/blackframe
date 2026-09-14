@@ -33,7 +33,7 @@ class CatalogSearchTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'name' => 'Dune Messiah',
+                'name' => 'Dune Messiah (1969)',
                 'type' => 'book',
                 'source_label' => 'Open Library',
             ])
@@ -51,6 +51,95 @@ class CatalogSearchTest extends TestCase
 
         $this->assertNull($external['subject_id']);
         $this->assertNotEmpty($external['reference']);
+    }
+
+    public function test_same_titled_movies_from_one_provider_are_all_returned(): void
+    {
+        config(['services.catalog.tmdb_token' => 'tmdb-token']);
+        $this->fakeDuneMovies();
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=dune&type=movie')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame(['Dune (2021)', 'Dune (1984)'], collect($data)->pluck('name')->all());
+    }
+
+    public function test_richer_provider_record_wins_when_titles_collide(): void
+    {
+        config(['services.catalog.tmdb_token' => 'tmdb-token']);
+
+        Http::fake([
+            'www.wikidata.org/*' => Http::response(['search' => [[
+                'id' => 'Q47703',
+                'label' => 'Dune',
+                'description' => '2021 film by Denis Villeneuve',
+                'concepturi' => 'https://www.wikidata.org/wiki/Q47703',
+            ]]]),
+            'api.themoviedb.org/*' => Http::response(['results' => [[
+                'media_type' => 'movie',
+                'id' => 438631,
+                'title' => 'Dune',
+                'overview' => 'Paul Atreides unites with the Fremen.',
+                'poster_path' => '/dune-2021.jpg',
+                'release_date' => '2021-10-22',
+            ]]]),
+        ]);
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=dune&type=movie')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertCount(1, $data);
+        $this->assertSame('tmdb', $data[0]['source']);
+        $this->assertSame('Dune (2021)', $data[0]['name']);
+    }
+
+    public function test_trailing_release_year_ranks_the_matching_title_first(): void
+    {
+        config(['services.catalog.tmdb_token' => 'tmdb-token']);
+        $this->fakeDuneMovies();
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=dune%20(1984)&type=movie')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('Dune (1984)', $data[0]['name']);
+
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), 'themoviedb.org')
+            && str_contains($request->url(), 'query=dune')
+            && ! str_contains($request->url(), '1984'));
+    }
+
+    public function test_bare_release_year_ranks_the_matching_title_first(): void
+    {
+        config(['services.catalog.tmdb_token' => 'tmdb-token']);
+        $this->fakeDuneMovies();
+
+        $data = $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=dune%202021&type=movie')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('Dune (2021)', $data[0]['name']);
+    }
+
+    public function test_a_year_that_is_the_whole_title_is_not_stripped(): void
+    {
+        Http::fake([
+            'openlibrary.org/*' => Http::response(['docs' => []]),
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->getJson('/catalog/search?query=1984&type=book')
+            ->assertOk();
+
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), 'openlibrary.org')
+            && str_contains($request->url(), 'q=1984'));
     }
 
     public function test_exact_matches_rank_above_fuzzy_provider_results(): void
@@ -122,7 +211,7 @@ class CatalogSearchTest extends TestCase
             ->assertOk()
             ->json('data');
 
-        $this->assertSame(['Sand and Stone'], collect($data)->pluck('name')->all());
+        $this->assertSame(['Sand and Stone (2001)'], collect($data)->pluck('name')->all());
     }
 
     public function test_chosen_external_result_is_imported_only_when_added_to_a_shelf(): void
@@ -148,7 +237,7 @@ class CatalogSearchTest extends TestCase
 
         $subject = Subject::query()->sole();
 
-        $this->assertSame('Dune Messiah', $subject->name);
+        $this->assertSame('Dune Messiah (1969)', $subject->name);
         $this->assertSame('openlibrary', $subject->source);
         $this->assertSame($user->id, $subject->imported_by);
         $this->assertDatabaseHas('user_subjects', [
@@ -200,6 +289,31 @@ class CatalogSearchTest extends TestCase
         $this->assertSame($firstUser->id, $suggestion->user_id);
         $this->assertSame('the long tomorrow', $suggestion->normalized_name);
         $this->assertSame('pending', $suggestion->status);
+    }
+
+    private function fakeDuneMovies(): void
+    {
+        Http::fake([
+            'www.wikidata.org/*' => Http::response(['search' => []]),
+            'api.themoviedb.org/*' => Http::response(['results' => [
+                [
+                    'media_type' => 'movie',
+                    'id' => 438631,
+                    'title' => 'Dune',
+                    'overview' => 'Paul Atreides unites with the Fremen.',
+                    'poster_path' => '/dune-2021.jpg',
+                    'release_date' => '2021-10-22',
+                ],
+                [
+                    'media_type' => 'movie',
+                    'id' => 841,
+                    'title' => 'Dune',
+                    'overview' => 'A spice trader rises on Arrakis.',
+                    'poster_path' => '/dune-1984.jpg',
+                    'release_date' => '1984-12-14',
+                ],
+            ]]),
+        ]);
     }
 
     private function fakeCatalogs(): void
