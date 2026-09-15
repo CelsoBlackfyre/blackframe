@@ -1,10 +1,12 @@
+import { subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { SubjectSummary } from '@/types/subjects';
-import { Tag } from 'lucide-react';
 
-type BadgeSubject = Pick<SubjectSummary, 'name' | 'type_label'>;
+type BadgeSubject = Pick<SubjectSummary, 'name' | 'type' | 'type_label'>;
 
 export function SubjectBadge({ subject, className }: { subject: BadgeSubject; className?: string }) {
+    const GroupIcon = subjectGroupFor(subject.type).icon;
+
     return (
         <span
             className={cn(
@@ -12,7 +14,7 @@ export function SubjectBadge({ subject, className }: { subject: BadgeSubject; cl
                 className,
             )}
         >
-            <Tag className="text-primary size-3.5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+            <GroupIcon className="text-primary size-3.5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
             <span className="truncate">{subject.name}</span>
             <span className="text-muted-foreground shrink-0">· {subject.type_label}</span>
         </span>

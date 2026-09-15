@@ -3,6 +3,7 @@ import { PageHeading } from '@/components/page-heading';
 import { SocialAvatar } from '@/components/social/avatar';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { sortBySubjectGroup, subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { MatchCandidate, MatchDecision, MatchScoreWeight, MatchSummary, MatchView } from '@/types/matches';
@@ -50,36 +51,46 @@ interface LastDecision {
 }
 
 function SharedShelf({ candidate, compact = false }: { candidate: MatchCandidate; compact?: boolean }) {
-    const subjects = compact ? candidate.compatibility.shared_subjects.slice(0, 3) : candidate.compatibility.shared_subjects;
+    const shared = sortBySubjectGroup(candidate.compatibility.shared_subjects, (subject) => subject.type);
+    const subjects = compact ? shared.slice(0, 3) : shared;
 
     return (
         <div className={cn('grid gap-2', compact ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-5')}>
-            {subjects.map((subject) => (
-                <div key={subject.id} className="min-w-0">
-                    <div className="bg-muted relative aspect-[4/5] overflow-hidden rounded-xl border border-white/10">
-                        {subject.image_url ? (
-                            <img
-                                src={subject.image_url}
-                                alt=""
-                                loading="lazy"
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none"
-                            />
-                        ) : (
-                            <div className="text-muted-foreground flex h-full items-center justify-center">
-                                <LibraryBig className="size-6" strokeWidth={1.5} aria-hidden="true" />
-                            </div>
-                        )}
-                        {subject.both_favorite && (
-                            <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-lg shadow-sm">
-                                <Star className="size-3.5 fill-current" strokeWidth={1.8} aria-hidden="true" />
-                                <span className="sr-only">Favorite for both of you</span>
-                            </span>
+            {subjects.map((subject) => {
+                const GroupIcon = subjectGroupFor(subject.type).icon;
+
+                return (
+                    <div key={subject.id} className="min-w-0">
+                        <div className="bg-muted relative aspect-[4/5] overflow-hidden rounded-xl border border-white/10">
+                            {subject.image_url ? (
+                                <img
+                                    src={subject.image_url}
+                                    alt=""
+                                    loading="lazy"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none"
+                                />
+                            ) : (
+                                <div className="text-muted-foreground flex h-full items-center justify-center">
+                                    <LibraryBig className="size-6" strokeWidth={1.5} aria-hidden="true" />
+                                </div>
+                            )}
+                            {subject.both_favorite && (
+                                <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-lg shadow-sm">
+                                    <Star className="size-3.5 fill-current" strokeWidth={1.8} aria-hidden="true" />
+                                    <span className="sr-only">Favorite for both of you</span>
+                                </span>
+                            )}
+                        </div>
+                        <p className="mt-1.5 truncate text-xs font-semibold">{subject.name}</p>
+                        {!compact && (
+                            <p className="text-muted-foreground mt-0.5 flex items-center gap-1 truncate text-[0.6875rem]">
+                                <GroupIcon className="size-3 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+                                {subject.type_label}
+                            </p>
                         )}
                     </div>
-                    <p className="mt-1.5 truncate text-xs font-semibold">{subject.name}</p>
-                    {!compact && <p className="text-muted-foreground mt-0.5 truncate text-[0.6875rem]">{subject.type_label}</p>}
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

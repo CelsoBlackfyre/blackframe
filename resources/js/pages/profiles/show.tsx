@@ -6,8 +6,10 @@ import { FollowButton } from '@/components/social/follow-button';
 import { PostCard } from '@/components/social/post-card';
 import { PulsePostCard } from '@/components/social/pulse-post-card';
 import { SubjectBadge } from '@/components/subjects/subject-badge';
+import { SubjectGroupSection } from '@/components/subjects/subject-group-section';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { groupBySubjectGroup, sortBySubjectGroup, subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { ProfileConnectionList, ProfilePageProps, ProfileShelfEntry, ProfileView } from '@/types/profiles';
@@ -104,6 +106,8 @@ function FollowProfileButton({ profile }: Pick<ProfilePageProps, 'profile'>) {
 }
 
 function ShelfCard({ entry }: { entry: ProfileShelfEntry }) {
+    const GroupIcon = subjectGroupFor(entry.subject.type).icon;
+
     return (
         <article className="border-border bg-card group overflow-hidden rounded-2xl border">
             <div className="bg-muted aspect-[4/3] overflow-hidden">
@@ -125,8 +129,11 @@ function ShelfCard({ entry }: { entry: ProfileShelfEntry }) {
             <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{entry.subject.type_label}</p>
-                        <h2 className="mt-1 line-clamp-2 font-semibold">{entry.subject.name}</h2>
+                        <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+                            <GroupIcon className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+                            {entry.subject.type_label}
+                        </p>
+                        <h3 className="mt-1 line-clamp-2 font-semibold">{entry.subject.name}</h3>
                     </div>
                     {entry.favorite && <Heart className="text-primary mt-0.5 size-4 shrink-0 fill-current" aria-label="Favorite" />}
                 </div>
@@ -262,7 +269,7 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                                             {profile.is_self ? 'Your culture' : 'Culture you share'}
                                         </p>
                                         <div className="flex flex-wrap gap-2">
-                                            {profile.shared_subjects.map((subject) => (
+                                            {sortBySubjectGroup(profile.shared_subjects, (subject) => subject.type).map((subject) => (
                                                 <SubjectBadge key={subject.id} subject={subject} />
                                             ))}
                                         </div>
@@ -354,14 +361,17 @@ export default function ShowProfile({ profile, filters, posts, pulse, shelf }: P
                     ) : filters.tab === 'shelf' && shelf ? (
                         shelf.data.length > 0 ? (
                             <>
-                                <section
-                                    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                                    aria-label={`${profile.name}'s Geek Shelf`}
-                                >
-                                    {shelf.data.map((entry) => (
-                                        <ShelfCard key={entry.id} entry={entry} />
+                                <div className="space-y-8" role="region" aria-label={`${profile.name}'s Geek Shelf`}>
+                                    {groupBySubjectGroup(shelf.data, (entry) => entry.subject.type).map(({ group, items }) => (
+                                        <SubjectGroupSection key={group.id} group={group} count={items.length} headingLevel="h2">
+                                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {items.map((entry) => (
+                                                    <ShelfCard key={entry.id} entry={entry} />
+                                                ))}
+                                            </div>
+                                        </SubjectGroupSection>
                                     ))}
-                                </section>
+                                </div>
                                 <Pagination resource={shelf} ariaLabel="Profile content pages" />
                             </>
                         ) : (

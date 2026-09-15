@@ -125,6 +125,8 @@ class DirectMessagingTest extends TestCase
                 ->where('active.messages.0.is_mine', false)
                 ->has('active.shared_subjects', 1)
                 ->where('active.shared_subjects.0.name', 'Shared World')
+                ->where('active.shared_subjects.0.slug', $subject->slug)
+                ->where('active.shared_subjects.0.type', $subject->type->value)
             );
 
         $this->assertDatabaseHas('conversation_user', [

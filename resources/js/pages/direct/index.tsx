@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { getEcho } from '@/lib/echo';
+import { sortBySubjectGroup, subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { DirectActiveConversation, DirectConversationSummary, DirectMessage } from '@/types/direct';
@@ -292,21 +293,25 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
                 <div className="border-border bg-muted/35 border-b px-4 py-3 sm:px-5">
                     <div className="flex items-center gap-2 overflow-x-auto">
                         <span className="text-muted-foreground shrink-0 text-xs font-semibold">You both shelved</span>
-                        {active.shared_subjects.map((subject) => (
-                            <span
-                                key={subject.id}
-                                className="border-border bg-card inline-flex shrink-0 items-center gap-2 rounded-lg border py-1 pr-2.5 pl-1 text-xs font-semibold"
-                            >
-                                {subject.image_url ? (
-                                    <img src={subject.image_url} alt="" className="size-7 rounded-md object-cover" />
-                                ) : (
-                                    <span className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-md">
-                                        <BookHeart className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
-                                    </span>
-                                )}
-                                <span className="max-w-36 truncate">{subject.name}</span>
-                            </span>
-                        ))}
+                        {sortBySubjectGroup(active.shared_subjects, (subject) => subject.type).map((subject) => {
+                            const GroupIcon = subjectGroupFor(subject.type).icon;
+
+                            return (
+                                <span
+                                    key={subject.id}
+                                    className="border-border bg-card inline-flex shrink-0 items-center gap-2 rounded-lg border py-1 pr-2.5 pl-1 text-xs font-semibold"
+                                >
+                                    {subject.image_url ? (
+                                        <img src={subject.image_url} alt="" className="size-7 rounded-md object-cover" />
+                                    ) : (
+                                        <span className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-md">
+                                            <GroupIcon className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+                                        </span>
+                                    )}
+                                    <span className="max-w-36 truncate">{subject.name}</span>
+                                </span>
+                            );
+                        })}
                     </div>
                 </div>
             )}

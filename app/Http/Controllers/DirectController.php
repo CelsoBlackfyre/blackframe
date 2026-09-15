@@ -138,6 +138,8 @@ class DirectController extends Controller
             ->map(fn (UserSubject $entry) => [
                 'id' => $entry->subject->id,
                 'name' => $entry->subject->name,
+                'slug' => $entry->subject->slug,
+                'type' => $entry->subject->type->value,
                 'type_label' => $entry->subject->type->label(),
                 'image_url' => $entry->subject->image_url,
             ]);

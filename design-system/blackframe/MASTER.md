@@ -27,6 +27,7 @@ The ui-ux-pro-max community/social search supported expressive typography, rose,
 - `FeedTabs`: Home/Pulse navigation and current-page semantics.
 - `PostEngagement`: likes, paginated comments, writing, confirmation before deletion, network/validation feedback.
 - `PasswordInput`: accessible reveal control and password-manager support.
+- `SubjectGroupSection`: medium headings (films & TV, books & comics, games, characters & franchises) shared by the shelf and profile shelf. Grouping mirrors `ShelfStatus::labelFor`, and `resources/js/lib/subject-groups.ts` is the only place a subject type is assigned to a medium.
 - `ConnectionStatus` and `AppErrorBoundary`: useful feedback when the connection or rendering fails.
 
 ## Layout
@@ -35,9 +36,9 @@ The ui-ux-pro-max community/social search supported expressive typography, rose,
 - Header search opens the real people directory. Account and theme controls stay in predictable places.
 - Home: 640px content column and optional 280px context rail. Photo lightboxes show the uncropped original; carousel controls have explicit labels.
 - Pulse: the same navigation and composer, with a readable text measure and shared comment behavior.
-- Shelf: collection first, flat summary, search/sort/status filters, collapsed editors, and an Add title dialog. Keep in-progress edits visibly marked.
+- Shelf: collection first, grouped by medium with per-section counts, then search/sort/status filters, collapsed editors, and an Add title dialog. Keep in-progress edits visibly marked.
 - Discover: search and relationship filters above people cards; real shared-title context and processing/error feedback.
-- Profiles: clear identity, consistent tabs, and the same visual/text post components.
+- Profiles: clear identity, consistent tabs, shared taste grouped by medium, and the same visual/text post components.
 - Settings: responsive navigation and a single focused settings surface, with a valid main landmark.
 - Public pages: split hero with original photography, one primary action label per intent, and coherent light/dark presentation. Authentication continues the same visual identity.
 

@@ -1,3 +1,5 @@
+import { SubjectType } from '@/types/subjects';
+
 export interface DirectPerson {
     id: number;
     name: string;
@@ -28,6 +30,8 @@ export interface DirectConversationSummary {
 export interface DirectSharedSubject {
     id: number;
     name: string;
+    slug: string;
+    type: SubjectType;
     type_label: string;
     image_url: string | null;
 }

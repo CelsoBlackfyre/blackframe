@@ -2,6 +2,7 @@ import { FlashMessage } from '@/components/flash-message';
 import InputError from '@/components/input-error';
 import { PageHeading } from '@/components/page-heading';
 import { ShelfEntryCard } from '@/components/shelf/shelf-entry-card';
+import { SubjectGroupSection } from '@/components/subjects/subject-group-section';
 import { SubjectPicker } from '@/components/subjects/subject-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import { groupBySubjectGroup } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { CatalogCandidate, SelectOption, ShelfEntry, ShelfStatus } from '@/types/subjects';
@@ -66,6 +68,8 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
         .sort((a, b) =>
             sort === 'title' ? a.subject.name.localeCompare(b.subject.name) : sort === 'rating' ? (b.rating ?? 0) - (a.rating ?? 0) : 0,
         );
+
+    const groupedEntries = groupBySubjectGroup(filteredEntries, (entry) => entry.subject.type);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -196,10 +200,16 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                             ))}
                         </div>
 
-                        {filteredEntries.length > 0 ? (
-                            <div className="mt-6 grid gap-4 2xl:grid-cols-2">
-                                {filteredEntries.map((entry) => (
-                                    <ShelfEntryCard key={entry.id} entry={entry} statusOptions={statusOptions} />
+                        {groupedEntries.length > 0 ? (
+                            <div className="mt-6 space-y-8">
+                                {groupedEntries.map(({ group, items }) => (
+                                    <SubjectGroupSection key={group.id} group={group} count={items.length}>
+                                        <div className="grid gap-4 2xl:grid-cols-2">
+                                            {items.map((entry) => (
+                                                <ShelfEntryCard key={entry.id} entry={entry} statusOptions={statusOptions} />
+                                            ))}
+                                        </div>
+                                    </SubjectGroupSection>
                                 ))}
                             </div>
                         ) : (

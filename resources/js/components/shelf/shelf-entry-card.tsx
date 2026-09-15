@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { subjectGroupFor } from '@/lib/subject-groups';
 import { SelectOption, ShelfEntry, ShelfStatus } from '@/types/subjects';
 import { useForm } from '@inertiajs/react';
 import { ChevronDown, Heart, LoaderCircle, Save, Star, Trash2 } from 'lucide-react';
@@ -19,6 +20,7 @@ interface ShelfEntryForm {
 
 export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; statusOptions: SelectOption<ShelfStatus>[] }) {
     const [confirmingRemoval, setConfirmingRemoval] = useState(false);
+    const GroupIcon = subjectGroupFor(entry.subject.type).icon;
     const form = useForm<ShelfEntryForm>({
         status: entry.status,
         favorite: entry.favorite,
@@ -71,8 +73,11 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                 <form onSubmit={submit} className="min-w-0 p-4 sm:p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-muted-foreground text-xs font-medium">{entry.subject.type_label}</p>
-                            <h3 className="mt-0.5 text-base font-semibold [overflow-wrap:anywhere]">{entry.subject.name}</h3>
+                            <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+                                <GroupIcon className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+                                {entry.subject.type_label}
+                            </p>
+                            <h4 className="mt-0.5 text-base font-semibold [overflow-wrap:anywhere]">{entry.subject.name}</h4>
                             {entry.subject.parent && <p className="text-muted-foreground mt-1 text-xs">Part of {entry.subject.parent}</p>}
                         </div>
                         <span className="border-primary/20 bg-primary/8 rounded-full border px-2.5 py-1 text-xs font-semibold">
