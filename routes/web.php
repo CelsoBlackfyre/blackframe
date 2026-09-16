@@ -8,6 +8,7 @@ use App\Http\Controllers\DirectMessageController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\MatchDecisionController;
 use App\Http\Controllers\PeopleController;
@@ -24,6 +25,8 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
+
+Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('feed', FeedController::class)->name('feed');

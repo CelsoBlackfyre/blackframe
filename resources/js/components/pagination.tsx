@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Paginated } from '@/types/feed';
 import { Link } from '@inertiajs/react';
@@ -12,43 +13,41 @@ interface PaginationProps {
     preserveState?: boolean;
 }
 
-export function Pagination({
-    resource,
-    previousLabel = 'Newer',
-    nextLabel = 'Older',
-    ariaLabel = 'Pages',
-    className = 'mt-7',
-    preserveState = false,
-}: PaginationProps) {
+export function Pagination({ resource, previousLabel, nextLabel, ariaLabel, className = 'mt-7', preserveState = false }: PaginationProps) {
+    const { t } = useTranslation();
+    const previous = previousLabel ?? t('Newer');
+    const next = nextLabel ?? t('Older');
+    const label = ariaLabel ?? t('Pages');
+
     if (!resource.prev_page_url && !resource.next_page_url) {
         return null;
     }
 
     return (
-        <nav className={cn('flex items-center justify-between gap-4', className)} aria-label={ariaLabel}>
+        <nav className={cn('flex items-center justify-between gap-4', className)} aria-label={label}>
             {resource.prev_page_url ? (
                 <Button asChild variant="outline" className="min-h-11 rounded-xl">
                     <Link href={resource.prev_page_url} preserveScroll preserveState={preserveState || undefined}>
-                        {previousLabel}
+                        {previous}
                     </Link>
                 </Button>
             ) : (
                 <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                    {previousLabel}
+                    {previous}
                 </Button>
             )}
             <span className="text-muted-foreground text-xs tabular-nums">
-                Page {resource.current_page} of {resource.last_page}
+                {t('Page {current} of {total}', { current: resource.current_page, total: resource.last_page })}
             </span>
             {resource.next_page_url ? (
                 <Button asChild variant="outline" className="min-h-11 rounded-xl">
                     <Link href={resource.next_page_url} preserveScroll preserveState={preserveState || undefined}>
-                        {nextLabel}
+                        {next}
                     </Link>
                 </Button>
             ) : (
                 <Button variant="outline" disabled className="min-h-11 rounded-xl">
-                    {nextLabel}
+                    {next}
                 </Button>
             )}
         </nav>

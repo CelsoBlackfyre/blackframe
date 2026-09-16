@@ -42,6 +42,14 @@ The ui-ux-pro-max community/social search supported expressive typography, rose,
 - Settings: responsive navigation and a single focused settings surface, with a valid main landmark.
 - Public pages: split hero with original photography, one primary action label per intent, and coherent light/dark presentation. Authentication continues the same visual identity.
 
+## Languages
+
+- Interface languages are English and Portuguese (Brazil). English is the source: its strings are the translation keys, so anything not yet translated still reads as English instead of showing a raw key.
+- Catalogs live in `lang/{locale}.json` for interface copy and `lang/{locale}/*.php` for Laravel's own messages. Only the active catalog is sent to the browser, and the medium, status and type vocabulary must match `SubjectType` and `ShelfStatus` in every language.
+- A visitor's choice is kept in the session and a `locale` cookie, and first-time visitors are matched against their browser's language. `settings/language` and the header switcher both write the same preference.
+- Dates, relative times, numbers and server-rendered labels follow the active locale: Carbon carries the locale for relative dates, absolute dates use `translatedFormat`, and `Intl` formatting receives the locale instead of the browser default.
+- Copy rules apply to every language: no em-dashes, sentence case, and the same friendly register.
+
 ## Accessibility and state
 
 Use semantic links and buttons; retain browser keyboard order and visible focus. Controls have at least 44px touch targets. All meaningful images need truthful alt text. Reserve media space and lazy-load below the first post. Input errors must be associated with fields. Dialogs have a title, description, close control, and focus containment. Fixed navigation reserves bottom padding and safe areas.
@@ -58,4 +66,4 @@ Matching uses structured shared shelf data, never demographics or popularity. Di
 
 ## Review matrix
 
-375px, 768px, 1024px, 1440px; light/dark; keyboard-only navigation; reduced motion; unavailable media; loading and empty states. Recheck affected flows after changing a shared component.
+375px, 768px, 1024px, 1440px; light/dark; English and Portuguese; keyboard-only navigation; reduced motion; unavailable media; loading and empty states. Recheck affected flows after changing a shared component.

@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import * as React from 'react';
 
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 const Sheet = SheetPrimitive.Root;
@@ -49,18 +50,22 @@ const sheetVariants = cva(
 interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>, VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-    ({ side = 'right', className, children, ...props }, ref) => (
-        <SheetPortal>
-            <SheetOverlay />
-            <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
-                {children}
-                <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-3 right-3 flex size-11 items-center justify-center rounded-xl opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </SheetPrimitive.Close>
-            </SheetPrimitive.Content>
-        </SheetPortal>
-    ),
+    ({ side = 'right', className, children, ...props }, ref) => {
+        const { t } = useTranslation();
+
+        return (
+            <SheetPortal>
+                <SheetOverlay />
+                <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
+                    {children}
+                    <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-3 right-3 flex size-11 items-center justify-center rounded-xl opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">{t('Close')}</span>
+                    </SheetPrimitive.Close>
+                </SheetPrimitive.Content>
+            </SheetPortal>
+        );
+    },
 );
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 

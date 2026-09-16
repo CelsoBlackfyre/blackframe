@@ -13,11 +13,11 @@ enum ShelfStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Current => 'In progress',
-            self::Completed => 'Completed',
-            self::Backlog => 'Backlog',
-            self::Paused => 'Paused',
-            self::Dropped => 'Dropped',
+            self::Current => __('In progress'),
+            self::Completed => __('Completed'),
+            self::Backlog => __('Backlog'),
+            self::Paused => __('Paused'),
+            self::Dropped => __('Dropped'),
         };
     }
 
@@ -28,10 +28,10 @@ enum ShelfStatus: string
         }
 
         return match ($type) {
-            SubjectType::Game, SubjectType::TabletopGame => 'Playing',
-            SubjectType::Movie, SubjectType::Series, SubjectType::Anime => 'Watching',
-            SubjectType::Manga, SubjectType::Book, SubjectType::Comic => 'Reading',
-            SubjectType::Character, SubjectType::Franchise => 'Exploring',
+            SubjectType::Game, SubjectType::TabletopGame => __('Playing'),
+            SubjectType::Movie, SubjectType::Series, SubjectType::Anime => __('Watching'),
+            SubjectType::Manga, SubjectType::Book, SubjectType::Comic => __('Reading'),
+            SubjectType::Character, SubjectType::Franchise => __('Exploring'),
         };
     }
 }

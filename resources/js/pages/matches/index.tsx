@@ -3,6 +3,7 @@ import { PageHeading } from '@/components/page-heading';
 import { SocialAvatar } from '@/components/social/avatar';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
 import { sortBySubjectGroup, subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
@@ -30,13 +31,6 @@ import { PointerEvent as ReactPointerEvent, useCallback, useRef, useState } from
 gsap.registerPlugin(useGSAP);
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Shelf Match', href: route('matches.index') }];
-const statusLabels: Record<string, string> = {
-    current: 'In progress',
-    completed: 'Completed',
-    backlog: 'Backlog',
-    paused: 'Paused',
-    dropped: 'Dropped',
-};
 
 interface MatchPageProps {
     candidates: MatchCandidate[];
@@ -51,6 +45,7 @@ interface LastDecision {
 }
 
 function SharedShelf({ candidate, compact = false }: { candidate: MatchCandidate; compact?: boolean }) {
+    const { t } = useTranslation();
     const shared = sortBySubjectGroup(candidate.compatibility.shared_subjects, (subject) => subject.type);
     const subjects = compact ? shared.slice(0, 3) : shared;
 
@@ -77,7 +72,7 @@ function SharedShelf({ candidate, compact = false }: { candidate: MatchCandidate
                             {subject.both_favorite && (
                                 <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-lg shadow-sm">
                                     <Star className="size-3.5 fill-current" strokeWidth={1.8} aria-hidden="true" />
-                                    <span className="sr-only">Favorite for both of you</span>
+                                    <span className="sr-only">{t('Favorite for both of you')}</span>
                                 </span>
                             )}
                         </div>
@@ -96,16 +91,18 @@ function SharedShelf({ candidate, compact = false }: { candidate: MatchCandidate
 }
 
 function CompatibilityScore({ score, size = 'large' }: { score: number; size?: 'large' | 'small' }) {
+    const { t } = useTranslation();
+
     return (
         <div
             className={cn(
                 'bg-primary text-primary-foreground flex shrink-0 flex-col items-center justify-center rounded-2xl shadow-sm',
                 size === 'large' ? 'size-20' : 'size-14 rounded-xl',
             )}
-            aria-label={`${score} percent shelf compatibility`}
+            aria-label={t('{score} percent shelf compatibility', { score })}
         >
             <strong className={cn('leading-none tabular-nums', size === 'large' ? 'text-2xl' : 'text-lg')}>{score}%</strong>
-            <span className={cn('font-semibold', size === 'large' ? 'mt-1 text-[0.5625rem]' : 'text-[0.5rem]')}>match</span>
+            <span className={cn('font-semibold', size === 'large' ? 'mt-1 text-[0.5625rem]' : 'text-[0.5rem]')}>{t('match')}</span>
         </div>
     );
 }
@@ -125,7 +122,8 @@ function CandidateCard({
     onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
     disabled: boolean;
 }) {
-    const relationship = candidate.is_following && candidate.follows_you ? 'Already connected' : candidate.follows_you ? 'Follows you' : null;
+    const { t } = useTranslation();
+    const relationship = candidate.is_following && candidate.follows_you ? t('Already connected') : candidate.follows_you ? t('Follows you') : null;
 
     return (
         <article
@@ -134,7 +132,7 @@ function CandidateCard({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            aria-label={`Compatibility card for ${candidate.name}`}
+            aria-label={t('Compatibility card for {name}', { name: candidate.name })}
             aria-disabled={disabled}
             className="group border-border bg-card relative z-20 [touch-action:pan-y] overflow-hidden rounded-2xl border shadow-[0_8px_30px_rgba(19,16,18,0.07)] select-none dark:shadow-none"
         >
@@ -143,7 +141,7 @@ function CandidateCard({
                     {candidate.avatar_url ? (
                         <img
                             src={candidate.avatar_url}
-                            alt={`${candidate.name}'s profile photo`}
+                            alt={t("{name}'s profile photo", { name: candidate.name })}
                             draggable={false}
                             className="absolute inset-0 h-full w-full object-cover"
                         />
@@ -154,10 +152,10 @@ function CandidateCard({
                     )}
                     <div className="absolute top-4 left-4 flex items-center gap-2 rounded-xl bg-black/65 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm">
                         <ArrowLeft className="size-4" aria-hidden="true" />
-                        Drag to pass
+                        {t('Drag to pass')}
                     </div>
                     <div className="absolute top-4 right-4 flex items-center gap-2 rounded-xl bg-black/65 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm">
-                        Connect
+                        {t('Connect')}
                         <ArrowRight className="size-4" aria-hidden="true" />
                     </div>
                 </div>
@@ -175,21 +173,21 @@ function CandidateCard({
                     </div>
 
                     <p className="text-muted-foreground mt-5 line-clamp-3 text-sm leading-6">
-                        {candidate.bio || 'Explore the titles and favorites you have in common.'}
+                        {candidate.bio || t('Explore the titles and favorites you have in common.')}
                     </p>
 
                     <dl className="mt-6 grid grid-cols-3 gap-2">
                         <div className="bg-muted rounded-xl p-3">
                             <dd className="text-lg font-semibold tabular-nums">{candidate.compatibility.shared_count}</dd>
-                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">shared titles</dt>
+                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">{t('shared titles')}</dt>
                         </div>
                         <div className="bg-muted rounded-xl p-3">
                             <dd className="text-lg font-semibold tabular-nums">{candidate.compatibility.shared_favorites_count}</dd>
-                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">both favorites</dt>
+                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">{t('both favorites')}</dt>
                         </div>
                         <div className="bg-muted rounded-xl p-3">
                             <dd className="text-lg font-semibold tabular-nums">{candidate.compatibility.same_status_count}</dd>
-                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">same status</dt>
+                            <dt className="text-muted-foreground text-[0.6875rem] leading-4">{t('same status')}</dt>
                         </div>
                     </dl>
 
@@ -202,7 +200,7 @@ function CandidateCard({
                     </div>
 
                     <div className="mt-auto pt-6">
-                        <p className="mb-3 text-xs font-semibold">On both shelves</p>
+                        <p className="mb-3 text-xs font-semibold">{t('On both shelves')}</p>
                         <SharedShelf candidate={candidate} />
                     </div>
                 </div>
@@ -212,18 +210,26 @@ function CandidateCard({
 }
 
 function CompatibilityRail({ candidate, scoreModel }: { candidate: MatchCandidate; scoreModel: MatchScoreWeight[] }) {
+    const { t } = useTranslation();
     const topShared = candidate.compatibility.shared_subjects[0];
+    const statusLabels: Record<string, string> = {
+        current: t('In progress'),
+        completed: t('Completed'),
+        backlog: t('Backlog'),
+        paused: t('Paused'),
+        dropped: t('Dropped'),
+    };
 
     return (
-        <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start" aria-label="How this match was calculated">
+        <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start" aria-label={t('How this match was calculated')}>
             <section className="border-border bg-card rounded-2xl border p-5">
                 <div className="flex items-center gap-3">
                     <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
                         <Info className="size-5" strokeWidth={1.8} aria-hidden="true" />
                     </span>
                     <div>
-                        <h2 className="font-semibold">Why this score</h2>
-                        <p className="text-muted-foreground text-xs">Shelf signals only</p>
+                        <h2 className="font-semibold">{t('Why this score')}</h2>
+                        <p className="text-muted-foreground text-xs">{t('Shelf signals only')}</p>
                     </div>
                 </div>
                 <div className="mt-5 space-y-3">
@@ -235,17 +241,20 @@ function CompatibilityRail({ candidate, scoreModel }: { candidate: MatchCandidat
                     ))}
                 </div>
                 <p className="text-muted-foreground border-border mt-5 border-t pt-4 text-xs leading-5">
-                    BlackFrame compares overlap, favorites, status, and ratings. Profile text and follower count never change the score.
+                    {t('BlackFrame compares overlap, favorites, status, and ratings. Profile text and follower count never change the score.')}
                 </p>
             </section>
 
             {topShared && (
                 <section className="bg-accent text-accent-foreground rounded-2xl p-5">
                     <BookHeart className="text-primary size-6" strokeWidth={1.8} aria-hidden="true" />
-                    <h2 className="mt-4 text-lg font-semibold">Start with {topShared.name}</h2>
+                    <h2 className="mt-4 text-lg font-semibold">{t('Start with {name}', { name: topShared.name })}</h2>
                     <p className="mt-2 text-sm leading-6 text-neutral-300 dark:text-neutral-600">
-                        You marked it {statusLabels[topShared.viewer_status].toLowerCase()}. {candidate.name.split(' ')[0]} marked it{' '}
-                        {statusLabels[topShared.candidate_status].toLowerCase()}.
+                        {t('You marked it {viewer}. {name} marked it {candidate}.', {
+                            viewer: statusLabels[topShared.viewer_status].toLowerCase(),
+                            name: candidate.name.split(' ')[0],
+                            candidate: statusLabels[topShared.candidate_status].toLowerCase(),
+                        })}
                     </p>
                 </section>
             )}
@@ -254,6 +263,7 @@ function CompatibilityRail({ candidate, scoreModel }: { candidate: MatchCandidat
 }
 
 function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; scoreModel: MatchScoreWeight[] }) {
+    const { t } = useTranslation();
     const current = candidates[0];
     const cardRef = useRef<HTMLElement>(null);
     const drag = useRef<{ pointerId: number; startX: number; currentX: number } | null>(null);
@@ -295,7 +305,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                         only: ['candidates', 'summary', 'flash'],
                         onSuccess: () => setLastDecision({ candidate: current, decision }),
                         onError: () => {
-                            setActionError('We could not save that choice. Please try again.');
+                            setActionError(t('We could not save that choice. Please try again.'));
                             if (cardRef.current) gsap.to(cardRef.current, { x: 0, rotation: 0, opacity: 1, duration: 0.24 });
                         },
                         onFinish: () => setProcessing(false),
@@ -317,7 +327,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                 onComplete: submit,
             });
         },
-        [current, processing],
+        [current, processing, t],
     );
 
     const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
@@ -354,7 +364,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
             preserveScroll: true,
             only: ['candidates', 'summary', 'flash'],
             onSuccess: () => setLastDecision(null),
-            onError: () => setActionError('We could not undo that choice. Please try again.'),
+            onError: () => setActionError(t('We could not undo that choice. Please try again.')),
             onFinish: () => setProcessing(false),
         });
     };
@@ -363,9 +373,9 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
         return (
             <EmptyMatches
                 icon={Check}
-                title="You are caught up"
-                description="You have reviewed every compatible shelf nearby. Add more titles or return later as the community grows."
-                action={{ label: 'Grow your shelf', href: route('shelf.index') }}
+                title={t('You are caught up')}
+                description={t('You have reviewed every compatible shelf nearby. Add more titles or return later as the community grows.')}
+                action={{ label: t('Grow your shelf'), href: route('shelf.index') }}
             />
         );
     }
@@ -408,7 +418,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                         ) : (
                             <X aria-hidden="true" />
                         )}
-                        Pass
+                        {t('Pass')}
                     </Button>
                     <Button
                         type="button"
@@ -421,7 +431,7 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                         ) : (
                             <HeartHandshake aria-hidden="true" />
                         )}
-                        Connect
+                        {t('Connect')}
                     </Button>
                 </div>
 
@@ -434,7 +444,10 @@ function MatchDeck({ candidates, scoreModel }: { candidates: MatchCandidate[]; s
                             className="text-muted-foreground hover:text-foreground inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors"
                         >
                             <RotateCcw className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                            Undo {lastDecision.decision} for {lastDecision.candidate.name}
+                            {t('Undo {decision} for {name}', {
+                                decision: t(lastDecision.decision === 'connect' ? 'Connect' : 'Pass'),
+                                name: lastDecision.candidate.name,
+                            })}
                         </button>
                     )}
                     {actionError && <p className="text-destructive mt-2 text-sm">{actionError}</p>}
@@ -472,19 +485,21 @@ function EmptyMatches({
 }
 
 function Connections({ candidates }: { candidates: MatchCandidate[] }) {
+    const { t } = useTranslation();
+
     if (candidates.length === 0) {
         return (
             <EmptyMatches
                 icon={HeartHandshake}
-                title="No mutual matches yet"
-                description="A connection appears here only after both people choose Connect. Your outgoing choices stay private until then."
-                action={{ label: 'Find shelf matches', href: route('matches.index', { view: 'discover' }) }}
+                title={t('No mutual matches yet')}
+                description={t('A connection appears here only after both people choose Connect. Your outgoing choices stay private until then.')}
+                action={{ label: t('Find shelf matches'), href: route('matches.index', { view: 'discover' }) }}
             />
         );
     }
 
     return (
-        <section className="grid gap-4 lg:grid-cols-2" aria-label="Mutual shelf matches">
+        <section className="grid gap-4 lg:grid-cols-2" aria-label={t('Mutual shelf matches')}>
             {candidates.map((candidate) => (
                 <article key={candidate.id} className="border-border bg-card flex flex-col rounded-2xl border p-5">
                     <div className="flex items-start gap-4">
@@ -509,7 +524,7 @@ function Connections({ candidates }: { candidates: MatchCandidate[] }) {
                     </div>
                     <p className="text-primary mt-5 inline-flex items-center gap-2 text-sm font-semibold">
                         <HeartHandshake className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                        You both chose Connect
+                        {t('You both chose Connect')}
                     </p>
                     <MessageMatchButton candidate={candidate} />
                 </article>
@@ -519,6 +534,7 @@ function Connections({ candidates }: { candidates: MatchCandidate[] }) {
 }
 
 function MessageMatchButton({ candidate }: { candidate: MatchCandidate }) {
+    const { t } = useTranslation();
     const { post, processing, errors } = useForm<{ person?: string }>({});
 
     return (
@@ -534,7 +550,7 @@ function MessageMatchButton({ candidate }: { candidate: MatchCandidate }) {
                 ) : (
                     <MessagesSquare aria-hidden="true" />
                 )}
-                Message {candidate.name.split(' ')[0]}
+                {t('Message {name}', { name: candidate.name.split(' ')[0] })}
             </Button>
             {errors.person && (
                 <p className="text-destructive mt-2 text-sm" role="alert">
@@ -546,9 +562,10 @@ function MessageMatchButton({ candidate }: { candidate: MatchCandidate }) {
 }
 
 export default function Matches({ candidates, filters, summary, score_model: scoreModel }: MatchPageProps) {
+    const { t } = useTranslation();
     const tabs: Array<{ value: MatchView; label: string; count?: number }> = [
-        { value: 'discover', label: 'Discover' },
-        { value: 'connections', label: 'Connections', count: summary.connections_count },
+        { value: 'discover', label: t('Discover') },
+        { value: 'connections', label: t('Connections'), count: summary.connections_count },
     ];
 
     return (
@@ -556,21 +573,23 @@ export default function Matches({ candidates, filters, summary, score_model: sco
             <Head title="Shelf Match">
                 <meta
                     name="description"
-                    content="Find people through transparent compatibility based on the titles, favorites, statuses, and ratings on your BlackFrame shelf."
+                    content={t(
+                        'Find people through transparent compatibility based on the titles, favorites, statuses, and ratings on your BlackFrame shelf.',
+                    )}
                 />
             </Head>
 
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
                 <PageHeading
-                    title="A good place to connect."
-                    description="Meet people through the stories and worlds you both chose to keep."
+                    title={t('A good place to connect.')}
+                    description={t('Meet people through the stories and worlds you both chose to keep.')}
                     action={
                         <Link
                             href={route('shelf.index')}
                             className="bg-accent text-accent-foreground inline-flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium"
                         >
                             <LibraryBig className="size-5" aria-hidden="true" />
-                            {summary.shelf_count} titles shaping your matches
+                            {t('{count} title shaping your matches|{count} titles shaping your matches', { count: summary.shelf_count })}
                         </Link>
                     }
                 />
@@ -579,7 +598,7 @@ export default function Matches({ candidates, filters, summary, score_model: sco
                     <FlashMessage />
                 </div>
 
-                <nav aria-label="Shelf Match views" className="border-border mt-6 flex gap-1 border-b">
+                <nav aria-label={t('Shelf Match views')} className="border-border mt-6 flex gap-1 border-b">
                     {tabs.map((tab) => {
                         const active = filters.view === tab.value;
                         return (
@@ -609,9 +628,11 @@ export default function Matches({ candidates, filters, summary, score_model: sco
                     {summary.shelf_count === 0 ? (
                         <EmptyMatches
                             icon={LibraryBig}
-                            title="Your shelf starts the conversation"
-                            description="Add at least one book, game, film, series, comic, or fandom. BlackFrame only recommends people after finding a real title you share."
-                            action={{ label: 'Build my shelf', href: route('shelf.index') }}
+                            title={t('Your shelf starts the conversation')}
+                            description={t(
+                                'Add at least one book, game, film, series, comic, or fandom. BlackFrame only recommends people after finding a real title you share.',
+                            )}
+                            action={{ label: t('Build my shelf'), href: route('shelf.index') }}
                         />
                     ) : filters.view === 'connections' ? (
                         <Connections candidates={candidates} />

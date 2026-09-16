@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { FeedAuthor, Paginated } from '@/types/feed';
 import { Link, useForm } from '@inertiajs/react';
@@ -20,6 +21,7 @@ interface ThreadComment {
 }
 
 function CommentRow({ comment, postId, onRemoved }: { comment: ThreadComment; postId: number; onRemoved: () => void }) {
+    const { t } = useTranslation();
     const form = useForm({});
     const [confirming, setConfirming] = useState(false);
     const [error, setError] = useState('');
@@ -41,7 +43,7 @@ function CommentRow({ comment, postId, onRemoved }: { comment: ThreadComment; po
                 )}
                 {confirming && (
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className="text-muted-foreground text-xs">Delete this comment?</span>
+                        <span className="text-muted-foreground text-xs">{t('Delete this comment?')}</span>
                         <Button
                             size="sm"
                             variant="destructive"
@@ -51,14 +53,14 @@ function CommentRow({ comment, postId, onRemoved }: { comment: ThreadComment; po
                                     preserveScroll: true,
                                     only: ['posts', 'pulse'],
                                     onSuccess: onRemoved,
-                                    onError: () => setError('Couldn’t delete this comment. Please try again.'),
+                                    onError: () => setError(t('Couldn’t delete this comment. Please try again.')),
                                 })
                             }
                         >
-                            {form.processing ? 'Deleting…' : 'Delete'}
+                            {form.processing ? t('Deleting…') : t('Delete')}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setConfirming(false)} disabled={form.processing}>
-                            Cancel
+                            {t('Cancel')}
                         </Button>
                     </div>
                 )}
@@ -67,7 +69,7 @@ function CommentRow({ comment, postId, onRemoved }: { comment: ThreadComment; po
                 <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={`Delete comment by ${comment.author.name}`}
+                    aria-label={t('Delete comment by {name}', { name: comment.author.name })}
                     onClick={() => setConfirming(true)}
                     className="text-muted-foreground shrink-0"
                 >
@@ -79,6 +81,7 @@ function CommentRow({ comment, postId, onRemoved }: { comment: ThreadComment; po
 }
 
 function Comments({ postId, count }: { postId: number; count: number }) {
+    const { t, intlLocale } = useTranslation();
     const [open, setOpen] = useState(false);
     const [comments, setComments] = useState<ThreadComment[]>([]);
     const [nextPage, setNextPage] = useState<string | null>(null);
@@ -108,12 +111,12 @@ function Comments({ postId, count }: { postId: number; count: number }) {
                 );
                 setNextPage(result.next_page_url);
             } catch {
-                if (!request.signal.aborted) setError('Comments couldn’t load. Check your connection and try again.');
+                if (!request.signal.aborted) setError(t('Comments couldn’t load. Check your connection and try again.'));
             } finally {
                 if (!request.signal.aborted) setLoading(false);
             }
         },
-        [postId],
+        [postId, t],
     );
 
     useEffect(() => {
@@ -128,7 +131,7 @@ function Comments({ postId, count }: { postId: number; count: number }) {
             only: ['posts', 'pulse'],
             onSuccess: () => {
                 form.reset();
-                setAnnouncement('Comment posted.');
+                setAnnouncement(t('Comment posted.'));
                 void load();
             },
         });
@@ -137,20 +140,20 @@ function Comments({ postId, count }: { postId: number; count: number }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="text-muted-foreground gap-2 px-3" aria-label={`Open comments (${count})`}>
+                <Button variant="ghost" className="text-muted-foreground gap-2 px-3" aria-label={t('Open comments ({count})', { count })}>
                     <MessageCircle className="size-5!" strokeWidth={1.8} aria-hidden="true" />
-                    <span className="text-sm tabular-nums">{count.toLocaleString()}</span>
+                    <span className="text-sm tabular-nums">{count.toLocaleString(intlLocale)}</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
                 <DialogHeader className="border-border border-b p-6 pr-12">
-                    <DialogTitle className="text-xl">Keep the conversation going</DialogTitle>
-                    <DialogDescription>Share a thought, ask a question, or find common ground.</DialogDescription>
+                    <DialogTitle className="text-xl">{t('Keep the conversation going')}</DialogTitle>
+                    <DialogDescription>{t('Share a thought, ask a question, or find common ground.')}</DialogDescription>
                 </DialogHeader>
                 <div className="min-h-24 min-w-0 flex-1 overflow-y-auto px-6" aria-busy={loading}>
                     {loading && comments.length === 0 ? (
                         <div className="space-y-5 py-6" role="status">
-                            <span className="sr-only">Loading comments</span>
+                            <span className="sr-only">{t('Loading comments')}</span>
                             {[1, 2, 3].map((id) => (
                                 <div key={id} className="flex gap-3">
                                     <Skeleton className="size-9 shrink-0 rounded-full" />
@@ -164,8 +167,8 @@ function Comments({ postId, count }: { postId: number; count: number }) {
                     ) : comments.length === 0 && !error ? (
                         <div className="py-10 text-center">
                             <MessageCircle className="text-primary mx-auto size-7" strokeWidth={1.5} aria-hidden="true" />
-                            <p className="mt-3 font-medium">Be the first to say something.</p>
-                            <p className="text-muted-foreground mt-1 text-sm">Good conversations start with a little curiosity.</p>
+                            <p className="mt-3 font-medium">{t('Be the first to say something.')}</p>
+                            <p className="text-muted-foreground mt-1 text-sm">{t('Good conversations start with a little curiosity.')}</p>
                         </div>
                     ) : (
                         <div className="divide-border divide-y">
@@ -175,7 +178,7 @@ function Comments({ postId, count }: { postId: number; count: number }) {
                                     comment={comment}
                                     postId={postId}
                                     onRemoved={() => {
-                                        setAnnouncement('Comment deleted.');
+                                        setAnnouncement(t('Comment deleted.'));
                                         void load();
                                     }}
                                 />
@@ -186,25 +189,25 @@ function Comments({ postId, count }: { postId: number; count: number }) {
                         <div role="alert" className="py-5">
                             <p className="text-destructive text-sm">{error}</p>
                             <Button variant="outline" className="mt-3" onClick={() => void load()}>
-                                Try again
+                                {t('Try again')}
                             </Button>
                         </div>
                     )}
                     {nextPage && !error && (
                         <Button variant="ghost" disabled={loading} className="my-3 w-full" onClick={() => void load(nextPage, true)}>
-                            {loading ? 'Loading…' : 'Earlier comments'}
+                            {loading ? t('Loading…') : t('Earlier comments')}
                         </Button>
                     )}
                 </div>
                 <form onSubmit={submit} className="border-border border-t p-5 sm:p-6">
-                    <Label htmlFor={`comment-${postId}`}>Your comment</Label>
+                    <Label htmlFor={`comment-${postId}`}>{t('Your comment')}</Label>
                     <Textarea
                         id={`comment-${postId}`}
                         value={form.data.body}
                         onChange={(event) => form.setData('body', event.target.value)}
                         maxLength={1000}
                         required
-                        placeholder="Add to the conversation…"
+                        placeholder={t('Add to the conversation…')}
                         className="mt-2 min-h-24 resize-y"
                         aria-invalid={!!form.errors.body}
                         aria-describedby={`comment-error-${postId}`}
@@ -214,7 +217,7 @@ function Comments({ postId, count }: { postId: number; count: number }) {
                         <span className="text-muted-foreground text-xs tabular-nums">{form.data.body.length} / 1,000</span>
                         <Button type="submit" disabled={form.processing || !form.data.body.trim()}>
                             <Send aria-hidden="true" />
-                            {form.processing ? 'Posting…' : 'Post comment'}
+                            {form.processing ? t('Posting…') : t('Post comment')}
                         </Button>
                     </div>
                     <p role="status" className="sr-only">
@@ -231,6 +234,7 @@ export function PostEngagement({
 }: {
     post: { id: number; liked_by_viewer: boolean; likes_count: number; comments_count: number; can_delete: boolean };
 }) {
+    const { t, intlLocale } = useTranslation();
     const form = useForm({});
     const deleteForm = useForm({});
     const [error, setError] = useState('');
@@ -241,7 +245,7 @@ export function PostEngagement({
             preserveScroll: true,
             preserveState: true,
             only: ['posts', 'pulse'],
-            onError: () => setError('Your like couldn’t be updated. Please try again.'),
+            onError: () => setError(t('Your like couldn’t be updated. Please try again.')),
         };
         if (post.liked_by_viewer) form.delete(route('posts.likes.destroy', post.id), options);
         else form.post(route('posts.likes.store', post.id), options);
@@ -251,29 +255,29 @@ export function PostEngagement({
         deleteForm.delete(route('posts.destroy', post.id), {
             preserveScroll: true,
             only: ['posts', 'pulse', 'flash'],
-            onError: () => setError('Your post couldn’t be deleted. Please try again.'),
+            onError: () => setError(t('Your post couldn’t be deleted. Please try again.')),
         });
     }
     return (
         <div>
-            <div role="group" aria-label="Post engagement" className="-ml-2 flex items-center gap-2">
+            <div role="group" aria-label={t('Post engagement')} className="-ml-2 flex items-center gap-2">
                 <Button
                     variant="ghost"
                     onClick={toggleLike}
                     disabled={form.processing}
-                    aria-label={post.liked_by_viewer ? 'Unlike this post' : 'Like this post'}
+                    aria-label={post.liked_by_viewer ? t('Unlike this post') : t('Like this post')}
                     aria-pressed={post.liked_by_viewer}
                     className={cn('gap-2 px-3', post.liked_by_viewer ? 'text-primary hover:text-primary' : 'text-muted-foreground')}
                 >
                     <Heart className={cn('size-5!', post.liked_by_viewer && 'fill-current')} strokeWidth={1.8} aria-hidden="true" />
-                    <span className="text-sm tabular-nums">{post.likes_count.toLocaleString()}</span>
+                    <span className="text-sm tabular-nums">{post.likes_count.toLocaleString(intlLocale)}</span>
                 </Button>
                 <Comments postId={post.id} count={post.comments_count} />
                 {post.can_delete && !confirmingDelete && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Delete this post"
+                        aria-label={t('Delete this post')}
                         onClick={() => setConfirmingDelete(true)}
                         className="text-muted-foreground hover:text-destructive ml-auto shrink-0"
                     >
@@ -286,13 +290,13 @@ export function PostEngagement({
                     role="alert"
                     className="border-destructive/30 bg-destructive/5 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3.5 py-3"
                 >
-                    <p className="text-sm font-medium">Delete this post? This can’t be undone.</p>
+                    <p className="text-sm font-medium">{t('Delete this post? This can’t be undone.')}</p>
                     <div className="flex items-center gap-2">
                         <Button size="sm" variant="destructive" onClick={deletePost} disabled={deleteForm.processing}>
-                            {deleteForm.processing ? 'Deleting…' : 'Delete post'}
+                            {deleteForm.processing ? t('Deleting…') : t('Delete post')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setConfirmingDelete(false)} disabled={deleteForm.processing}>
-                            Keep post
+                            {t('Keep post')}
                         </Button>
                     </div>
                 </div>

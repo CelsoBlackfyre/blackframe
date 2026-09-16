@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
 import { groupBySubjectGroup } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
@@ -43,9 +44,9 @@ interface AddShelfEntryForm {
 
 type ShelfFilter = 'all' | 'favorites' | ShelfStatus;
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Geek Shelf', href: route('shelf.index') }];
-
 export default function GeekShelf({ entries, statusOptions, stats }: ShelfPageProps) {
+    const { t } = useTranslation();
+    const breadcrumbs: BreadcrumbItem[] = [{ title: t('Geek Shelf'), href: route('shelf.index') }];
     const [adding, setAdding] = useState(false);
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState('recent');
@@ -94,24 +95,24 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
     };
 
     const shelfFilters: SelectOption<ShelfFilter>[] = [
-        { value: 'all', label: `All ${stats.total}` },
-        { value: 'current', label: `In progress ${stats.current}` },
-        { value: 'completed', label: `Completed ${stats.completed}` },
-        { value: 'backlog', label: `Backlog ${stats.backlog}` },
-        { value: 'favorites', label: `Favorites ${stats.favorites}` },
+        { value: 'all', label: t('All {count}', { count: stats.total }) },
+        { value: 'current', label: t('In progress {count}', { count: stats.current }) },
+        { value: 'completed', label: t('Completed {count}', { count: stats.completed }) },
+        { value: 'backlog', label: t('Backlog {count}', { count: stats.backlog }) },
+        { value: 'favorites', label: t('Favorites {count}', { count: stats.favorites }) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Geek Shelf" />
+            <Head title={t('Geek Shelf')} />
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
                 <PageHeading
-                    title="Geek Shelf"
-                    description="The stories, worlds, and favorites that make you, you."
+                    title={t('Geek Shelf')}
+                    description={t('The stories, worlds, and favorites that make you, you.')}
                     action={
                         <Button onClick={() => setAdding(true)}>
                             <Plus aria-hidden="true" />
-                            Add a title
+                            {t('Add a title')}
                         </Button>
                     }
                 />
@@ -120,12 +121,12 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                     <FlashMessage />
                 </div>
 
-                <section className="border-border mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-y py-6 sm:grid-cols-4" aria-label="Shelf summary">
+                <section className="border-border mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-y py-6 sm:grid-cols-4" aria-label={t('Shelf summary')}>
                     {[
-                        { label: 'On your shelf', value: stats.total, icon: LibraryBig },
-                        { label: 'In progress', value: stats.current, icon: BookOpen },
-                        { label: 'Completed', value: stats.completed, icon: CircleCheckBig },
-                        { label: 'Favorites', value: stats.favorites, icon: Heart },
+                        { label: t('On your shelf'), value: stats.total, icon: LibraryBig },
+                        { label: t('In progress'), value: stats.current, icon: BookOpen },
+                        { label: t('Completed'), value: stats.completed, icon: CircleCheckBig },
+                        { label: t('Favorites'), value: stats.favorites, icon: Heart },
                     ].map((stat) => (
                         <div key={stat.label} className="flex items-center gap-4">
                             <stat.icon className="text-primary size-5" strokeWidth={1.8} aria-hidden="true" />
@@ -142,10 +143,10 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                         <div className="flex flex-wrap items-end justify-between gap-4">
                             <div>
                                 <h2 id="collection-heading" className="text-xl font-semibold">
-                                    Your collection
+                                    {t('Your collection')}
                                 </h2>
                                 <p className="text-muted-foreground mt-1 text-sm" role="status">
-                                    {filteredEntries.length} {filteredEntries.length === 1 ? 'title' : 'titles'} in this view
+                                    {t('{count} title|{count} titles in this view', { count: filteredEntries.length })}
                                 </p>
                             </div>
                         </div>
@@ -153,7 +154,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                             <div className="relative min-w-0 flex-1">
                                 <Label htmlFor="shelf-search" className="sr-only">
-                                    Search your shelf
+                                    {t('Search your shelf')}
                                 </Label>
                                 <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-3.5 size-4" aria-hidden="true" />
                                 <Input
@@ -161,27 +162,27 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                     type="search"
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Find a title in your collection"
+                                    placeholder={t('Find a title in your collection')}
                                     className="pl-10"
                                 />
                             </div>
                             <div className="sm:w-48">
                                 <Label htmlFor="shelf-sort" className="sr-only">
-                                    Sort your shelf
+                                    {t('Sort your shelf')}
                                 </Label>
                                 <Select value={sort} onValueChange={setSort}>
                                     <SelectTrigger id="shelf-sort" className="h-11 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="recent">Recently updated</SelectItem>
-                                        <SelectItem value="title">Title: A to Z</SelectItem>
-                                        <SelectItem value="rating">Highest rated</SelectItem>
+                                        <SelectItem value="recent">{t('Recently updated')}</SelectItem>
+                                        <SelectItem value="title">{t('Title: A to Z')}</SelectItem>
+                                        <SelectItem value="rating">{t('Highest rated')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
-                        <div role="group" aria-label="Filter shelf entries" className="mt-4 flex flex-wrap gap-2">
+                        <div role="group" aria-label={t('Filter shelf entries')} className="mt-4 flex flex-wrap gap-2">
                             {shelfFilters.map((filter) => (
                                 <button
                                     key={filter.value}
@@ -215,11 +216,13 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                         ) : (
                             <div className="border-border bg-card mt-5 rounded-2xl border border-dashed px-6 py-14 text-center">
                                 <LibraryBig className="text-primary mx-auto size-8" strokeWidth={1.7} aria-hidden="true" />
-                                <h3 className="mt-4 text-lg font-semibold">{search ? `No titles match “${search}”` : 'Nothing in this view yet'}</h3>
+                                <h3 className="mt-4 text-lg font-semibold">
+                                    {search ? t('No titles match “{search}”', { search }) : t('Nothing in this view yet')}
+                                </h3>
                                 <p className="text-muted-foreground mx-auto mt-2 max-w-sm text-sm leading-6">
                                     {search
-                                        ? 'Try a different title or clear your filters.'
-                                        : 'Add a title you love and start making this collection your own.'}
+                                        ? t('Try a different title or clear your filters.')
+                                        : t('Add a title you love and start making this collection your own.')}
                                 </p>
                                 <Button
                                     className="mt-5"
@@ -234,12 +237,12 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                     {search || shelfFilter !== 'all' ? (
                                         <>
                                             <X aria-hidden="true" />
-                                            Clear filters
+                                            {t('Clear filters')}
                                         </>
                                     ) : (
                                         <>
                                             <Plus aria-hidden="true" />
-                                            Add a title
+                                            {t('Add a title')}
                                         </>
                                     )}
                                 </Button>
@@ -255,30 +258,32 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                     >
                         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
                             <DialogHeader>
-                                <DialogTitle className="text-2xl">Make room for a favorite.</DialogTitle>
-                                <DialogDescription>Find a title, choose a status, and make it part of your story.</DialogDescription>
+                                <DialogTitle className="text-2xl">{t('Make room for a favorite.')}</DialogTitle>
+                                <DialogDescription>{t('Find a title, choose a status, and make it part of your story.')}</DialogDescription>
                             </DialogHeader>
                             <form id="add-to-shelf" onSubmit={submit}>
                                 {Object.keys(form.errors).length > 0 && (
                                     <div role="alert" className="border-destructive/30 bg-destructive/8 mt-5 rounded-xl border px-3 py-2 text-sm">
-                                        Check the highlighted shelf details.
+                                        {t('Check the highlighted shelf details.')}
                                     </div>
                                 )}
 
                                 <div className="mt-5 space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="subject_id">Title or fandom</Label>
+                                        <Label htmlFor="subject_id">{t('Title or fandom')}</Label>
                                         <SubjectPicker
                                             id="subject_id"
                                             value={selectedSubject}
                                             onChange={chooseSubject}
                                             error={form.errors.subject_id ?? form.errors.subject_reference}
                                         />
-                                        <p className="text-muted-foreground text-xs leading-5">Search books, games, films, series, and more.</p>
+                                        <p className="text-muted-foreground text-xs leading-5">
+                                            {t('Search books, games, films, series, and more.')}
+                                        </p>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="new-status">Status</Label>
+                                        <Label htmlFor="new-status">{t('Status')}</Label>
                                         <Select value={form.data.status} onValueChange={(value: ShelfStatus) => form.setData('status', value)}>
                                             <SelectTrigger id="new-status" className="h-11 rounded-xl">
                                                 <SelectValue />
@@ -296,7 +301,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
 
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="new-rating">Rating</Label>
+                                            <Label htmlFor="new-rating">{t('Rating')}</Label>
                                             <Input
                                                 id="new-rating"
                                                 type="number"
@@ -306,7 +311,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                                 step="0.1"
                                                 value={form.data.rating}
                                                 onChange={(event) => form.setData('rating', event.target.value)}
-                                                placeholder="Optional · 1–10"
+                                                placeholder={t('Optional · 1 to 10')}
                                                 className="h-11 rounded-xl"
                                                 aria-describedby="new-rating-error"
                                             />
@@ -314,13 +319,13 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="new-progress">Progress</Label>
+                                            <Label htmlFor="new-progress">{t('Progress')}</Label>
                                             <Input
                                                 id="new-progress"
                                                 value={form.data.progress}
                                                 onChange={(event) => form.setData('progress', event.target.value)}
                                                 maxLength={120}
-                                                placeholder="Optional milestone"
+                                                placeholder={t('Optional milestone')}
                                                 className="h-11 rounded-xl"
                                                 aria-describedby="new-progress-error"
                                             />
@@ -335,7 +340,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                             onCheckedChange={(checked) => form.setData('favorite', checked === true)}
                                         />
                                         <Label htmlFor="new-favorite" className="cursor-pointer">
-                                            Mark as a favorite
+                                            {t('Mark as a favorite')}
                                         </Label>
                                     </div>
                                 </div>
@@ -350,7 +355,7 @@ export default function GeekShelf({ entries, statusOptions, stats }: ShelfPagePr
                                     ) : (
                                         <Plus className="size-4" strokeWidth={1.8} aria-hidden="true" />
                                     )}
-                                    {form.processing ? 'Adding' : 'Add to shelf'}
+                                    {form.processing ? t('Adding') : t('Add to shelf')}
                                 </Button>
                             </form>
                         </DialogContent>

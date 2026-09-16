@@ -1,32 +1,34 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import { FeedActivation } from '@/types/feed';
 import { Link } from '@inertiajs/react';
 import { Check, Circle, LibraryBig, SquarePen, UsersRound } from 'lucide-react';
 
 export function FeedActivationPanel({ activation }: { activation: FeedActivation }) {
+    const { t } = useTranslation();
     const steps = [
         {
-            label: 'Add 5 culture titles',
-            detail: `${Math.min(activation.shelf_count, 5)} of 5 on your Geek Shelf`,
+            label: t('Add 5 culture titles'),
+            detail: t('{count} of 5 on your Geek Shelf', { count: Math.min(activation.shelf_count, 5) }),
             complete: activation.shelf_count >= 5,
             href: route('shelf.index'),
-            action: 'Build shelf',
+            action: t('Build shelf'),
             icon: LibraryBig,
         },
         {
-            label: 'Follow 3 people',
-            detail: `${Math.min(activation.following_count, 3)} of 3 voices in your Home feed`,
+            label: t('Follow 3 people'),
+            detail: t('{count} of 3 voices in your Home feed', { count: Math.min(activation.following_count, 3) }),
             complete: activation.following_count >= 3,
             href: route('people.index'),
-            action: 'Discover',
+            action: t('Discover'),
             icon: UsersRound,
         },
         {
-            label: 'Share your first post',
-            detail: activation.published_posts_count > 0 ? 'Your profile has a voice' : 'Start with a photo, thought, or recommendation',
+            label: t('Share your first post'),
+            detail: activation.published_posts_count > 0 ? t('Your profile has a voice') : t('Start with a photo, thought, or recommendation'),
             complete: activation.published_posts_count > 0,
             href: route('posts.create'),
-            action: 'Create',
+            action: t('Create'),
             icon: SquarePen,
         },
     ];
@@ -39,13 +41,15 @@ export function FeedActivationPanel({ activation }: { activation: FeedActivation
         <section className="border-border bg-card overflow-hidden rounded-[1.5rem] border" aria-labelledby="activation-heading">
             <div className="border-border flex flex-wrap items-start justify-between gap-4 border-b px-5 py-5 sm:px-6">
                 <div>
-                    <p className="text-primary text-xs font-semibold tracking-[0.14em] uppercase">Make Home yours</p>
+                    <p className="text-primary text-xs font-semibold tracking-[0.14em] uppercase">{t('Make Home yours')}</p>
                     <h2 id="activation-heading" className="mt-2 text-xl font-semibold tracking-[-0.02em]">
-                        Build your culture graph
+                        {t('Build your culture graph')}
                     </h2>
-                    <p className="text-muted-foreground mt-1 text-sm">A useful Home starts with taste, people, and one thing worth sharing.</p>
+                    <p className="text-muted-foreground mt-1 text-sm">{t('A useful Home starts with taste, people, and one thing worth sharing.')}</p>
                 </div>
-                <span className="bg-primary/10 text-primary rounded-xl px-3 py-2 text-sm font-semibold tabular-nums">{completed}/3 complete</span>
+                <span className="bg-primary/10 text-primary rounded-xl px-3 py-2 text-sm font-semibold tabular-nums">
+                    {t('{done}/3 complete', { done: completed })}
+                </span>
             </div>
 
             <ol className="divide-border grid divide-y lg:grid-cols-3 lg:divide-x lg:divide-y-0">
@@ -77,7 +81,7 @@ export function FeedActivationPanel({ activation }: { activation: FeedActivation
                                 {step.complete ? (
                                     <span className="text-primary inline-flex items-center gap-2 text-xs font-semibold">
                                         <Circle className="size-2 fill-current" aria-hidden="true" />
-                                        Complete
+                                        {t('Complete')}
                                     </span>
                                 ) : (
                                     <Button

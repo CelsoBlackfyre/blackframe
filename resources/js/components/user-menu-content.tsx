@@ -1,6 +1,7 @@
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useTranslation } from '@/lib/i18n';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
 import { HeartHandshake, LibraryBig, LogOut, Palette, Settings, UserRound } from 'lucide-react';
@@ -11,6 +12,7 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const { t } = useTranslation();
 
     return (
         <>
@@ -24,19 +26,19 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profiles.show', user.username)} prefetch onClick={cleanup}>
                         <UserRound className="mr-2" />
-                        Profile
+                        {t('Profile')}
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('shelf.index')} prefetch onClick={cleanup}>
                         <LibraryBig className="mr-2" />
-                        Geek Shelf
+                        {t('Geek Shelf')}
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('matches.index')} prefetch onClick={cleanup}>
                         <HeartHandshake className="mr-2" />
-                        Matches
+                        {t('Matches')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -45,13 +47,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Settings
+                        {t('Settings')}
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('appearance')} as="button" prefetch onClick={cleanup}>
                         <Palette className="mr-2" />
-                        Appearance
+                        {t('Appearance')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -59,7 +61,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuItem asChild>
                 <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={cleanup}>
                     <LogOut className="mr-2" />
-                    Log out
+                    {t('Log out')}
                 </Link>
             </DropdownMenuItem>
         </>

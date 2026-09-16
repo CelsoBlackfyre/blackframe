@@ -2,21 +2,21 @@ import { SocialAvatar } from '@/components/social/avatar';
 import { FollowButton } from '@/components/social/follow-button';
 import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import { PersonSummary } from '@/types/people';
 import { Link, useForm } from '@inertiajs/react';
 import { ArrowUpRight, Check, LibraryBig, LoaderCircle, LockKeyhole, Sparkles, UsersRound, X } from 'lucide-react';
 import { useState } from 'react';
 
-const numberFormatter = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
-
 function RelationshipAction({ person }: { person: PersonSummary }) {
+    const { t } = useTranslation();
     const form = useForm({});
     const [actionError, setActionError] = useState<string | null>(null);
     const options = {
         preserveScroll: true,
         preserveState: true,
         only: ['people', 'follow_requests', 'network', 'flash'],
-        onError: () => setActionError('We could not update this connection. Please try again.'),
+        onError: () => setActionError(t('We could not update this connection. Please try again.')),
     };
 
     if (person.incoming_follow_request) {
@@ -26,7 +26,7 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
                     type="button"
                     onClick={() => form.patch(route('people.follow-requests.accept', person.id), options)}
                     disabled={form.processing}
-                    aria-label={`Accept ${person.name}'s follow request`}
+                    aria-label={t("Accept {name}'s follow request", { name: person.name })}
                     className="min-h-11 cursor-pointer rounded-xl px-4"
                 >
                     {form.processing ? (
@@ -34,18 +34,18 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
                     ) : (
                         <Check aria-hidden="true" />
                     )}
-                    Accept
+                    {t('Accept')}
                 </Button>
                 <Button
                     type="button"
                     variant="ghost"
                     onClick={() => form.delete(route('people.follow-requests.decline', person.id), options)}
                     disabled={form.processing}
-                    aria-label={`Decline ${person.name}'s follow request`}
+                    aria-label={t("Decline {name}'s follow request", { name: person.name })}
                     className="min-h-11 cursor-pointer rounded-xl px-4"
                 >
                     <X aria-hidden="true" />
-                    Decline
+                    {t('Decline')}
                 </Button>
                 {actionError && (
                     <p role="alert" className="text-destructive max-w-44 text-xs leading-5">
@@ -71,13 +71,15 @@ function RelationshipAction({ person }: { person: PersonSummary }) {
 }
 
 export function PersonCard({ person }: { person: PersonSummary }) {
-    const relationshipLabel = person.is_following && person.follows_you ? 'Connected' : person.follows_you ? 'Follows you' : null;
+    const { t, intlLocale } = useTranslation();
+    const compactNumber = new Intl.NumberFormat(intlLocale, { notation: 'compact', maximumFractionDigits: 1 });
+    const relationshipLabel = person.is_following && person.follows_you ? t('Connected') : person.follows_you ? t('Follows you') : null;
     const profileHref = route('profiles.show', person.username);
 
     return (
         <article className="border-border bg-card hover:border-primary/30 flex h-full flex-col rounded-[1.25rem] border p-4 transition-colors sm:p-5">
             <div className="flex items-start gap-3">
-                <Link href={profileHref} aria-label={`View ${person.name}'s profile`} className="shrink-0 rounded-full">
+                <Link href={profileHref} aria-label={t("View {name}'s profile", { name: person.name })} className="shrink-0 rounded-full">
                     <SocialAvatar name={person.name} src={person.avatar_url} className="size-14" />
                 </Link>
                 <div className="min-w-0 flex-1 pt-0.5">
@@ -92,7 +94,7 @@ export function PersonCard({ person }: { person: PersonSummary }) {
                         {person.is_private && (
                             <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold">
                                 <LockKeyhole className="size-3" aria-hidden="true" />
-                                Private
+                                {t('Private')}
                             </span>
                         )}
                     </div>
@@ -106,7 +108,7 @@ export function PersonCard({ person }: { person: PersonSummary }) {
                 <div className="mt-5">
                     <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-semibold">
                         <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-                        You both like
+                        {t('You both like')}
                     </p>
                     <div className="flex flex-wrap gap-2">
                         {person.shared_subjects.map((subject) => (
@@ -132,20 +134,20 @@ export function PersonCard({ person }: { person: PersonSummary }) {
                     {person.shared_titles_count > 0 && (
                         <div className="flex items-center gap-1.5">
                             <dd className="font-semibold tabular-nums">{person.shared_titles_count}</dd>
-                            <dt className="text-muted-foreground">shared titles</dt>
+                            <dt className="text-muted-foreground">{t('shared titles')}</dt>
                         </div>
                     )}
                     {person.mutual_connections_count > 0 && (
                         <div className="flex items-center gap-1.5">
                             <UsersRound className="text-muted-foreground size-3.5" aria-hidden="true" />
                             <dd className="font-semibold tabular-nums">{person.mutual_connections_count}</dd>
-                            <dt className="text-muted-foreground">mutual</dt>
+                            <dt className="text-muted-foreground">{t('mutual')}</dt>
                         </div>
                     )}
                     {person.shared_titles_count === 0 && person.mutual_connections_count === 0 && (
                         <div className="flex items-baseline gap-1.5">
-                            <dd className="font-semibold tabular-nums">{numberFormatter.format(person.followers_count)}</dd>
-                            <dt className="text-muted-foreground">followers</dt>
+                            <dd className="font-semibold tabular-nums">{compactNumber.format(person.followers_count)}</dd>
+                            <dt className="text-muted-foreground">{t('followers')}</dt>
                         </div>
                     )}
                 </dl>
@@ -153,7 +155,7 @@ export function PersonCard({ person }: { person: PersonSummary }) {
                     href={profileHref}
                     className="text-primary inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold hover:underline"
                 >
-                    View profile
+                    {t('View profile')}
                     <ArrowUpRight className="size-4" aria-hidden="true" />
                 </Link>
             </div>

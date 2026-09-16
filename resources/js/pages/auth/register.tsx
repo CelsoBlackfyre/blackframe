@@ -1,4 +1,5 @@
 import { PasswordInput } from '@/components/ui/password-input';
+import { useTranslation } from '@/lib/i18n';
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -20,6 +21,7 @@ interface RegisterForm {
 }
 
 export default function Register() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
         username: '',
@@ -36,12 +38,12 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout title="Join BlackFrame" description="Create a profile for the photos and people you care about.">
-            <Head title="Register" />
+        <AuthLayout title={t('Join BlackFrame')} description={t('Create a profile for the photos and people you care about.')}>
+            <Head title={t('Register')} />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('Name')}</Label>
                         <Input
                             id="name"
                             aria-invalid={!!errors.name}
@@ -53,13 +55,13 @@ export default function Register() {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
-                            placeholder="Full name"
+                            placeholder={t('Full name')}
                         />
                         <InputError id="name-error" message={errors.name} className="mt-2" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="username">Username</Label>
+                        <Label htmlFor="username">{t('Username')}</Label>
                         <Input
                             id="username"
                             type="text"
@@ -72,13 +74,13 @@ export default function Register() {
                             aria-describedby="username-help"
                         />
                         <p id="username-help" className="text-muted-foreground text-xs">
-                            Use lowercase letters, numbers, periods, or underscores.
+                            {t('Use lowercase letters, numbers, periods, or underscores.')}
                         </p>
                         <InputError message={errors.username} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">{t('Email address')}</Label>
                         <Input
                             id="email"
                             aria-invalid={!!errors.email}
@@ -95,7 +97,7 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('Password')}</Label>
                         <PasswordInput
                             id="password"
                             aria-invalid={!!errors.password}
@@ -105,13 +107,13 @@ export default function Register() {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
-                            placeholder="Password"
+                            placeholder={t('Password')}
                         />
                         <InputError id="password-error" message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                        <Label htmlFor="password_confirmation">{t('Confirm password')}</Label>
                         <PasswordInput
                             id="password_confirmation"
                             aria-invalid={!!errors.password_confirmation}
@@ -121,19 +123,19 @@ export default function Register() {
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
-                            placeholder="Confirm password"
+                            placeholder={t('Confirm password')}
                         />
                         <InputError id="password_confirmation-error" message={errors.password_confirmation} />
                     </div>
 
                     <Button type="submit" className="mt-2 min-h-11 w-full cursor-pointer rounded-xl" disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
+                        {t('Create account')}
                     </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
-                    Already have an account? <TextLink href={route('login')}>Log in</TextLink>
+                    {t('Already have an account?')} <TextLink href={route('login')}>{t('Log in')}</TextLink>
                 </div>
             </form>
         </AuthLayout>

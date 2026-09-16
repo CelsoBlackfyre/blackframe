@@ -29,10 +29,10 @@ class MatchController extends Controller
                     : $compatibility->connectionsCount($viewer),
             ],
             'score_model' => [
-                ['label' => 'Collection overlap', 'weight' => 55],
-                ['label' => 'Shared favorites', 'weight' => 20],
-                ['label' => 'Same shelf status', 'weight' => 15],
-                ['label' => 'Rating closeness', 'weight' => 10],
+                ['label' => __('Collection overlap'), 'weight' => 55],
+                ['label' => __('Shared favorites'), 'weight' => 20],
+                ['label' => __('Same shelf status'), 'weight' => 15],
+                ['label' => __('Rating closeness'), 'weight' => 10],
             ],
         ]);
     }

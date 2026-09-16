@@ -16,19 +16,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: route('profile.edit'),
-    },
-];
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
+    const { t } = useTranslation();
     const [preview, setPreview] = useState<string | null>(null);
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Profile settings'),
+            href: route('profile.edit'),
+        },
+    ];
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<{
         name: string;
@@ -100,15 +102,15 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile settings" />
+            <Head title={t('Profile settings')} />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+                    <HeadingSmall title={t('Profile information')} description={t('Update your name and email address')} />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label>Profile banner</Label>
+                            <Label>{t('Profile banner')}</Label>
 
                             <div
                                 className={cn(
@@ -119,7 +121,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 {bannerPreview || auth.user.banner_url ? (
                                     <img
                                         src={bannerPreview ?? auth.user.banner_url ?? undefined}
-                                        alt="Profile banner preview"
+                                        alt={t('Profile banner preview')}
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
@@ -144,12 +146,12 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         className="border-input hover:bg-accent hover:text-accent-foreground inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-5 text-sm font-medium"
                                     >
                                         <ImagePlus className="h-4 w-4" aria-hidden="true" />
-                                        {bannerPreview || auth.user.banner_url ? 'Change banner' : 'Add banner'}
+                                        {bannerPreview || auth.user.banner_url ? t('Change banner') : t('Add banner')}
                                     </Label>
                                 </div>
 
                                 <p id="banner-help" className="text-muted-foreground text-xs">
-                                    Shown across the top of your profile. JPG, PNG, or WebP. Up to 4 MB.
+                                    {t('Shown across the top of your profile. JPG, PNG, or WebP. Up to 4 MB.')}
                                 </p>
                             </div>
 
@@ -157,11 +159,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Profile photo</Label>
+                            <Label>{t('Profile photo')}</Label>
 
                             <div className="flex items-center gap-4">
                                 <Avatar className="border-border h-20 w-20 border">
-                                    <AvatarImage src={preview ?? auth.user.avatar_url ?? undefined} alt={`${auth.user.name}'s profile photo`} />
+                                    <AvatarImage
+                                        src={preview ?? auth.user.avatar_url ?? undefined}
+                                        alt={t("{name}'s profile photo", { name: auth.user.name })}
+                                    />
                                     <AvatarFallback>{initials}</AvatarFallback>
                                 </Avatar>
 
@@ -180,12 +185,12 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                             className="border-input hover:bg-accent hover:text-accent-foreground inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-5 text-sm font-medium"
                                         >
                                             <Camera className="h-4 w-4" aria-hidden="true" />
-                                            {preview || auth.user.avatar_url ? 'Change photo' : 'Upload photo'}
+                                            {preview || auth.user.avatar_url ? t('Change photo') : t('Upload photo')}
                                         </Label>
                                     </div>
 
                                     <p id="avatar-help" className="text-muted-foreground text-xs">
-                                        JPG, PNG, or WebP. Up to 2 MB.
+                                        {t('JPG, PNG, or WebP. Up to 2 MB.')}
                                     </p>
 
                                     <InputError message={errors.avatar} />
@@ -194,7 +199,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">{t('Name')}</Label>
 
                             <Input
                                 id="name"
@@ -203,14 +208,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                                 autoComplete="name"
-                                placeholder="Full name"
+                                placeholder={t('Full name')}
                             />
 
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="username">Username</Label>
+                            <Label htmlFor="username">{t('Username')}</Label>
 
                             <Input
                                 id="username"
@@ -219,18 +224,18 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => setData('username', e.target.value.toLowerCase())}
                                 required
                                 autoComplete="username"
-                                placeholder="your.username"
+                                placeholder={t('your.username')}
                                 aria-describedby="username-help"
                             />
                             <p id="username-help" className="text-muted-foreground text-xs">
-                                Lowercase letters, numbers, periods, and underscores only.
+                                {t('Lowercase letters, numbers, periods, and underscores only.')}
                             </p>
 
                             <InputError className="mt-2" message={errors.username} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="email">{t('Email address')}</Label>
 
                             <Input
                                 id="email"
@@ -240,14 +245,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
                                 autoComplete="username"
-                                placeholder="Email address"
+                                placeholder={t('Email address')}
                             />
 
                             <InputError className="mt-2" message={errors.email} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="bio">Bio</Label>
+                            <Label htmlFor="bio">{t('Bio')}</Label>
                             <Textarea
                                 id="bio"
                                 value={data.bio}
@@ -255,17 +260,17 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 maxLength={160}
                                 rows={4}
                                 className="min-h-28 resize-y px-3 py-2 text-sm"
-                                placeholder="What do you like to share?"
+                                placeholder={t('What do you like to share?')}
                             />
                             <div className="text-muted-foreground flex items-center justify-between gap-4 text-xs">
-                                <span>Shown on your public profile.</span>
+                                <span>{t('Shown on your public profile.')}</span>
                                 <span className="tabular-nums">{data.bio.length}/160</span>
                             </div>
                             <InputError className="mt-2" message={errors.bio} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="website">Website</Label>
+                            <Label htmlFor="website">{t('Website')}</Label>
                             <Input
                                 id="website"
                                 type="url"
@@ -284,9 +289,9 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onCheckedChange={(checked) => setData('is_private', checked === true)}
                             />
                             <div className="grid gap-1">
-                                <Label htmlFor="is_private">Private profile</Label>
+                                <Label htmlFor="is_private">{t('Private profile')}</Label>
                                 <p className="text-muted-foreground text-xs leading-5">
-                                    Only followers you approve can see your posts, Pulse updates, Geek Shelf, and cultural activity.
+                                    {t('Only followers you approve can see your posts, Pulse updates, Geek Shelf, and cultural activity.')}
                                 </p>
                                 <InputError message={errors.is_private} />
                             </div>
@@ -295,20 +300,20 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
                             <div>
                                 <p className="mt-2 text-sm text-neutral-800">
-                                    Your email address is unverified.
+                                    {t('Your email address is unverified.')}
                                     <Link
                                         href={route('verification.send')}
                                         method="post"
                                         as="button"
                                         className="rounded-md text-sm text-neutral-600 underline hover:text-neutral-900 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
                                     >
-                                        Click here to re-send the verification email.
+                                        {t('Click here to re-send the verification email.')}
                                     </Link>
                                 </p>
 
                                 {status === 'verification-link-sent' && (
                                     <div className="mt-2 text-sm font-medium text-green-600">
-                                        A new verification link has been sent to your email address.
+                                        {t('A new verification link has been sent to your email address.')}
                                     </div>
                                 )}
                             </div>
@@ -316,7 +321,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                         <div className="flex items-center gap-4">
                             <Button disabled={processing} className="min-h-11 cursor-pointer rounded-xl px-5">
-                                {processing ? 'Saving...' : 'Save profile'}
+                                {processing ? t('Saving...') : t('Save profile')}
                             </Button>
 
                             <Transition
@@ -326,7 +331,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Saved</p>
+                                <p className="text-sm text-neutral-600">{t('Saved')}</p>
                             </Transition>
                         </div>
                     </form>

@@ -9,6 +9,6 @@ enum ProfileConnectionList: string
 
     public function label(): string
     {
-        return $this === self::Followers ? 'Followers' : 'Following';
+        return $this === self::Followers ? __('Followers') : __('Following');
     }
 }

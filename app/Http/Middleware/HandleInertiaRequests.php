@@ -64,6 +64,36 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
             ],
+            'locale' => fn () => app()->getLocale(),
+            'locale_options' => fn () => collect(config('localization.supported'))
+                ->map(fn (string $label, string $value): array => ['value' => $value, 'label' => $label])
+                ->values(),
+            'translations' => fn () => $this->translations(),
         ];
+    }
+
+    /**
+     * English strings are the translation keys, so only a non-default locale
+     * needs a catalog. A missing entry falls back to readable English.
+     *
+     * @return array<string, string>
+     */
+    private function translations(): array
+    {
+        $locale = app()->getLocale();
+
+        if ($locale === config('localization.source')) {
+            return [];
+        }
+
+        $path = lang_path($locale.'.json');
+
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 }

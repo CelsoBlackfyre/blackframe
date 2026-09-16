@@ -1,12 +1,14 @@
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { Images, MessageCircleMore } from 'lucide-react';
 
 export function FeedTabs({ active }: { active: 'home' | 'pulse' }) {
+    const { t } = useTranslation();
     return (
-        <nav className="border-border flex items-center gap-6 border-b" aria-label="Timeline views">
+        <nav className="border-border flex items-center gap-6 border-b" aria-label={t('Timeline views')}>
             {[
-                { id: 'home', label: 'Home', href: route('feed'), icon: Images },
+                { id: 'home', label: t('Home'), href: route('feed'), icon: Images },
                 { id: 'pulse', label: 'Pulse', href: route('pulse'), icon: MessageCircleMore },
             ].map((tab) => (
                 <Link
@@ -23,7 +25,7 @@ export function FeedTabs({ active }: { active: 'home' | 'pulse' }) {
                     {tab.label}
                 </Link>
             ))}
-            <span className="text-muted-foreground ml-auto text-xs">Latest from your circle</span>
+            <span className="text-muted-foreground ml-auto text-xs">{t('Latest from your circle')}</span>
         </nav>
     );
 }

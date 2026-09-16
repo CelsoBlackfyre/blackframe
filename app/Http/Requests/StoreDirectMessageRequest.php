@@ -33,8 +33,8 @@ class StoreDirectMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'body.required' => 'Write a message before sending.',
-            'body.max' => 'Keep direct messages to 2,000 characters or fewer.',
+            'body.required' => __('Write a message before sending.'),
+            'body.max' => __('Keep direct messages to 2,000 characters or fewer.'),
         ];
     }
 }

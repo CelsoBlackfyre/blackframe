@@ -5,27 +5,24 @@ import { SocialAvatar } from '@/components/social/avatar';
 import { FollowButton } from '@/components/social/follow-button';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { ConnectionSummary, ConnectionsPageProps, ProfileConnectionList } from '@/types/profiles';
 import { Head, Link } from '@inertiajs/react';
 import { LockKeyhole, UserPlus, UsersRound } from 'lucide-react';
 
-const lists: Array<{ value: ProfileConnectionList; label: string }> = [
-    { value: 'followers', label: 'Followers' },
-    { value: 'following', label: 'Following' },
-];
-
 function listUrl(username: string, list: ProfileConnectionList): string {
     return route('profiles.connections', { user: username, list });
 }
 
 function ConnectionRow({ connection }: { connection: ConnectionSummary }) {
+    const { t } = useTranslation();
     const profileHref = route('profiles.show', connection.username);
 
     return (
         <article className="border-border bg-card flex items-center gap-3 rounded-2xl border p-3.5 sm:p-4">
-            <Link href={profileHref} aria-label={`View ${connection.name}'s profile`} className="shrink-0 rounded-full">
+            <Link href={profileHref} aria-label={t("View {name}'s profile", { name: connection.name })} className="shrink-0 rounded-full">
                 <SocialAvatar name={connection.name} src={connection.avatar_url} className="size-12" />
             </Link>
             <div className="min-w-0 flex-1">
@@ -36,12 +33,12 @@ function ConnectionRow({ connection }: { connection: ConnectionSummary }) {
                 {connection.bio && <p className="text-muted-foreground mt-1 line-clamp-1 text-xs leading-5">{connection.bio}</p>}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {connection.follows_you && (
-                        <span className="bg-muted text-muted-foreground rounded-lg px-2 py-0.5 text-xs font-semibold">Follows you</span>
+                        <span className="bg-muted text-muted-foreground rounded-lg px-2 py-0.5 text-xs font-semibold">{t('Follows you')}</span>
                     )}
                     {connection.is_private && (
                         <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-semibold">
                             <LockKeyhole className="size-3" aria-hidden="true" />
-                            Private
+                            {t('Private')}
                         </span>
                     )}
                 </div>
@@ -61,18 +58,26 @@ function ConnectionRow({ connection }: { connection: ConnectionSummary }) {
 }
 
 export default function ShowConnections({ profile, filters, connections }: ConnectionsPageProps) {
+    const { t } = useTranslation();
+    const lists: Array<{ value: ProfileConnectionList; label: string }> = [
+        { value: 'followers', label: t('Followers') },
+        { value: 'following', label: t('Following') },
+    ];
     const breadcrumbs: BreadcrumbItem[] = [
         { title: `@${profile.username}`, href: route('profiles.show', profile.username) },
-        { title: lists.find((list) => list.value === filters.list)?.label ?? 'Followers', href: listUrl(profile.username, filters.list) },
+        { title: lists.find((list) => list.value === filters.list)?.label ?? t('Followers'), href: listUrl(profile.username, filters.list) },
     ];
     const isFollowers = filters.list === 'followers';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${profile.name} (@${profile.username}) · ${isFollowers ? 'Followers' : 'Following'}`}>
+            <Head title={`${profile.name} (@${profile.username}) · ${isFollowers ? t('Followers') : t('Following')}`}>
                 <meta
                     name="description"
-                    content={`See who ${profile.is_self ? 'you' : profile.name} ${isFollowers ? 'follows' : 'is followed by'} on BlackFrame.`}
+                    content={t('See who {who} {action} on BlackFrame.', {
+                        who: profile.is_self ? t('you') : profile.name,
+                        action: isFollowers ? t('follows') : t('is followed by'),
+                    })}
                 />
             </Head>
 
@@ -88,19 +93,19 @@ export default function ShowConnections({ profile, filters, connections }: Conne
                                 @{profile.username}
                                 {profile.is_private && (
                                     <span className="inline-flex items-center gap-1">
-                                        <LockKeyhole className="size-3.5" aria-label="Private profile" />
-                                        Private
+                                        <LockKeyhole className="size-3.5" aria-label={t('Private profile')} />
+                                        {t('Private')}
                                     </span>
                                 )}
                             </p>
                         </div>
                         <Button asChild variant="outline" className="ml-auto min-h-11 shrink-0 rounded-xl px-4">
-                            <Link href={route('profiles.show', profile.username)}>View profile</Link>
+                            <Link href={route('profiles.show', profile.username)}>{t('View profile')}</Link>
                         </Button>
                     </div>
 
                     <nav
-                        aria-label="Connection lists"
+                        aria-label={t('Connection lists')}
                         className="border-border mt-5 flex gap-1 overflow-x-auto border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     >
                         {lists.map((list) => {
@@ -132,43 +137,55 @@ export default function ShowConnections({ profile, filters, connections }: Conne
 
                 <div className="mt-7">
                     {!profile.can_view_connections ? (
-                        <EmptyState icon={LockKeyhole} title="This profile is private">
-                            Send {profile.name.split(' ')[0]} a follow request to see who follows them and who they follow.
+                        <EmptyState icon={LockKeyhole} title={t('This profile is private')}>
+                            {t('Send {name} a follow request to see who follows them and who they follow.', {
+                                name: profile.name.split(' ')[0],
+                            })}
                         </EmptyState>
                     ) : connections && connections.data.length > 0 ? (
                         <>
                             <section
                                 className="space-y-3"
                                 aria-busy="false"
-                                aria-label={`${isFollowers ? 'Followers' : 'Following'} of ${profile.name}`}
+                                aria-label={t('{list} of {name}', {
+                                    list: isFollowers ? t('Followers') : t('Following'),
+                                    name: profile.name,
+                                })}
                             >
                                 {connections.data.map((connection) => (
                                     <ConnectionRow key={connection.id} connection={connection} />
                                 ))}
                             </section>
-                            <Pagination resource={connections} ariaLabel="Connection pages" />
+                            <Pagination resource={connections} ariaLabel={t('Connection pages')} />
                         </>
                     ) : isFollowers ? (
-                        <EmptyState icon={UsersRound} title={profile.is_self ? 'No followers yet' : `${profile.name} has no followers yet`}>
+                        <EmptyState
+                            icon={UsersRound}
+                            title={profile.is_self ? t('No followers yet') : t('{name} has no followers yet', { name: profile.name })}
+                        >
                             {profile.is_self
-                                ? 'When someone follows you, they will appear here so you can find and connect with them.'
-                                : 'Once people start following this profile, they will appear here.'}
+                                ? t('When someone follows you, they will appear here so you can find and connect with them.')
+                                : t('Once people start following this profile, they will appear here.')}
                         </EmptyState>
                     ) : (
                         <EmptyState
                             icon={UserPlus}
-                            title={profile.is_self ? 'You are not following anyone yet' : `${profile.name} is not following anyone yet`}
+                            title={
+                                profile.is_self
+                                    ? t('You are not following anyone yet')
+                                    : t('{name} is not following anyone yet', { name: profile.name })
+                            }
                             action={
                                 profile.is_self ? (
                                     <Button asChild className="min-h-11 rounded-xl">
-                                        <Link href={route('people.index')}>Discover people</Link>
+                                        <Link href={route('people.index')}>{t('Discover people')}</Link>
                                     </Button>
                                 ) : undefined
                             }
                         >
                             {profile.is_self
-                                ? 'Explore the BlackFrame community and follow people whose posts you want in your feed.'
-                                : 'The people they follow will appear here.'}
+                                ? t('Explore the BlackFrame community and follow people whose posts you want in your feed.')
+                                : t('The people they follow will appear here.')}
                         </EmptyState>
                     )}
                 </div>

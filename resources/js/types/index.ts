@@ -33,6 +33,9 @@ export interface SharedData {
     direct: {
         unread_count: number;
     };
+    locale: string;
+    locale_options: Array<{ value: string; label: string }>;
+    translations: Record<string, string>;
     [key: string]: unknown;
 }
 

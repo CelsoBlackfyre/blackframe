@@ -1,4 +1,5 @@
 import { PasswordInput } from '@/components/ui/password-input';
+import { useTranslation } from '@/lib/i18n';
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -24,6 +25,7 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
         email: '',
         password: '',
@@ -38,13 +40,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Welcome back." description="Your people and your next favorite are waiting.">
-            <Head title="Log in" />
+        <AuthLayout title={t('Welcome back.')} description={t('Your people and your next favorite are waiting.')}>
+            <Head title={t('Log in')} />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">{t('Email address')}</Label>
                         <Input
                             id="email"
                             aria-invalid={!!errors.email}
@@ -62,10 +64,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                     <div className="grid gap-2">
                         <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">{t('Password')}</Label>
                             {canResetPassword && (
                                 <TextLink href={route('password.request')} className="ml-auto text-sm">
-                                    Forgot password?
+                                    {t('Forgot password?')}
                                 </TextLink>
                             )}
                         </div>
@@ -77,7 +79,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoComplete="current-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
+                            placeholder={t('Password')}
                         />
                         <InputError id="password-error" message={errors.password} />
                     </div>
@@ -89,17 +91,17 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             checked={data.remember}
                             onCheckedChange={(checked) => setData('remember', checked === true)}
                         />
-                        <Label htmlFor="remember">Remember me</Label>
+                        <Label htmlFor="remember">{t('Remember me')}</Label>
                     </div>
 
                     <Button type="submit" className="mt-4 w-full" disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                        {t('Log in')}
                     </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
-                    Don't have an account? <TextLink href={route('register')}>Sign up</TextLink>
+                    {t("Don't have an account?")} <TextLink href={route('register')}>{t('Sign up')}</TextLink>
                 </div>
             </form>
 

@@ -16,7 +16,7 @@ class DirectConversationController extends Controller
 
         if (! $direct->canStart($viewer, $user)) {
             throw ValidationException::withMessages([
-                'person' => 'Direct conversations open after both people choose Connect in Shelf Match.',
+                'person' => __('Direct conversations open after both people choose Connect in Shelf Match.'),
             ]);
         }
 

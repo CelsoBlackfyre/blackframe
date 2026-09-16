@@ -1,12 +1,14 @@
 import AppLogo from '@/components/app-logo';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import LanguageSwitcher from '@/components/language-switcher';
 import { SocialAvatar } from '@/components/social/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useTranslation } from '@/lib/i18n';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { MessagesSquare, Search } from 'lucide-react';
@@ -14,6 +16,7 @@ import { FormEvent, useState } from 'react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItem[] }) {
     const { auth, direct } = usePage<SharedData>().props;
+    const { t } = useTranslation();
     const [query, setQuery] = useState('');
     function search(event: FormEvent) {
         event.preventDefault();
@@ -23,7 +26,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         <header className="border-border bg-background sticky top-0 z-20 h-[4.5rem] shrink-0 border-b">
             <div className="mx-auto flex h-full w-full max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
                 <SidebarTrigger className="size-11 shrink-0 rounded-xl" />
-                <Link href={route('feed')} className="flex items-center md:hidden" aria-label="BlackFrame home">
+                <Link href={route('feed')} className="flex items-center md:hidden" aria-label={t('BlackFrame home')}>
                     <AppLogo compact />
                 </Link>
                 <div className="hidden min-w-0 lg:block">
@@ -31,7 +34,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 </div>
                 <form onSubmit={search} role="search" className="relative ml-auto hidden w-full max-w-[330px] sm:block">
                     <label htmlFor="global-search" className="sr-only">
-                        Search people
+                        {t('Search people')}
                     </label>
                     <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-4 size-4" aria-hidden="true" />
                     <Input
@@ -40,12 +43,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         maxLength={80}
-                        placeholder="Find your people"
+                        placeholder={t('Find your people')}
                         className="bg-muted/70 border-transparent pr-14 pl-10"
                     />
                     <button
                         type="submit"
-                        aria-label="Search BlackFrame"
+                        aria-label={t('Search BlackFrame')}
                         className="hover:text-primary absolute inset-y-0 right-1 flex w-11 items-center justify-center rounded-lg"
                     >
                         <ArrowSearch />
@@ -53,15 +56,20 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 </form>
                 <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
                     <Button asChild variant="ghost" size="icon" className="sm:hidden">
-                        <Link href={route('people.index')} aria-label="Search BlackFrame">
+                        <Link href={route('people.index')} aria-label={t('Search BlackFrame')}>
                             <Search className="size-5!" aria-hidden="true" />
                         </Link>
                     </Button>
                     <AppearanceToggleDropdown className="hidden sm:block" />
+                    <LanguageSwitcher className="hidden sm:block" />
                     <Button asChild variant="ghost" size="icon" className="relative hidden md:inline-flex">
                         <Link
                             href={route('direct.index')}
-                            aria-label={`Open Direct messages${direct.unread_count ? `, ${direct.unread_count} unread` : ''}`}
+                            aria-label={
+                                direct.unread_count
+                                    ? t('Open Direct messages, {count} unread', { count: direct.unread_count })
+                                    : t('Open Direct messages')
+                            }
                         >
                             <MessagesSquare className="size-5!" strokeWidth={1.8} aria-hidden="true" />
                             {direct.unread_count > 0 && (
@@ -75,7 +83,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
-                                aria-label="Open account menu"
+                                aria-label={t('Open account menu')}
                                 className="hover:bg-muted flex size-11 items-center justify-center rounded-xl"
                             >
                                 <SocialAvatar name={auth.user.name} src={auth.user.avatar_url} className="size-8" />

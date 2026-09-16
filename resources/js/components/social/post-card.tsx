@@ -1,6 +1,7 @@
 import { SubjectBadge } from '@/components/subjects/subject-badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useTranslation } from '@/lib/i18n';
 import { FeedPost } from '@/types/feed';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, ImageOff, MapPin } from 'lucide-react';
@@ -9,6 +10,7 @@ import { SocialAvatar } from './avatar';
 import { PostEngagement } from './post-engagement';
 
 export function PostCard({ post, eager = false }: { post: FeedPost; eager?: boolean }) {
+    const { t } = useTranslation();
     const [activeImage, setActiveImage] = useState(0);
     const [expanded, setExpanded] = useState(false);
     const [failedImage, setFailedImage] = useState<string | null>(null);
@@ -17,7 +19,11 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
     return (
         <article className="border-border bg-card overflow-hidden rounded-2xl border">
             <header className="flex items-center gap-3 px-4 py-4 sm:px-5">
-                <Link href={route('profiles.show', post.author.username)} aria-label={`View ${post.author.name}'s profile`} className="rounded-full">
+                <Link
+                    href={route('profiles.show', post.author.username)}
+                    aria-label={t("View {name}'s profile", { name: post.author.name })}
+                    className="rounded-full"
+                >
                     <SocialAvatar name={post.author.name} src={post.author.avatar_url} />
                 </Link>
                 <div className="min-w-0 flex-1">
@@ -47,7 +53,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                             <button
                                 type="button"
                                 className="absolute inset-0 h-full w-full cursor-zoom-in"
-                                aria-label={`View photo by ${post.author.name}`}
+                                aria-label={t('View photo by {name}', { name: post.author.name })}
                             >
                                 <img
                                     src={image.medium_url ?? image.url}
@@ -63,7 +69,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                         </DialogTrigger>
                         <DialogContent className="max-h-[94dvh] max-w-[min(94vw,1100px)] p-3 pt-12">
                             <DialogHeader className="sr-only">
-                                <DialogTitle>Photo by {post.author.name}</DialogTitle>
+                                <DialogTitle>{t('Photo by {name}', { name: post.author.name })}</DialogTitle>
                                 <DialogDescription>{image.alt_text}</DialogDescription>
                             </DialogHeader>
                             <img
@@ -78,7 +84,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                 ) : (
                     <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
                         <ImageOff className="size-7" strokeWidth={1.5} aria-hidden="true" />
-                        <p className="text-sm">This photo is unavailable.</p>
+                        <p className="text-sm">{t('This photo is unavailable.')}</p>
                     </div>
                 )}
                 {post.media.length > 1 && (
@@ -86,7 +92,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                         <Button
                             variant="secondary"
                             size="icon"
-                            aria-label="Previous photo"
+                            aria-label={t('Previous photo')}
                             disabled={activeImage === 0}
                             onClick={() => setActiveImage((index) => index - 1)}
                         >
@@ -98,7 +104,7 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                         <Button
                             variant="secondary"
                             size="icon"
-                            aria-label="Next photo"
+                            aria-label={t('Next photo')}
                             disabled={activeImage === post.media.length - 1}
                             onClick={() => setActiveImage((index) => index + 1)}
                         >
@@ -123,13 +129,13 @@ export function PostCard({ post, eager = false }: { post: FeedPost; eager?: bool
                                 aria-expanded={expanded}
                                 className="text-muted-foreground hover:text-primary min-h-11 text-sm font-medium"
                             >
-                                {expanded ? 'Show less' : 'Read more'}
+                                {expanded ? t('Show less') : t('Read more')}
                             </button>
                         )}
                     </div>
                 )}
                 {post.subjects.length > 0 && (
-                    <div className="flex flex-wrap gap-2" aria-label="Topics in this post">
+                    <div className="flex flex-wrap gap-2" aria-label={t('Topics in this post')}>
                         {post.subjects.map((subject) => (
                             <SubjectBadge key={subject.id} subject={subject} />
                         ))}

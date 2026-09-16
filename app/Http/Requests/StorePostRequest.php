@@ -45,10 +45,10 @@ class StorePostRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'caption.required' => 'Write something before publishing your text post.',
-            'media.required' => 'Choose an image to publish this photo post.',
-            'media.mimes' => 'Use a JPG, PNG, or WebP image.',
-            'alt_text.required' => 'Describe the image so people using assistive technology can understand it.',
+            'caption.required' => __('Write something before publishing your text post.'),
+            'media.required' => __('Choose an image to publish this photo post.'),
+            'media.mimes' => __('Use a JPG, PNG, or WebP image.'),
+            'alt_text.required' => __('Describe the image so people using assistive technology can understand it.'),
         ];
     }
 }

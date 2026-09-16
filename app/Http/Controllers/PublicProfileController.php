@@ -60,7 +60,7 @@ class PublicProfileController extends Controller
                 'follow_request_pending' => $followRequestPending,
                 'incoming_follow_request' => $incomingFollowRequest,
                 'can_view_content' => $canViewContent,
-                'joined_at' => $user->created_at->format('F Y'),
+                'joined_at' => $user->created_at->translatedFormat('F Y'),
                 'counts' => [
                     'posts' => (int) $user->posts_count,
                     'visual_posts' => (int) $user->visual_posts_count,

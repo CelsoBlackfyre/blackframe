@@ -21,23 +21,23 @@ class MatchDecisionController extends Controller
 
         if ($viewer->is($user)) {
             throw ValidationException::withMessages([
-                'target' => 'You cannot match with your own profile.',
+                'target' => __('You cannot match with your own profile.'),
             ]);
         }
 
         if (! $compatibility->isVisibleTo($viewer, $user)) {
             throw ValidationException::withMessages([
-                'target' => 'This private profile is not available for matching.',
+                'target' => __('This private profile is not available for matching.'),
             ]);
         }
 
         if (! $compatibility->sharesShelfTitle($viewer, $user)) {
             throw ValidationException::withMessages([
-                'target' => 'This profile does not share a shelf title with you yet.',
+                'target' => __('This profile does not share a shelf title with you yet.'),
             ]);
         }
 
-        $decision = $request->enum('decision', MatchDecisionType::class) ?? abort(400, 'Invalid match decision.');
+        $decision = $request->enum('decision', MatchDecisionType::class) ?? abort(400, __('Invalid match decision.'));
 
         $viewer->matchDecisions()->updateOrCreate(
             ['target_user_id' => $user->id],
@@ -53,10 +53,10 @@ class MatchDecisionController extends Controller
         return back()->with(
             'success',
             $isMutual
-                ? "You and {$user->name} matched."
+                ? __('You and :name matched.', ['name' => $user->name])
                 : ($decision === MatchDecisionType::Connect
-                    ? "Connection sent to {$user->name}."
-                    : "Passed on {$user->name} for now."),
+                    ? __('Connection sent to :name.', ['name' => $user->name])
+                    : __('Passed on :name for now.', ['name' => $user->name])),
         );
     }
 
@@ -67,6 +67,6 @@ class MatchDecisionController extends Controller
             ->where('target_user_id', $user->id)
             ->delete();
 
-        return back()->with('success', "Your choice for {$user->name} was undone.");
+        return back()->with('success', __('Your choice for :name was undone.', ['name' => $user->name]));
     }
 }

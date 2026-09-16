@@ -49,14 +49,14 @@ class PostController extends Controller
 
         $destination = $data['type'] === 'text' ? 'pulse' : 'feed';
 
-        return to_route($destination)->with('success', $data['type'] === 'text' ? 'Your Pulse post is live.' : 'Your photo is live.');
+        return to_route($destination)->with('success', $data['type'] === 'text' ? __('Your Pulse post is live.') : __('Your photo is live.'));
     }
 
     public function destroy(Post $post, MediaService $mediaService): RedirectResponse
     {
         Gate::authorize('delete', $post);
 
-        $message = $post->type === 'text' ? 'Your Pulse message was deleted.' : 'Your photo was deleted.';
+        $message = $post->type === 'text' ? __('Your Pulse message was deleted.') : __('Your photo was deleted.');
 
         DB::transaction(function () use ($post, $mediaService): void {
             $mediaService->deletePostMedia($post);

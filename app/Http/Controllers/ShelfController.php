@@ -64,7 +64,7 @@ class ShelfController extends Controller
             ],
         );
 
-        return back()->with('success', $subject->name.' is now on your Geek Shelf.');
+        return back()->with('success', __(':name is now on your Geek Shelf.', ['name' => $subject->name]));
     }
 
     public function update(UpdateShelfEntryRequest $request, UserSubject $shelfEntry): RedirectResponse
@@ -73,7 +73,7 @@ class ShelfController extends Controller
 
         $shelfEntry->update($request->validated());
 
-        return back()->with('success', $shelfEntry->subject->name.' was updated.');
+        return back()->with('success', __(':name was updated.', ['name' => $shelfEntry->subject->name]));
     }
 
     public function destroy(Request $request, UserSubject $shelfEntry): RedirectResponse
@@ -83,7 +83,7 @@ class ShelfController extends Controller
         $subjectName = $shelfEntry->subject->name;
         $shelfEntry->delete();
 
-        return back()->with('success', $subjectName.' was removed from your Geek Shelf.');
+        return back()->with('success', __(':name was removed from your Geek Shelf.', ['name' => $subjectName]));
     }
 
     /**

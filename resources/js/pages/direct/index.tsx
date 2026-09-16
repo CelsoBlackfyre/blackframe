@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { getEcho } from '@/lib/echo';
+import { useTranslation } from '@/lib/i18n';
 import { sortBySubjectGroup, subjectGroupFor } from '@/lib/subject-groups';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem, SharedData } from '@/types';
@@ -27,25 +28,25 @@ interface DirectPageProps {
     active: DirectActiveConversation | null;
 }
 
-function formatInboxTime(value: string): string {
+function formatInboxTime(value: string, locale: string): string {
     const date = new Date(value);
     const now = new Date();
 
     if (date.toDateString() === now.toDateString()) {
-        return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+        return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(date);
     }
 
     const daysAgo = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
 
     if (daysAgo < 7) {
-        return new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date);
+        return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
     }
 
-    return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(date);
 }
 
-function formatMessageTime(value: string): string {
-    return new Intl.DateTimeFormat(undefined, {
+function formatMessageTime(value: string, locale: string): string {
+    return new Intl.DateTimeFormat(locale, {
         weekday: 'short',
         hour: 'numeric',
         minute: '2-digit',
@@ -53,38 +54,45 @@ function formatMessageTime(value: string): string {
 }
 
 function EmptyInbox() {
+    const { t } = useTranslation();
+
     return (
         <div className="flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center">
             <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
                 <Inbox className="size-6" strokeWidth={1.8} aria-hidden="true" />
             </span>
-            <h2 className="mt-5 text-lg font-semibold">Your next conversation starts here.</h2>
+            <h2 className="mt-5 text-lg font-semibold">{t('Your next conversation starts here.')}</h2>
             <p className="text-muted-foreground mt-2 max-w-xs text-sm leading-6">
-                Private conversations unlock when you and another person both choose Connect in Shelf Match.
+                {t('Private conversations unlock when you and another person both choose Connect in Shelf Match.')}
             </p>
             <Button asChild className="mt-6 min-h-11 rounded-xl px-5">
-                <Link href={route('matches.index', { view: 'connections' })}>View Shelf Matches</Link>
+                <Link href={route('matches.index', { view: 'connections' })}>{t('View Shelf Matches')}</Link>
             </Button>
         </div>
     );
 }
 
 function EmptySelection() {
+    const { t } = useTranslation();
+
     return (
         <div className="flex h-full min-h-96 flex-col items-center justify-center px-8 text-center">
             <span className="bg-muted text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
                 <MessageSquareText className="size-7" strokeWidth={1.7} aria-hidden="true" />
             </span>
-            <h2 className="mt-5 text-xl font-semibold">Choose a conversation</h2>
-            <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-6">Pick someone from your inbox and carry on where you left off.</p>
+            <h2 className="mt-5 text-xl font-semibold">{t('Choose a conversation')}</h2>
+            <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-6">
+                {t('Pick someone from your inbox and carry on where you left off.')}
+            </p>
         </div>
     );
 }
 
 function ConversationRow({ conversation, active }: { conversation: DirectConversationSummary; active: boolean }) {
+    const { t, intlLocale } = useTranslation();
     const preview = conversation.last_message
-        ? `${conversation.last_message.is_mine ? 'You: ' : ''}${conversation.last_message.body}`
-        : 'Start the conversation';
+        ? `${conversation.last_message.is_mine ? t('You: ') : ''}${conversation.last_message.body}`
+        : t('Start the conversation');
 
     return (
         <li>
@@ -116,7 +124,7 @@ function ConversationRow({ conversation, active }: { conversation: DirectConvers
                                     conversation.unread_count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground',
                                 )}
                             >
-                                {formatInboxTime(conversation.last_message.created_at)}
+                                {formatInboxTime(conversation.last_message.created_at, intlLocale)}
                             </time>
                         )}
                     </div>
@@ -132,7 +140,7 @@ function ConversationRow({ conversation, active }: { conversation: DirectConvers
                         {conversation.unread_count > 0 && (
                             <span className="bg-primary text-primary-foreground min-w-5 shrink-0 rounded-full px-1.5 text-center text-[0.625rem] leading-5 font-semibold tabular-nums">
                                 {conversation.unread_count > 99 ? '99+' : conversation.unread_count}
-                                <span className="sr-only"> unread messages</span>
+                                <span className="sr-only"> {t('unread messages')}</span>
                             </span>
                         )}
                     </div>
@@ -143,6 +151,7 @@ function ConversationRow({ conversation, active }: { conversation: DirectConvers
 }
 
 function InboxPane({ conversations, activeId }: { conversations: DirectConversationSummary[]; activeId?: number }) {
+    const { t } = useTranslation();
     const [query, setQuery] = useState('');
     const filtered = useMemo(() => {
         const normalized = query.trim().toLocaleLowerCase();
@@ -155,12 +164,12 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
     }, [conversations, query]);
 
     return (
-        <section className={cn('flex min-h-0 flex-col', activeId ? 'hidden lg:flex' : 'flex')} aria-label="Direct inbox">
+        <section className={cn('flex min-h-0 flex-col', activeId ? 'hidden lg:flex' : 'flex')} aria-label={t('Direct inbox')}>
             <header className="border-border border-b px-4 py-5 sm:px-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-[-0.025em]">Direct</h1>
-                        <p className="text-muted-foreground mt-1 text-xs">A shared favorite is just the beginning.</p>
+                        <p className="text-muted-foreground mt-1 text-xs">{t('A shared favorite is just the beginning.')}</p>
                     </div>
                     <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
                         <MessageSquareText className="size-5" strokeWidth={1.8} aria-hidden="true" />
@@ -169,7 +178,7 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
                 {conversations.length > 0 && (
                     <div className="mt-5">
                         <Label htmlFor="conversation-search" className="text-xs font-semibold">
-                            Search conversations
+                            {t('Search conversations')}
                         </Label>
                         <div className="relative mt-2">
                             <Search
@@ -182,7 +191,7 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
                                 type="search"
                                 value={query}
                                 onChange={(event) => setQuery(event.target.value)}
-                                placeholder="Name or username"
+                                placeholder={t('Name or username')}
                                 className="h-11 rounded-xl pl-10 text-base"
                             />
                         </div>
@@ -195,8 +204,8 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
                     <EmptyInbox />
                 ) : filtered.length === 0 ? (
                     <div className="px-6 py-12 text-center">
-                        <p className="font-semibold">No conversations found</p>
-                        <p className="text-muted-foreground mt-1 text-sm">Try another name or username.</p>
+                        <p className="font-semibold">{t('No conversations found')}</p>
+                        <p className="text-muted-foreground mt-1 text-sm">{t('Try another name or username.')}</p>
                     </div>
                 ) : (
                     <ul className="space-y-1">
@@ -211,10 +220,12 @@ function InboxPane({ conversations, activeId }: { conversations: DirectConversat
 }
 
 function MessageBubble({ message }: { message: DirectMessage }) {
+    const { t, intlLocale } = useTranslation();
+
     return (
         <li
             className={cn('flex', message.is_mine ? 'justify-end' : 'justify-start')}
-            aria-label={message.is_mine ? 'You said' : `${message.author.name} said`}
+            aria-label={message.is_mine ? t('You said') : t('{name} said', { name: message.author.name })}
         >
             <div className={cn('max-w-[82%] sm:max-w-[72%]', message.is_mine ? 'items-end' : 'items-start')}>
                 <div
@@ -228,7 +239,7 @@ function MessageBubble({ message }: { message: DirectMessage }) {
                     <p className="break-words whitespace-pre-wrap">{message.body}</p>
                 </div>
                 <time dateTime={message.created_at} className="text-muted-foreground mt-1 block px-1 text-[0.6875rem]">
-                    {formatMessageTime(message.created_at)}
+                    {formatMessageTime(message.created_at, intlLocale)}
                 </time>
             </div>
         </li>
@@ -236,6 +247,7 @@ function MessageBubble({ message }: { message: DirectMessage }) {
 }
 
 function ConversationPane({ active, messages }: { active: DirectActiveConversation | null; messages: DirectMessage[] }) {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({ body: '' });
     const messageEndRef = useRef<HTMLDivElement>(null);
 
@@ -245,7 +257,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
 
     if (!active) {
         return (
-            <section className="bg-muted/25 hidden min-h-0 lg:block" aria-label="No conversation selected">
+            <section className="bg-muted/25 hidden min-h-0 lg:block" aria-label={t('No conversation selected')}>
                 <EmptySelection />
             </section>
         );
@@ -269,10 +281,10 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
     };
 
     return (
-        <section className="flex min-h-0 min-w-0 flex-col" aria-label={`Conversation with ${active.person.name}`}>
+        <section className="flex min-h-0 min-w-0 flex-col" aria-label={t('Conversation with {name}', { name: active.person.name })}>
             <header className="border-border flex min-h-20 items-center gap-3 border-b px-4 py-3 sm:px-5">
                 <Button asChild variant="ghost" size="icon" className="-ml-2 size-11 rounded-xl lg:hidden">
-                    <Link href={route('direct.index')} aria-label="Back to Direct inbox">
+                    <Link href={route('direct.index')} aria-label={t('Back to Direct inbox')}>
                         <ArrowLeft className="size-5" aria-hidden="true" />
                     </Link>
                 </Button>
@@ -292,7 +304,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
             {active.shared_subjects.length > 0 && (
                 <div className="border-border bg-muted/35 border-b px-4 py-3 sm:px-5">
                     <div className="flex items-center gap-2 overflow-x-auto">
-                        <span className="text-muted-foreground shrink-0 text-xs font-semibold">You both shelved</span>
+                        <span className="text-muted-foreground shrink-0 text-xs font-semibold">{t('You both shelved')}</span>
                         {sortBySubjectGroup(active.shared_subjects, (subject) => subject.type).map((subject) => {
                             const GroupIcon = subjectGroupFor(subject.type).icon;
 
@@ -316,17 +328,22 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
                 </div>
             )}
 
-            <div className="bg-muted/25 min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6" role="log" aria-label="Messages" aria-live="polite">
+            <div className="bg-muted/25 min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6" role="log" aria-label={t('Messages')} aria-live="polite">
                 {messages.length === 0 ? (
                     <div className="flex min-h-full flex-col items-center justify-center py-10 text-center">
                         <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
                             <Sparkles className="size-6" strokeWidth={1.8} aria-hidden="true" />
                         </span>
-                        <h2 className="mt-5 text-lg font-semibold">A shared shelf is a good opening</h2>
+                        <h2 className="mt-5 text-lg font-semibold">{t('A shared shelf is a good opening')}</h2>
                         <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-6">
                             {active.shared_subjects[0]
-                                ? `Try asking ${active.person.name.split(' ')[0]} what stayed with them about ${active.shared_subjects[0].name}.`
-                                : `Say hello to ${active.person.name.split(' ')[0]} and start with the stories you both keep close.`}
+                                ? t('Try asking {name} what stayed with them about {title}.', {
+                                      name: active.person.name.split(' ')[0],
+                                      title: active.shared_subjects[0].name,
+                                  })
+                                : t('Say hello to {name} and start with the stories you both keep close.', {
+                                      name: active.person.name.split(' ')[0],
+                                  })}
                         </p>
                     </div>
                 ) : (
@@ -341,7 +358,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
 
             <form onSubmit={submit} className="border-border bg-card border-t p-3 sm:p-4">
                 <Label htmlFor="direct-message" className="text-xs font-semibold">
-                    Message {active.person.name}
+                    {t('Message {name}', { name: active.person.name })}
                 </Label>
                 <div className="mt-2 flex items-end gap-2">
                     <Textarea
@@ -351,7 +368,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
                         onKeyDown={handleComposerKeys}
                         maxLength={2000}
                         rows={2}
-                        placeholder="Write a private message…"
+                        placeholder={t('Write a private message…')}
                         disabled={processing}
                         className="max-h-36 min-h-12 resize-y"
                     />
@@ -359,7 +376,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
                         type="submit"
                         disabled={processing || !data.body.trim()}
                         className="size-12 shrink-0 cursor-pointer rounded-xl p-0"
-                        aria-label={processing ? 'Sending message' : 'Send message'}
+                        aria-label={processing ? t('Sending message') : t('Send message')}
                     >
                         {processing ? (
                             <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
@@ -369,7 +386,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
                     </Button>
                 </div>
                 <div className="mt-1.5 flex min-h-5 items-start justify-between gap-3">
-                    <p className="text-muted-foreground text-xs">Ctrl/⌘ + Enter to send</p>
+                    <p className="text-muted-foreground text-xs">{t('Ctrl/⌘ + Enter to send')}</p>
                     <p className={cn('text-xs tabular-nums', data.body.length > 1900 ? 'text-destructive font-semibold' : 'text-muted-foreground')}>
                         {data.body.length}/2000
                     </p>
@@ -385,6 +402,7 @@ function ConversationPane({ active, messages }: { active: DirectActiveConversati
 }
 
 export default function DirectIndex({ conversations, active }: DirectPageProps) {
+    const { t } = useTranslation();
     const activeId = active?.id;
     const authId = usePage<SharedData>().props.auth.user.id;
     const [liveMessages, setLiveMessages] = useState<DirectMessage[]>([]);
@@ -468,7 +486,7 @@ export default function DirectIndex({ conversations, active }: DirectPageProps) 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Direct">
-                <meta name="description" content="Private conversations between mutual Shelf Matches on BlackFrame." />
+                <meta name="description" content={t('Private conversations between mutual Shelf Matches on BlackFrame.')} />
             </Head>
 
             <main id="main-content" className="mx-auto w-full max-w-[1180px] px-3 py-4 pb-24 sm:px-5 md:pb-5" tabIndex={-1}>

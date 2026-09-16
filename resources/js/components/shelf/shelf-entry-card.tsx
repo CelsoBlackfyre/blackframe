@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTranslation } from '@/lib/i18n';
 import { subjectGroupFor } from '@/lib/subject-groups';
 import { SelectOption, ShelfEntry, ShelfStatus } from '@/types/subjects';
 import { useForm } from '@inertiajs/react';
@@ -19,6 +20,7 @@ interface ShelfEntryForm {
 }
 
 export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; statusOptions: SelectOption<ShelfStatus>[] }) {
+    const { t } = useTranslation();
     const [confirmingRemoval, setConfirmingRemoval] = useState(false);
     const GroupIcon = subjectGroupFor(entry.subject.type).icon;
     const form = useForm<ShelfEntryForm>({
@@ -52,7 +54,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                         <>
                             <img
                                 src={entry.subject.image_url}
-                                alt={`${entry.subject.name} cover artwork`}
+                                alt={t('{name} cover artwork', { name: entry.subject.name })}
                                 width="640"
                                 height="800"
                                 loading="lazy"
@@ -65,7 +67,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                         </>
                     ) : (
                         <div className="flex h-full min-h-28 items-center justify-center px-4 text-center">
-                            <span className="text-muted-foreground text-sm">No artwork</span>
+                            <span className="text-muted-foreground text-sm">{t('No artwork')}</span>
                         </div>
                     )}
                 </div>
@@ -78,7 +80,9 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                                 {entry.subject.type_label}
                             </p>
                             <h4 className="mt-0.5 text-base font-semibold [overflow-wrap:anywhere]">{entry.subject.name}</h4>
-                            {entry.subject.parent && <p className="text-muted-foreground mt-1 text-xs">Part of {entry.subject.parent}</p>}
+                            {entry.subject.parent && (
+                                <p className="text-muted-foreground mt-1 text-xs">{t('Part of {parent}', { parent: entry.subject.parent })}</p>
+                            )}
                         </div>
                         <span className="border-primary/20 bg-primary/8 rounded-full border px-2.5 py-1 text-xs font-semibold">
                             {entry.status_label}
@@ -95,19 +99,19 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                         {entry.favorite && (
                             <span className="text-primary flex items-center gap-1.5">
                                 <Heart className="size-4 fill-current" aria-hidden="true" />
-                                Favorite
+                                {t('Favorite')}
                             </span>
                         )}
                         {entry.progress && <span>{entry.progress}</span>}
                     </div>
                     <details className="group/edit mt-3">
                         <summary className="text-muted-foreground hover:text-foreground flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
-                            Update entry {form.isDirty && <span className="text-primary ml-auto text-xs">Unsaved changes</span>}
+                            {t('Update entry')} {form.isDirty && <span className="text-primary ml-auto text-xs">{t('Unsaved changes')}</span>}
                             <ChevronDown className="size-4 transition-transform group-open/edit:rotate-180" aria-hidden="true" />
                         </summary>
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor={`status-${entry.id}`}>Status</Label>
+                                <Label htmlFor={`status-${entry.id}`}>{t('Status')}</Label>
                                 <Select value={form.data.status} onValueChange={(value: ShelfStatus) => form.setData('status', value)}>
                                     <SelectTrigger id={`status-${entry.id}`} className="h-11 rounded-xl">
                                         <SelectValue />
@@ -124,7 +128,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor={`rating-${entry.id}`}>Rating</Label>
+                                <Label htmlFor={`rating-${entry.id}`}>{t('Rating')}</Label>
                                 <Input
                                     id={`rating-${entry.id}`}
                                     type="number"
@@ -134,7 +138,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                                     step="0.1"
                                     value={form.data.rating}
                                     onChange={(event) => form.setData('rating', event.target.value)}
-                                    placeholder="1–10"
+                                    placeholder={t('1 to 10')}
                                     className="h-11 rounded-xl"
                                     aria-describedby={`rating-error-${entry.id}`}
                                 />
@@ -142,13 +146,13 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor={`progress-${entry.id}`}>Progress</Label>
+                                <Label htmlFor={`progress-${entry.id}`}>{t('Progress')}</Label>
                                 <Input
                                     id={`progress-${entry.id}`}
                                     value={form.data.progress}
                                     onChange={(event) => form.setData('progress', event.target.value)}
                                     maxLength={120}
-                                    placeholder="Season, chapter, playtime, or milestone"
+                                    placeholder={t('Season, chapter, playtime, or milestone')}
                                     className="h-11 rounded-xl"
                                     aria-describedby={`progress-error-${entry.id}`}
                                 />
@@ -165,7 +169,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                                 />
                                 <Label htmlFor={`favorite-${entry.id}`} className="flex cursor-pointer items-center gap-1.5">
                                     <Heart className="text-primary size-4" strokeWidth={1.8} aria-hidden="true" />
-                                    Favorite
+                                    {t('Favorite')}
                                 </Label>
                             </div>
 
@@ -178,7 +182,7 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                                     className="text-destructive hover:text-destructive min-h-11 cursor-pointer rounded-xl"
                                 >
                                     <Trash2 className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                                    Remove
+                                    {t('Remove')}
                                 </Button>
                                 <Button type="submit" disabled={form.processing || !form.isDirty} className="min-h-11 cursor-pointer rounded-xl">
                                     {form.processing ? (
@@ -186,22 +190,22 @@ export function ShelfEntryCard({ entry, statusOptions }: { entry: ShelfEntry; st
                                     ) : (
                                         <Save className="size-4" strokeWidth={1.8} aria-hidden="true" />
                                     )}
-                                    {form.processing ? 'Saving…' : form.recentlySuccessful ? 'Saved' : 'Save changes'}
+                                    {form.processing ? t('Saving…') : form.recentlySuccessful ? t('Saved') : t('Save changes')}
                                 </Button>
                             </div>
                         </div>
                         {confirmingRemoval && (
                             <div role="alert" className="border-destructive/30 bg-destructive/5 mt-4 rounded-xl border p-4">
-                                <p className="text-sm font-medium">Remove {entry.subject.name} from your shelf?</p>
+                                <p className="text-sm font-medium">{t('Remove {name} from your shelf?', { name: entry.subject.name })}</p>
                                 <p className="text-muted-foreground mt-1 text-sm">
-                                    Your rating, progress, and favorite status will be removed. You can add the title again later.
+                                    {t('Your rating, progress, and favorite status will be removed. You can add the title again later.')}
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     <Button type="button" variant="destructive" disabled={form.processing} onClick={remove}>
-                                        Remove title
+                                        {t('Remove title')}
                                     </Button>
                                     <Button type="button" variant="outline" disabled={form.processing} onClick={() => setConfirmingRemoval(false)}>
-                                        Keep title
+                                        {t('Keep title')}
                                     </Button>
                                 </div>
                             </div>

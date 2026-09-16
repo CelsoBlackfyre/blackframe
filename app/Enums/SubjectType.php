@@ -18,16 +18,16 @@ enum SubjectType: string
     public function label(): string
     {
         return match ($this) {
-            self::Game => 'Game',
-            self::Movie => 'Movie',
-            self::Series => 'TV series',
-            self::Anime => 'Anime',
-            self::Manga => 'Manga',
-            self::Book => 'Book',
-            self::Comic => 'Comic',
-            self::Character => 'Character',
-            self::Franchise => 'Franchise',
-            self::TabletopGame => 'Tabletop game',
+            self::Game => __('Game'),
+            self::Movie => __('Movie'),
+            self::Series => __('TV series'),
+            self::Anime => __('Anime'),
+            self::Manga => __('Manga'),
+            self::Book => __('Book'),
+            self::Comic => __('Comic'),
+            self::Character => __('Character'),
+            self::Franchise => __('Franchise'),
+            self::TabletopGame => __('Tabletop game'),
         };
     }
 }

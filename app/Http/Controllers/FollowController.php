@@ -16,7 +16,7 @@ class FollowController extends Controller
 
         if ($viewer->is($user)) {
             throw ValidationException::withMessages([
-                'person' => 'You cannot follow yourself.',
+                'person' => __('You cannot follow yourself.'),
             ]);
         }
 
@@ -48,10 +48,10 @@ class FollowController extends Controller
         }
 
         if ($user->is_private) {
-            return back()->with('success', 'Follow request sent to '.$user->username.'.');
+            return back()->with('success', __('Follow request sent to :username.', ['username' => $user->username]));
         }
 
-        return back()->with('success', 'You are now following '.$user->username.'.');
+        return back()->with('success', __('You are now following :username.', ['username' => $user->username]));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -61,7 +61,7 @@ class FollowController extends Controller
             ->where('following_id', $user->id)
             ->delete();
 
-        return back()->with('success', 'Your relationship with '.$user->username.' was removed.');
+        return back()->with('success', __('Your relationship with :username was removed.', ['username' => $user->username]));
     }
 
     public function accept(Request $request, User $user): RedirectResponse
@@ -86,7 +86,7 @@ class FollowController extends Controller
             return back();
         }
 
-        return back()->with('success', 'You accepted '.$user->username.'\'s follow request.');
+        return back()->with('success', __('You accepted :username\'s follow request.', ['username' => $user->username]));
     }
 
     public function decline(Request $request, User $user): RedirectResponse
@@ -99,6 +99,6 @@ class FollowController extends Controller
 
         abort_unless($deleted === 1, 404);
 
-        return back()->with('success', 'Follow request declined.');
+        return back()->with('success', __('Follow request declined.'));
     }
 }

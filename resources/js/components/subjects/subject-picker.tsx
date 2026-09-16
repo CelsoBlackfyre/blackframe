@@ -5,24 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { CatalogCandidate, CatalogSearchResponse, SelectOption, SubjectType } from '@/types/subjects';
 import { useForm } from '@inertiajs/react';
 import { BookMarked, Check, ExternalLink, LoaderCircle, Search, Send, X } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
-
-const typeOptions: SelectOption<SubjectType>[] = [
-    { value: 'game', label: 'Game' },
-    { value: 'movie', label: 'Movie' },
-    { value: 'series', label: 'TV series' },
-    { value: 'anime', label: 'Anime' },
-    { value: 'manga', label: 'Manga' },
-    { value: 'book', label: 'Book' },
-    { value: 'comic', label: 'Comic' },
-    { value: 'character', label: 'Character' },
-    { value: 'franchise', label: 'Franchise' },
-    { value: 'tabletop_game', label: 'Tabletop game' },
-];
 
 const sourceLinks: Record<string, string> = {
     'Open Library': 'https://openlibrary.org',
@@ -50,6 +38,19 @@ interface SubjectPickerProps {
 }
 
 export function SubjectPicker({ id, value, onChange, error, allowClear = false }: SubjectPickerProps) {
+    const { t } = useTranslation();
+    const typeOptions: SelectOption<SubjectType>[] = [
+        { value: 'game', label: t('Game') },
+        { value: 'movie', label: t('Movie') },
+        { value: 'series', label: t('TV series') },
+        { value: 'anime', label: t('Anime') },
+        { value: 'manga', label: t('Manga') },
+        { value: 'book', label: t('Book') },
+        { value: 'comic', label: t('Comic') },
+        { value: 'character', label: t('Character') },
+        { value: 'franchise', label: t('Franchise') },
+        { value: 'tabletop_game', label: t('Tabletop game') },
+    ];
     const generatedId = useId();
     const pickerId = id ?? `subject-picker-${generatedId}`;
     const [open, setOpen] = useState(false);
@@ -99,7 +100,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                     signal: controller.signal,
                 });
 
-                if (!response.ok) throw new Error('Catalog search failed.');
+                if (!response.ok) throw new Error(t('Catalog search failed.'));
 
                 const payload = (await response.json()) as CatalogSearchResponse;
                 setResults(payload.data);
@@ -109,7 +110,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                 if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
 
                 setResults([]);
-                setSearchError('The catalog could not be reached. Try again or request the missing title.');
+                setSearchError(t('The catalog could not be reached. Try again or request the missing title.'));
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
@@ -119,7 +120,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
             window.clearTimeout(timer);
             controller.abort();
         };
-    }, [open, query, type]);
+    }, [open, query, type, t]);
 
     const selectCandidate = (candidate: CatalogCandidate) => {
         onChange(candidate);
@@ -185,7 +186,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             ) : (
                                 <span className="text-muted-foreground flex items-center gap-2 text-sm">
                                     <Search className="size-4" strokeWidth={1.8} aria-hidden="true" />
-                                    Search real catalogs
+                                    {t('Search real catalogs')}
                                 </span>
                             )}
                         </button>
@@ -198,7 +199,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             size="icon"
                             className="h-auto min-h-12 w-12 shrink-0 cursor-pointer rounded-xl"
                             onClick={() => onChange(null)}
-                            aria-label={`Remove ${value.name}`}
+                            aria-label={t('Remove {name}', { name: value.name })}
                         >
                             <X className="size-4" aria-hidden="true" />
                         </Button>
@@ -207,14 +208,14 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
 
                 <DialogContent className="max-h-[90dvh] max-w-2xl min-w-0 overflow-x-hidden overflow-y-auto rounded-2xl p-0 sm:w-[calc(100%-2rem)]">
                     <DialogHeader className="border-border min-w-0 border-b px-5 py-5 pr-12 sm:px-6">
-                        <DialogTitle>Find a title or fandom</DialogTitle>
-                        <DialogDescription>Search trusted catalogs. BlackFrame only imports the result you choose.</DialogDescription>
+                        <DialogTitle>{t('Find a title or fandom')}</DialogTitle>
+                        <DialogDescription>{t('Search trusted catalogs. BlackFrame only imports the result you choose.')}</DialogDescription>
                     </DialogHeader>
 
                     <div className="min-w-0 space-y-5 px-5 pb-6 sm:px-6">
                         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
                             <div className="space-y-2">
-                                <Label htmlFor={`${pickerId}-search`}>Search</Label>
+                                <Label htmlFor={`${pickerId}-search`}>{t('Search')}</Label>
                                 <div className="relative">
                                     <Search
                                         className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
@@ -237,13 +238,13 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor={`${pickerId}-type`}>Category</Label>
+                                <Label htmlFor={`${pickerId}-type`}>{t('Category')}</Label>
                                 <Select value={type} onValueChange={(nextType: 'all' | SubjectType) => setType(nextType)}>
                                     <SelectTrigger id={`${pickerId}-type`} className="h-12 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All categories</SelectItem>
+                                        <SelectItem value="all">{t('All categories')}</SelectItem>
                                         {typeOptions.map((option) => (
                                             <SelectItem key={option.value} value={option.value}>
                                                 {option.label}
@@ -258,7 +259,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             {loading && (
                                 <div className="text-muted-foreground flex min-h-40 items-center justify-center gap-2 text-sm">
                                     <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                    Searching catalogs
+                                    {t('Searching catalogs')}
                                 </div>
                             )}
 
@@ -271,7 +272,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                         className="mt-3 min-h-11 cursor-pointer rounded-xl"
                                         onClick={openSuggestion}
                                     >
-                                        Request a review
+                                        {t('Request a review')}
                                     </Button>
                                 </div>
                             )}
@@ -279,15 +280,15 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             {!loading && !searchError && query.trim().length < 2 && (
                                 <div className="border-border bg-muted/35 flex min-h-40 flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center">
                                     <Search className="text-primary size-6" strokeWidth={1.8} aria-hidden="true" />
-                                    <p className="mt-3 text-sm font-semibold">Start with at least two characters</p>
+                                    <p className="mt-3 text-sm font-semibold">{t('Start with at least two characters')}</p>
                                     <p className="text-muted-foreground mt-1 max-w-sm text-xs leading-5">
-                                        Results can include books, games, films, series, anime, manga, characters, and franchises.
+                                        {t('Results can include books, games, films, series, anime, manga, characters, and franchises.')}
                                     </p>
                                 </div>
                             )}
 
                             {!loading && !searchError && query.trim().length >= 2 && results.length > 0 && (
-                                <ul className="min-w-0 space-y-2" aria-label="Catalog results">
+                                <ul className="min-w-0 space-y-2" aria-label={t('Catalog results')}>
                                     {results.map((candidate) => (
                                         <li key={candidate.key} className="min-w-0">
                                             <button
@@ -310,7 +311,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                                 <span className="min-w-0 flex-1">
                                                     <span className="block truncate text-sm font-semibold">{candidate.name}</span>
                                                     <span className="text-muted-foreground mt-0.5 block text-xs">
-                                                        {candidate.type_label} · via {candidate.source_label}
+                                                        {t('{type} · via {source}', { type: candidate.type_label, source: candidate.source_label })}
                                                     </span>
                                                     {candidate.description && (
                                                         <span className="text-muted-foreground mt-1 line-clamp-2 block text-xs leading-5">
@@ -318,7 +319,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                                         </span>
                                                     )}
                                                 </span>
-                                                <span className="text-primary hidden shrink-0 text-xs font-semibold sm:inline">Choose</span>
+                                                <span className="text-primary hidden shrink-0 text-xs font-semibold sm:inline">{t('Choose')}</span>
                                             </button>
                                         </li>
                                     ))}
@@ -328,9 +329,9 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             {!loading && !searchError && query.trim().length >= 2 && results.length === 0 && (
                                 <div className="border-border bg-muted/35 rounded-2xl border border-dashed px-6 py-8 text-center">
                                     <BookMarked className="text-primary mx-auto size-7" strokeWidth={1.8} aria-hidden="true" />
-                                    <p className="mt-3 text-sm font-semibold">No reliable match yet</p>
+                                    <p className="mt-3 text-sm font-semibold">{t('No reliable match yet')}</p>
                                     <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs leading-5">
-                                        Try the exact title or choose a category. If it is still missing, send one review request.
+                                        {t('Try the exact title or choose a category. If it is still missing, send one review request.')}
                                     </p>
                                     <Button
                                         type="button"
@@ -338,7 +339,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                         className="mt-4 min-h-11 cursor-pointer rounded-xl"
                                         onClick={openSuggestion}
                                     >
-                                        Request this title
+                                        {t('Request this title')}
                                     </Button>
                                 </div>
                             )}
@@ -346,9 +347,9 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
 
                         {!loading && results.length > 0 && !showSuggestion && (
                             <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-                                <p className="text-muted-foreground text-xs">Not seeing the right match?</p>
+                                <p className="text-muted-foreground text-xs">{t('Not seeing the right match?')}</p>
                                 <Button type="button" variant="ghost" className="min-h-11 cursor-pointer rounded-xl" onClick={openSuggestion}>
-                                    Request a missing title
+                                    {t('Request a missing title')}
                                 </Button>
                             </div>
                         )}
@@ -360,16 +361,16 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                             >
                                 <div>
                                     <h3 id={`${pickerId}-suggestion-heading`} className="text-sm font-semibold">
-                                        Request catalog review
+                                        {t('Request catalog review')}
                                     </h3>
                                     <p className="text-muted-foreground mt-1 text-xs leading-5">
-                                        One request is shared across the community, so duplicate submissions stay out of the catalog.
+                                        {t('One request is shared across the community, so duplicate submissions stay out of the catalog.')}
                                     </p>
                                 </div>
 
                                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label htmlFor={`${pickerId}-suggestion-name`}>Exact title</Label>
+                                        <Label htmlFor={`${pickerId}-suggestion-name`}>{t('Exact title')}</Label>
                                         <Input
                                             id={`${pickerId}-suggestion-name`}
                                             value={suggestion.data.name}
@@ -381,13 +382,13 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor={`${pickerId}-suggestion-type`}>Category</Label>
+                                        <Label htmlFor={`${pickerId}-suggestion-type`}>{t('Category')}</Label>
                                         <Select
                                             value={suggestion.data.type}
                                             onValueChange={(nextType: SubjectType) => suggestion.setData('type', nextType)}
                                         >
                                             <SelectTrigger id={`${pickerId}-suggestion-type`} className="h-11 rounded-xl">
-                                                <SelectValue placeholder="Choose a category" />
+                                                <SelectValue placeholder={t('Choose a category')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {typeOptions.map((option) => (
@@ -402,27 +403,27 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                 </div>
 
                                 <div className="mt-4 space-y-2">
-                                    <Label htmlFor={`${pickerId}-suggestion-url`}>Reference link</Label>
+                                    <Label htmlFor={`${pickerId}-suggestion-url`}>{t('Reference link')}</Label>
                                     <Input
                                         id={`${pickerId}-suggestion-url`}
                                         type="url"
                                         value={suggestion.data.source_url}
                                         onChange={(event) => suggestion.setData('source_url', event.target.value)}
-                                        placeholder="Optional official page or database link"
+                                        placeholder={t('Optional official page or database link')}
                                         className="h-11 rounded-xl"
                                     />
                                     <InputError message={suggestion.errors.source_url} />
                                 </div>
 
                                 <div className="mt-4 space-y-2">
-                                    <Label htmlFor={`${pickerId}-suggestion-notes`}>What should we know?</Label>
+                                    <Label htmlFor={`${pickerId}-suggestion-notes`}>{t('What should we know?')}</Label>
                                     <Textarea
                                         id={`${pickerId}-suggestion-notes`}
                                         value={suggestion.data.notes}
                                         onChange={(event) => suggestion.setData('notes', event.target.value)}
                                         maxLength={500}
                                         rows={3}
-                                        placeholder="Optional context to distinguish it from similar titles"
+                                        placeholder={t('Optional context to distinguish it from similar titles')}
                                         className="min-h-20 rounded-xl"
                                     />
                                     <InputError message={suggestion.errors.notes} />
@@ -435,7 +436,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                         className="min-h-11 cursor-pointer rounded-xl"
                                         onClick={() => setShowSuggestion(false)}
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="button"
@@ -448,7 +449,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                         ) : (
                                             <Send className="size-4" strokeWidth={1.8} aria-hidden="true" />
                                         )}
-                                        {suggestion.processing ? 'Sending' : 'Send for review'}
+                                        {suggestion.processing ? t('Sending') : t('Send for review')}
                                     </Button>
                                 </div>
                             </section>
@@ -456,7 +457,7 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
 
                         {sources.length > 0 && (
                             <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4 text-xs">
-                                <span>Catalog data:</span>
+                                <span>{t('Catalog data:')}</span>
                                 {sources.map((source) => (
                                     <a
                                         key={source}
@@ -470,7 +471,9 @@ export function SubjectPicker({ id, value, onChange, error, allowClear = false }
                                     </a>
                                 ))}
                                 {unavailableSources.length > 0 && (
-                                    <span className="w-full">Temporarily unavailable: {unavailableSources.join(', ')}.</span>
+                                    <span className="w-full">
+                                        {t('Temporarily unavailable: {sources}.', { sources: unavailableSources.join(', ') })}
+                                    </span>
                                 )}
                             </div>
                         )}

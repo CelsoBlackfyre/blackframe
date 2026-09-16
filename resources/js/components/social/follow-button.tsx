@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
 import { Check, Clock3, LoaderCircle, UserPlus } from 'lucide-react';
@@ -25,6 +26,7 @@ export function FollowButton({
     preserveState = false,
     className,
 }: FollowButtonProps) {
+    const { t } = useTranslation();
     const form = useForm({});
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function FollowButton({
             preserveScroll: true,
             preserveState: preserveState || undefined,
             ...(only ? { only } : {}),
-            onError: () => setActionError('We could not update this connection. Please try again.'),
+            onError: () => setActionError(t('We could not update this connection. Please try again.')),
         };
 
         if (is_following || follow_request_pending) {
@@ -45,7 +47,7 @@ export function FollowButton({
         form.post(route('people.follow.store', id), options);
     };
 
-    const label = is_following ? 'Following' : follow_request_pending ? 'Requested' : is_private ? 'Request' : 'Follow';
+    const label = is_following ? t('Following') : follow_request_pending ? t('Requested') : is_private ? t('Request') : t('Follow');
 
     return (
         <div className="shrink-0">
@@ -54,13 +56,15 @@ export function FollowButton({
                 variant={is_following || follow_request_pending ? 'outline' : 'default'}
                 onClick={toggle}
                 disabled={form.processing}
-                aria-label={`${is_following ? 'Unfollow' : follow_request_pending ? 'Cancel follow request to' : 'Follow'} ${name}`}
+                aria-label={t(is_following ? 'Unfollow {name}' : follow_request_pending ? 'Cancel follow request to {name}' : 'Follow {name}', {
+                    name,
+                })}
                 className={cn('min-h-11 cursor-pointer rounded-xl px-4', className)}
             >
                 {form.processing ? (
                     <>
                         <LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                        <span className="sr-only">Updating connection</span>
+                        <span className="sr-only">{t('Updating connection')}</span>
                     </>
                 ) : is_following ? (
                     <>

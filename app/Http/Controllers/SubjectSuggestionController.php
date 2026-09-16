@@ -29,8 +29,8 @@ class SubjectSuggestionController extends Controller
         );
 
         $message = $suggestion->wasRecentlyCreated
-            ? $suggestion->name.' was sent for catalog review.'
-            : $suggestion->name.' is already in the catalog review queue.';
+            ? __(':name was sent for catalog review.', ['name' => $suggestion->name])
+            : __(':name is already in the catalog review queue.', ['name' => $suggestion->name]);
 
         return back()->with('success', $message);
     }

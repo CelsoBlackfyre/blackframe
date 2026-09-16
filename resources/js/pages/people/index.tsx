@@ -5,6 +5,7 @@ import { PersonCard } from '@/components/social/person-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { Paginated } from '@/types/feed';
@@ -13,20 +14,12 @@ import { Head, Link, router } from '@inertiajs/react';
 import { LoaderCircle, Search, UsersRound, X } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Discover', href: route('people.index') }];
-
 interface PeoplePageProps {
     people: Paginated<PersonSummary>;
     follow_requests: PersonSummary[];
     filters: PeopleFilters;
     network: PeopleNetwork;
 }
-
-const tabs: Array<{ value: PeopleView; label: string }> = [
-    { value: 'discover', label: 'Discover' },
-    { value: 'followers', label: 'Followers' },
-    { value: 'following', label: 'Following' },
-];
 
 function peopleUrl(view: PeopleView, query: string): string {
     return route('people.index', {
@@ -36,26 +29,29 @@ function peopleUrl(view: PeopleView, query: string): string {
 }
 
 function EmptyPeople({ view, query, onClear }: { view: PeopleView; query: string; onClear: () => void }) {
+    const { t } = useTranslation();
     const hasQuery = query.trim() !== '';
 
     const content = hasQuery
         ? {
-              title: `No ${view === 'discover' ? 'people' : view} match your search`,
-              description: 'Try another name or username, or clear the search to see the complete list.',
+              title: t('No {view} match your search', {
+                  view: view === 'discover' ? t('people') : view === 'followers' ? t('followers') : t('following'),
+              }),
+              description: t('Try another name or username, or clear the search to see the complete list.'),
           }
         : view === 'followers'
           ? {
-                title: 'No followers yet',
-                description: 'When someone follows you, they will appear here so you can find and connect with them.',
+                title: t('No followers yet'),
+                description: t('When someone follows you, they will appear here so you can find and connect with them.'),
             }
           : view === 'following'
             ? {
-                  title: 'You are not following anyone yet',
-                  description: 'Explore the BlackFrame community and follow people whose posts you want in your feed.',
+                  title: t('You are not following anyone yet'),
+                  description: t('Explore the BlackFrame community and follow people whose posts you want in your feed.'),
               }
             : {
-                  title: 'No other people are here yet',
-                  description: 'New BlackFrame members will appear here as the community grows.',
+                  title: t('No other people are here yet'),
+                  description: t('New BlackFrame members will appear here as the community grows.'),
               };
 
     return (
@@ -65,11 +61,11 @@ function EmptyPeople({ view, query, onClear }: { view: PeopleView; query: string
             <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">{content.description}</p>
             {hasQuery ? (
                 <Button type="button" variant="outline" onClick={onClear} className="mt-5 min-h-11 cursor-pointer rounded-xl">
-                    Clear search
+                    {t('Clear search')}
                 </Button>
             ) : view === 'following' ? (
                 <Button asChild className="mt-5 min-h-11 rounded-xl">
-                    <Link href={peopleUrl('discover', '')}>Discover people</Link>
+                    <Link href={peopleUrl('discover', '')}>{t('Discover people')}</Link>
                 </Button>
             ) : null}
         </section>
@@ -77,6 +73,13 @@ function EmptyPeople({ view, query, onClear }: { view: PeopleView; query: string
 }
 
 export default function People({ people, follow_requests: followRequests, filters, network }: PeoplePageProps) {
+    const { t } = useTranslation();
+    const breadcrumbs: BreadcrumbItem[] = [{ title: t('Discover'), href: route('people.index') }];
+    const tabs: Array<{ value: PeopleView; label: string }> = [
+        { value: 'discover', label: t('Discover') },
+        { value: 'followers', label: t('Followers') },
+        { value: 'following', label: t('Following') },
+    ];
     const [searchQuery, setSearchQuery] = useState(filters.query);
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -96,11 +99,11 @@ export default function People({ people, follow_requests: followRequests, filter
                     only: ['people', 'filters'],
                     onStart: () => setIsSearching(true),
                     onFinish: () => setIsSearching(false),
-                    onError: () => setSearchError('Search could not be completed. Check your connection and try again.'),
+                    onError: () => setSearchError(t('Search could not be completed. Check your connection and try again.')),
                 },
             );
         },
-        [filters.view],
+        [filters.view, t],
     );
 
     useEffect(() => {
@@ -134,24 +137,24 @@ export default function People({ people, follow_requests: followRequests, filter
         searchInput.current?.focus();
     };
 
-    const resultLabel = `${people.total} ${people.total === 1 ? 'person' : 'people'}`;
+    const resultLabel = t('{count} person|{count} people', { count: people.total });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Discover people" />
+            <Head title={t('Discover people')} />
             <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-5 pb-28 sm:px-6 sm:py-8 md:pb-10" tabIndex={-1}>
                 <PageHeading
-                    title="Find your kind of people."
-                    description="Familiar favorites. Different perspectives. A little common ground."
+                    title={t('Find your kind of people.')}
+                    description={t('Familiar favorites. Different perspectives. A little common ground.')}
                     action={
                         <dl className="flex shrink-0 gap-6">
                             <div>
                                 <dd className="text-2xl font-semibold tabular-nums">{network.followers_count}</dd>
-                                <dt className="text-muted-foreground text-sm">Followers</dt>
+                                <dt className="text-muted-foreground text-sm">{t('Followers')}</dt>
                             </div>
                             <div className="border-border border-l pl-6">
                                 <dd className="text-2xl font-semibold tabular-nums">{network.following_count}</dd>
-                                <dt className="text-muted-foreground text-sm">Following</dt>
+                                <dt className="text-muted-foreground text-sm">{t('Following')}</dt>
                             </div>
                         </dl>
                     }
@@ -166,9 +169,9 @@ export default function People({ people, follow_requests: followRequests, filter
                         <div className="mb-4 flex items-center justify-between gap-4">
                             <div>
                                 <h2 id="follow-requests-title" className="font-semibold">
-                                    Follow requests
+                                    {t('Follow requests')}
                                 </h2>
-                                <p className="text-muted-foreground mt-1 text-sm">Choose who can see your private profile.</p>
+                                <p className="text-muted-foreground mt-1 text-sm">{t('Choose who can see your private profile.')}</p>
                             </div>
                             <span className="bg-primary/10 text-primary rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums">
                                 {network.follow_requests_count}
@@ -185,10 +188,10 @@ export default function People({ people, follow_requests: followRequests, filter
                 <section className="border-border bg-card mt-6 rounded-2xl border p-4 sm:p-5" aria-labelledby="people-search-label">
                     <form onSubmit={submitSearch} role="search">
                         <label id="people-search-label" htmlFor="people-search" className="text-sm font-semibold">
-                            Search people
+                            {t('Search people')}
                         </label>
                         <p id="people-search-help" className="text-muted-foreground mt-1 text-sm">
-                            Search by display name or username. Results update as you type.
+                            {t('Search by display name or username. Results update as you type.')}
                         </p>
                         <div className="relative mt-3">
                             <Search
@@ -202,7 +205,7 @@ export default function People({ people, follow_requests: followRequests, filter
                                 type="search"
                                 value={searchQuery}
                                 onChange={(event) => setSearchQuery(event.target.value)}
-                                placeholder="Name or @username"
+                                placeholder={t('Name or @username')}
                                 maxLength={80}
                                 autoComplete="off"
                                 aria-describedby={`people-search-help people-search-status${searchError ? ' people-search-error' : ''}`}
@@ -218,7 +221,7 @@ export default function People({ people, follow_requests: followRequests, filter
                                 <button
                                     type="button"
                                     onClick={clearSearch}
-                                    aria-label="Clear people search"
+                                    aria-label={t('Clear people search')}
                                     className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-1/2 right-2 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-xl transition-colors"
                                 >
                                     <X className="size-5" strokeWidth={1.8} aria-hidden="true" />
@@ -226,7 +229,7 @@ export default function People({ people, follow_requests: followRequests, filter
                             ) : null}
                         </div>
                         <p id="people-search-status" role="status" aria-live="polite" className="text-muted-foreground mt-2 text-xs">
-                            {isSearching ? 'Searching people…' : resultLabel}
+                            {isSearching ? t('Searching people…') : resultLabel}
                         </p>
                         {searchError && (
                             <p id="people-search-error" role="alert" className="text-destructive mt-2 text-sm">
@@ -237,7 +240,7 @@ export default function People({ people, follow_requests: followRequests, filter
                 </section>
 
                 <nav
-                    aria-label="People views"
+                    aria-label={t('People views')}
                     className="border-border mt-6 flex gap-1 overflow-x-auto border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
                     {tabs.map((tab) => {
@@ -262,7 +265,7 @@ export default function People({ people, follow_requests: followRequests, filter
                                     setIsSearching(true);
                                 }}
                                 onFinish={() => setIsSearching(false)}
-                                onError={() => setSearchError('This people view could not be loaded. Please try again.')}
+                                onError={() => setSearchError(t('This people view could not be loaded. Please try again.'))}
                                 aria-current={active ? 'page' : undefined}
                                 className={cn(
                                     'relative flex min-h-12 shrink-0 items-center gap-2 rounded-t-xl px-3 text-sm font-semibold transition-colors sm:px-4',
@@ -281,7 +284,11 @@ export default function People({ people, follow_requests: followRequests, filter
                     })}
                 </nav>
 
-                <section aria-label={`${tabs.find((tab) => tab.value === filters.view)?.label} people`} aria-busy={isSearching} className="mt-6">
+                <section
+                    aria-label={t('{view} people', { view: tabs.find((tab) => tab.value === filters.view)?.label ?? '' })}
+                    aria-busy={isSearching}
+                    className="mt-6"
+                >
                     {people.data.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                             {people.data.map((person) => (
@@ -293,7 +300,14 @@ export default function People({ people, follow_requests: followRequests, filter
                     )}
                 </section>
 
-                <Pagination resource={people} previousLabel="Previous" nextLabel="Next" ariaLabel="People pages" className="mt-8" preserveState />
+                <Pagination
+                    resource={people}
+                    previousLabel={t('Previous')}
+                    nextLabel={t('Next')}
+                    ariaLabel={t('People pages')}
+                    className="mt-8"
+                    preserveState
+                />
             </main>
         </AppLayout>
     );
